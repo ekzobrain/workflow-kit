@@ -29,6 +29,15 @@ module BPMN
   class Escalation < Element
   end
 
+  class ItemDefinition < Element
+    attr_accessor :structure_ref
+
+    def initialize(attributes = {})
+      super(attributes)
+      @structure_ref = attributes[:structure_ref]
+    end
+  end
+
   class Collaboration < Element
   end
 
