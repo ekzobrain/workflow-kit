@@ -575,7 +575,7 @@ grammar FEEL
   # 51.d expression , "in" , " (", positive unary tests, ")" ;
   #
   rule comparison
-    left:non_recursive_simple_expression_for_comparison __ operator:comparision_operator __ right:expression <Comparison>
+    left:non_recursive_simple_expression_for_comparison __ operator:comparison_operator __ right:expression <Comparison>
   end
 
   rule non_recursive_simple_expression_for_comparison
@@ -590,7 +590,7 @@ grammar FEEL
     expression __ "[" __ filter:expression __ "]" <FilterExpression>
   end
 
-  rule comparision_operator
+  rule comparison_operator
     "=" / "!=" / "<=" / ">=" / "<" / ">"
   end
 
