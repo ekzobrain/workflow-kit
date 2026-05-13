@@ -63,5 +63,35 @@ module DMN
       result = decision_table.evaluate(variables)
       _(result).must_be_nil
     end
+
+    describe "? input placeholder" do
+      it "should match contains(?, ...) in input entries" do
+        definitions = Definitions.from_xml(fixture_source("test_input_placeholder.dmn"))
+        decision_table = definitions.decisions.first.decision_table
+        result = decision_table.evaluate(description: "This is urgent", priority: 1)
+        _(result).must_equal({ "action" => "Escalate" })
+      end
+
+      it "should match ? > n in input entries" do
+        definitions = Definitions.from_xml(fixture_source("test_input_placeholder.dmn"))
+        decision_table = definitions.decisions.first.decision_table
+        result = decision_table.evaluate(description: "Normal request", priority: 8)
+        _(result).must_equal({ "action" => "Review" })
+      end
+
+      it "should match starts with(?, ...) in input entries" do
+        definitions = Definitions.from_xml(fixture_source("test_input_placeholder.dmn"))
+        decision_table = definitions.decisions.first.decision_table
+        result = decision_table.evaluate(description: "Bug in login flow", priority: 2)
+        _(result).must_equal({ "action" => "Triage" })
+      end
+
+      it "should fall through to default when no placeholder matches" do
+        definitions = Definitions.from_xml(fixture_source("test_input_placeholder.dmn"))
+        decision_table = definitions.decisions.first.decision_table
+        result = decision_table.evaluate(description: "Normal request", priority: 3)
+        _(result).must_equal({ "action" => "Queue" })
+      end
+    end
   end
 end

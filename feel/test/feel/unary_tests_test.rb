@@ -75,6 +75,44 @@ module FEEL
       end
     end
 
+    describe :input_value_placeholder do
+      it "should support ? in function invocations" do
+        _(UnaryTests.new(text: 'contains(?, "Garbage cart")').test("Garbage cart pickup")).must_equal true
+        _(UnaryTests.new(text: 'contains(?, "Garbage cart")').test("Recycling pickup")).must_equal false
+      end
+
+      it "should support ? in comparisons" do
+        _(UnaryTests.new(text: "? > 10").test(15)).must_equal true
+        _(UnaryTests.new(text: "? > 10").test(5)).must_equal false
+        _(UnaryTests.new(text: "? = 5").test(5)).must_equal true
+        _(UnaryTests.new(text: "? = 5").test(3)).must_equal false
+        _(UnaryTests.new(text: "? != 5").test(3)).must_equal true
+      end
+
+      it "should support ? in string functions" do
+        _(UnaryTests.new(text: 'starts with(?, "Hello")').test("Hello World")).must_equal true
+        _(UnaryTests.new(text: 'starts with(?, "Hello")').test("Goodbye")).must_equal false
+        _(UnaryTests.new(text: 'ends with(?, "World")').test("Hello World")).must_equal true
+      end
+
+      it "should support ? in arithmetic expressions" do
+        _(UnaryTests.new(text: "? + 5 > 10").test(6)).must_equal true
+        _(UnaryTests.new(text: "? + 5 > 10").test(4)).must_equal false
+      end
+
+      it "should support ? in comma-separated tests" do
+        _(UnaryTests.new(text: 'contains(?, "a"), contains(?, "b")').test("apple")).must_equal true
+        _(UnaryTests.new(text: 'contains(?, "a"), contains(?, "b")').test("banana")).must_equal true
+        _(UnaryTests.new(text: 'contains(?, "a"), contains(?, "b")').test("cherry")).must_equal false
+      end
+
+      it "should be valid" do
+        _(UnaryTests.new(text: 'contains(?, "x")').valid?).must_equal true
+        _(UnaryTests.new(text: "? > 10").valid?).must_equal true
+        _(UnaryTests.new(text: "? + 5 > 10").valid?).must_equal true
+      end
+    end
+
     describe :null_handling do
       it "should not match null input in comparisons" do
         _(UnaryTests.new(text: "< 4").test(nil)).must_equal false

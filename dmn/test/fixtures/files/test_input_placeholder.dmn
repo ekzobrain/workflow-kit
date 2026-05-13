@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="test_input_placeholder" name="Test Input Placeholder" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="service_request" name="Service Request">
+    <decisionTable id="DecisionTable_1" hitPolicy="FIRST">
+      <input id="Input_1" label="Description">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text>description</text>
+        </inputExpression>
+      </input>
+      <input id="Input_2" label="Priority">
+        <inputExpression id="InputExpression_2" typeRef="number">
+          <text>priority</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Action" name="action" typeRef="string" />
+      <rule id="DecisionRule_1">
+        <inputEntry id="UnaryTests_1">
+          <text>contains(?, "urgent")</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_2">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1">
+          <text>"Escalate"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_2">
+        <inputEntry id="UnaryTests_3">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_4">
+          <text>? &gt; 5</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_2">
+          <text>"Review"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_3">
+        <inputEntry id="UnaryTests_5">
+          <text>starts with(?, "Bug")</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_6">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_3">
+          <text>"Triage"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_4">
+        <inputEntry id="UnaryTests_7">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_8">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_4">
+          <text>"Queue"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+</definitions>

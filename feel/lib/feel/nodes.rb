@@ -125,6 +125,11 @@ module FEEL
   class SimplePositiveUnaryTest < Node
     def eval(context = {})
       operator = head.text_value.strip
+
+      if operator.empty? && text_value.include?("?")
+        return ->(input) { tail.eval(context.merge("?" => input)) }
+      end
+
       endpoint = tail.eval(context)
 
       case operator
@@ -239,6 +244,12 @@ module FEEL
       else
         ->(_input) { true }
       end
+    end
+  end
+
+  class ExpressionUnaryTest < Node
+    def eval(context = {})
+      ->(input) { expr.eval(context.merge("?" => input)) }
     end
   end
 
