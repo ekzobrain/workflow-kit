@@ -86,6 +86,20 @@ module DMN
         _(result).must_equal({ "action" => "Triage" })
       end
 
+      it "should match ? in both input entries of the same rule" do
+        definitions = Definitions.from_xml(fixture_source("test_input_placeholder.dmn"))
+        decision_table = definitions.decisions.first.decision_table
+        result = decision_table.evaluate(description: "A critical issue", priority: 4)
+        _(result).must_equal({ "action" => "Prioritize" })
+      end
+
+      it "should not match when only one ? input entry matches" do
+        definitions = Definitions.from_xml(fixture_source("test_input_placeholder.dmn"))
+        decision_table = definitions.decisions.first.decision_table
+        result = decision_table.evaluate(description: "A critical issue", priority: 2)
+        _(result).must_equal({ "action" => "Queue" })
+      end
+
       it "should fall through to default when no placeholder matches" do
         definitions = Definitions.from_xml(fixture_source("test_input_placeholder.dmn"))
         decision_table = definitions.decisions.first.decision_table

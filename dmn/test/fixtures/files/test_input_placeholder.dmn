@@ -48,12 +48,23 @@
       </rule>
       <rule id="DecisionRule_4">
         <inputEntry id="UnaryTests_7">
-          <text>-</text>
+          <text>contains(?, "critical")</text>
         </inputEntry>
         <inputEntry id="UnaryTests_8">
-          <text>-</text>
+          <text>? &gt; 3</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_4">
+          <text>"Prioritize"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_5">
+        <inputEntry id="UnaryTests_9">
+          <text>-</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10">
+          <text>-</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_5">
           <text>"Queue"</text>
         </outputEntry>
       </rule>
