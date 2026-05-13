@@ -245,6 +245,7 @@ grammar FEEL
     expr:simple_positive_unary_tests <SimpleUnaryTests> /
     negate:"not" __ "(" __ expr:simple_positive_unary_tests __ ")" <SimpleUnaryTests> /
     "-" <SimpleUnaryTests> /
+    # Handles ? in comparisons (e.g. "? > 5") — SimplePositiveUnaryTest handles ? in endpoints (e.g. "contains(?, \"x\")").
     expr:simple_expression <ExpressionUnaryTest>
   end
 
