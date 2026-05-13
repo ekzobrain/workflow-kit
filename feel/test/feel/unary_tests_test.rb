@@ -106,6 +106,11 @@ module FEEL
         _(UnaryTests.new(text: 'contains(?, "a"), contains(?, "b")').test("cherry")).must_equal false
       end
 
+      it "should not treat ? inside a string literal as an input placeholder" do
+        _(UnaryTests.new(text: 'string length("?")').test(1)).must_equal true
+        _(UnaryTests.new(text: 'string length("?")').test(2)).must_equal false
+      end
+
       it "should be valid" do
         _(UnaryTests.new(text: 'contains(?, "x")').valid?).must_equal true
         _(UnaryTests.new(text: "? > 10").valid?).must_equal true

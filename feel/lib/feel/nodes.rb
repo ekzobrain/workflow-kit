@@ -2,6 +2,13 @@
 
 module FEEL
   class Node < Treetop::Runtime::SyntaxNode
+    def contains_input_placeholder?
+      return true if is_a?(Name) && text_value == "?"
+      return false unless respond_to?(:elements) && elements
+
+      elements.any? { |el| el.respond_to?(:contains_input_placeholder?) && el.contains_input_placeholder? }
+    end
+
     #
     # Takes a context hash and returns an array of qualified names
     # { "person": { "name": { "first": "Eric", "last": "Carlson" }, "age": 60 } } => ["person", "person.name.first", "person.name.last", "person.age"]
@@ -126,7 +133,7 @@ module FEEL
     def eval(context = {})
       operator = head.text_value.strip
 
-      if operator.empty? && text_value.include?("?")
+      if operator.empty? && tail.respond_to?(:contains_input_placeholder?) && tail.contains_input_placeholder?
         return ->(input) { tail.eval(context.merge("?" => input)) }
       end
 
