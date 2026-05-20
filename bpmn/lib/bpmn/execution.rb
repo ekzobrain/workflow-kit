@@ -394,9 +394,9 @@ module BPMN
 
     def print_child(child, index)
       vars = child.variables.empty? ? '' : JSON.pretty_generate(child.variables, { indent: '', object_nl: ' ' })
-      step = child.step
+      name = child.step.name.present? ? " <#{child.step.name}>" : ""
 
-      str = "#{index} #{step.class.name.demodulize} #{step.id} \"#{step.name}\": #{child.status} #{vars}".strip
+      str = "#{index} #{child.step.class.name.demodulize} #{child.step.id}#{name}: #{child.status} #{vars}".strip
       str = "#{str} * in: #{child.tokens_in.join(', ')}" if child.tokens_in.present?
       str = "#{str} * out: #{child.tokens_out.join(', ')}" if child.tokens_out.present?
       puts str
