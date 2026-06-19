@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                  id="Definitions_multi_instance_execution" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="ParallelReview" name="Parallel Review" isExecutable="true">
+    <bpmn:startEvent id="PStart">
+      <bpmn:outgoing>pf1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="pf1" sourceRef="PStart" targetRef="PReview" />
+    <bpmn:userTask id="PReview" name="Review each">
+      <bpmn:multiInstanceLoopCharacteristics>
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=items" inputElement="item" outputCollection="results" outputElement="=score" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:incoming>pf1</bpmn:incoming>
+      <bpmn:outgoing>pf2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="pf2" sourceRef="PReview" targetRef="PEnd" />
+    <bpmn:endEvent id="PEnd">
+      <bpmn:incoming>pf2</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+
+  <bpmn:process id="SequentialReview" name="Sequential Review" isExecutable="true">
+    <bpmn:startEvent id="SStart">
+      <bpmn:outgoing>sf1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="sf1" sourceRef="SStart" targetRef="SReview" />
+    <bpmn:userTask id="SReview" name="Review each in order">
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true">
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=items" inputElement="item" outputCollection="results" outputElement="=score" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:incoming>sf1</bpmn:incoming>
+      <bpmn:outgoing>sf2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="sf2" sourceRef="SReview" targetRef="SEnd" />
+    <bpmn:endEvent id="SEnd">
+      <bpmn:incoming>sf2</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

@@ -4,7 +4,7 @@ module BPMN
   class ExtensionElements
     VALID_EXTENSION_NAMESPACES = %w[zeebe]
 
-    attr_accessor :assignment_definition, :called_element, :called_decision, :form_definition, :io_mapping, :properties, :script, :subscription, :task_definition, :task_headers, :task_schedule
+    attr_accessor :assignment_definition, :called_element, :called_decision, :form_definition, :io_mapping, :loop_characteristics, :properties, :script, :subscription, :task_definition, :task_headers, :task_schedule
 
     def initialize(attributes = {})
       if attributes[:properties].present?
@@ -17,6 +17,7 @@ module BPMN
       @called_decision = Zeebe::CalledDecision.new(attributes[:called_decision]) if attributes[:called_decision].present?
       @form_definition = Zeebe::FormDefinition.new(attributes[:form_definition]) if attributes[:form_definition].present?
       @io_mapping = Zeebe::IoMapping.new(attributes[:io_mapping]) if attributes[:io_mapping].present?
+      @loop_characteristics = Zeebe::LoopCharacteristics.new(attributes[:loop_characteristics]) if attributes[:loop_characteristics].present?
       @script = Zeebe::Script.new(attributes[:script]) if attributes[:script].present?
       @subscription = Zeebe::Subscription.new(attributes[:subscription]) if attributes[:subscription].present?
       @task_definition = Zeebe::TaskDefinition.new(attributes[:task_definition]) if attributes[:task_definition].present?

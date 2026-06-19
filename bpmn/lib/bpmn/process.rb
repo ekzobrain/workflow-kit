@@ -14,7 +14,7 @@ module BPMN
     attr_accessor :parent
 
     def initialize(attributes = {})
-      super(attributes.slice(:id, :name, :extension_elements, :incoming, :outgoing, :default))
+      super(attributes.slice(:id, :name, :extension_elements, :incoming, :outgoing, :default, :multi_instance_loop_characteristics))
 
       @is_executable = attributes[:is_executable] == ("true" || true)
 

@@ -97,7 +97,7 @@ module BPMN
     def run(execution)
       if defined?(task_type)
         klass = task_type.constantize
-        klass.new.call(execution.parent.variables, headers || {})
+        klass.new.call(execution.scope_variables, headers || {})
       end
     end
   end
@@ -113,7 +113,7 @@ module BPMN
     end
 
     def run(execution)
-      execution.parent.evaluate_expression(script, variables: execution.parent.variables)
+      execution.evaluate_expression(script, variables: execution.scope_variables)
     end
   end
 
@@ -128,7 +128,7 @@ module BPMN
     end
 
     def run(execution)
-      DMN.decide(decision_id, definitions: execution.context.dmn_definitions_by_decision_id(decision_id), variables: execution.parent.variables)
+      DMN.decide(decision_id, definitions: execution.context.dmn_definitions_by_decision_id(decision_id), variables: execution.scope_variables)
     end
   end
 end

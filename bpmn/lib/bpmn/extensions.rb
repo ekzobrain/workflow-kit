@@ -31,6 +31,10 @@ module Zeebe
     attr_accessor :form_key, :form_id, :external_reference
   end
 
+  class LoopCharacteristics < BPMN::Extension
+    attr_accessor :input_collection, :input_element, :output_collection, :output_element
+  end
+
   class IoMapping < BPMN::Extension
     attr_reader :inputs, :outputs
 

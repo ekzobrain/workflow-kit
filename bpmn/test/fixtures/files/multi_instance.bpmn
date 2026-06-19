@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                  id="Definitions_multi_instance" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="MultiInstance" name="Multi Instance" isExecutable="true">
+    <bpmn:startEvent id="Start">
+      <bpmn:outgoing>f1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="Notify" />
+    <bpmn:serviceTask id="Notify" name="Notify each">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="notify" />
+      </bpmn:extensionElements>
+      <bpmn:multiInstanceLoopCharacteristics>
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=recipients" inputElement="recipient" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="f2" sourceRef="Notify" targetRef="Each" />
+    <bpmn:subProcess id="Each" name="Process each order">
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true">
+        <bpmn:extensionElements>
+          <zeebe:loopCharacteristics inputCollection="=orders" inputElement="order" outputCollection="results" outputElement="=order.total" />
+        </bpmn:extensionElements>
+      </bpmn:multiInstanceLoopCharacteristics>
+      <bpmn:incoming>f2</bpmn:incoming>
+      <bpmn:outgoing>f3</bpmn:outgoing>
+      <bpmn:startEvent id="InnerStart">
+        <bpmn:outgoing>g1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="g1" sourceRef="InnerStart" targetRef="InnerEnd" />
+      <bpmn:endEvent id="InnerEnd">
+        <bpmn:incoming>g1</bpmn:incoming>
+      </bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="f3" sourceRef="Each" targetRef="End" />
+    <bpmn:endEvent id="End">
+      <bpmn:incoming>f3</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

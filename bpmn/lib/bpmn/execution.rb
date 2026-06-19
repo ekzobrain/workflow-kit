@@ -4,6 +4,7 @@ module BPMN
   class Execution
     attr_accessor :id, :status, :started_at, :ended_at, :variables, :tokens_in, :tokens_out, :start_event_id, :timer_expires_at, :message_names, :error_names, :escalation_names, :condition
     attr_accessor :step, :parent, :children, :context, :attached_to_id
+    attr_accessor :multi_instance_instance, :multi_instance_index, :multi_instance_items
 
     delegate :print, to: :printer
 
@@ -99,11 +100,77 @@ module BPMN
       map_input_variables if step&.input_mappings.present?
       context.notify_listener(:execution_started, execution: self)
       step.attachments.each { |attachment| parent.execute_step(attachment, attached_to: self) } if step.is_a?(BPMN::Activity)
-      continue
+      if multi_instance_body?
+        start_multi_instance
+      else
+        continue
+      end
     end
 
     def continue
       step.execute(self)
+    end
+
+    # --- Multi-instance --------------------------------------------------------
+
+    # This execution is the multi-instance "body" — it spawns and tracks the
+    # per-item instances rather than running the step itself.
+    def multi_instance_body?
+      step.respond_to?(:multi_instance?) && step.multi_instance? && !multi_instance_instance
+    end
+
+    def multi_instance_instances
+      children.select(&:multi_instance_instance)
+    end
+
+    def start_multi_instance
+      items = Array.wrap(evaluate_expression(step.multi_instance.input_collection))
+
+      if items.empty?
+        finish_multi_instance
+      elsif step.multi_instance.sequential?
+        @multi_instance_items = items
+        spawn_multi_instance(items.first, 0)
+      else
+        items.each_with_index { |item, index| spawn_multi_instance(item, index) }
+      end
+    end
+
+    def spawn_multi_instance(item, index)
+      instance = Execution.new(context: context, step: step, parent: self, multi_instance_instance: true, multi_instance_index: index)
+      instance.variables[step.multi_instance.input_element] = item if step.multi_instance.input_element.present?
+      children.push(instance)
+      instance.start
+    end
+
+    # Called (via has_ended) when one of the body's instances completes.
+    def advance_multi_instance
+      if multi_instance_complete?
+        finish_multi_instance
+      elsif step.multi_instance.sequential?
+        next_index = multi_instance_instances.length
+        spawn_multi_instance(@multi_instance_items[next_index], next_index)
+      end
+    end
+
+    def multi_instance_complete?
+      if step.multi_instance.sequential?
+        multi_instance_instances.count(&:ended?) == @multi_instance_items.length
+      else
+        multi_instance_instances.all?(&:ended?)
+      end
+    end
+
+    # Assembles outputCollection (in input order) and leaves once for the whole
+    # multi-instance — the body owns the outgoing flows.
+    def finish_multi_instance
+      output_collection = step.multi_instance.output_collection
+      if output_collection.present?
+        variables[output_collection] = multi_instance_instances.sort_by(&:multi_instance_index).map do |instance|
+          instance.evaluate_expression(step.multi_instance.output_element, variables: instance.scope_variables)
+        end
+      end
+      step.leave(self)
     end
 
     def wait
@@ -212,7 +279,17 @@ module BPMN
       evaluate_expression(condition) == true
     end
 
-    def evaluate_expression(expression, variables: parent&.variables || {}.with_indifferent_access)
+    # Variables visible in this execution's scope: the merge of all ancestor
+    # scopes down to this one, with closer (inner) scopes shadowing farther
+    # (outer) ones. This gives proper downward visibility — a variable created in
+    # an outer scope is visible in nested scopes (sub-processes, multi-instance
+    # instances), matching Zeebe.
+    def scope_variables
+      base = parent ? parent.scope_variables : {}.with_indifferent_access
+      base.merge(variables)
+    end
+
+    def evaluate_expression(expression, variables: scope_variables)
       return nil if expression.nil?
 
       if expression.start_with?("=")
@@ -241,6 +318,11 @@ module BPMN
     # Called by the child step executors when they have ended
     #
     def has_ended(_child)
+      return advance_multi_instance if multi_instance_body?
+      # A multi-instance instance completes inward: it notifies its body and does
+      # not take the activity's outgoing flows (the body owns those).
+      return self.end(true) if multi_instance_instance
+
       step.leave(self) if step.is_a?(BPMN::SubProcess) || step.is_a?(BPMN::CallActivity)
       self.end(true)
     end
@@ -299,6 +381,9 @@ module BPMN
         escalation_names: escalation_names,
         timer_expires_at: timer_expires_at,
         condition: condition,
+        multi_instance_instance: multi_instance_instance,
+        multi_instance_index: multi_instance_index,
+        multi_instance_items: multi_instance_items,
         children: children.map { |child| child.as_json },
       }.transform_values(&:presence).compact
     end

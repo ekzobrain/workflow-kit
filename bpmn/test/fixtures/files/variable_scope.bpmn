@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                  id="Definitions_variable_scope" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="VariableScope" name="Variable Scope" isExecutable="true">
+    <bpmn:startEvent id="Start">
+      <bpmn:outgoing>f1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="Sub" />
+    <bpmn:subProcess id="Sub" name="Inner scope">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=&#34;inner&#34;" target="name" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+      <bpmn:startEvent id="InnerStart">
+        <bpmn:outgoing>g1</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="g1" sourceRef="InnerStart" targetRef="Inner" />
+      <bpmn:task id="Inner" name="Inner task">
+        <bpmn:incoming>g1</bpmn:incoming>
+        <bpmn:outgoing>g2</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:sequenceFlow id="g2" sourceRef="Inner" targetRef="InnerEnd" />
+      <bpmn:endEvent id="InnerEnd">
+        <bpmn:incoming>g2</bpmn:incoming>
+      </bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="f2" sourceRef="Sub" targetRef="End" />
+    <bpmn:endEvent id="End">
+      <bpmn:incoming>f2</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>
