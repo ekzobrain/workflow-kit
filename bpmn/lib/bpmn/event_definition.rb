@@ -6,6 +6,20 @@ module BPMN
     end
   end
 
+  # An intra-process "go to": a throw-link event jumps to the catch-link event
+  # with the same name in the same scope. The jump itself lives in the event's
+  # execute (see IntermediateThrowEvent / IntermediateCatchEvent); the definition
+  # only carries the link name.
+  class LinkEventDefinition < EventDefinition
+    attr_accessor :name
+
+    def initialize(attributes = {})
+      super(attributes.except(:name))
+
+      @name = attributes[:name]
+    end
+  end
+
   class ConditionalEventDefinition < EventDefinition
     attr_accessor :variable_name, :variable_events, :condition
 

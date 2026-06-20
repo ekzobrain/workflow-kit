@@ -2,7 +2,7 @@
 
 module BPMN
   class Step < Element
-    attr_accessor :incoming, :outgoing, :default, :default_ref, :multi_instance
+    attr_accessor :incoming, :outgoing, :default, :default_ref, :multi_instance, :attachments
 
     def initialize(attributes = {})
       super(attributes.except(:incoming, :outgoing, :default, :multi_instance_loop_characteristics))
@@ -11,6 +11,9 @@ module BPMN
       @outgoing = Array.wrap(attributes[:outgoing]) || []
       @default_ref = attributes[:default]
       @multi_instance = MultiInstance.from(attributes) if attributes.key?(:multi_instance_loop_characteristics)
+      # Boundary events attached to this step (wired at parse). On Step (not just
+      # Activity) so sub-processes can host boundary events too.
+      @attachments = []
     end
 
     def multi_instance?
@@ -55,12 +58,5 @@ module BPMN
   end
 
   class Activity < Step
-    attr_accessor :attachments
-
-    def initialize(attributes = {})
-      super(attributes.except(:attachments))
-
-      @attachments = []
-    end
   end
 end

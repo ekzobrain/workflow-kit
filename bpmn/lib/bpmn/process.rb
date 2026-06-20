@@ -107,7 +107,15 @@ module BPMN
     end
 
     def element_by_id(id)
-      elements[id]
+      return elements[id] if elements.key?(id)
+
+      # Recurse into sub-processes so a nested element can be resolved by id (e.g.
+      # restoring an execution parked on a step inside a sub-process).
+      (sub_processes + ad_hoc_sub_processes).each do |sub_process|
+        found = sub_process.element_by_id(id)
+        return found if found
+      end
+      nil
     end
 
     def elements_by_type(type)

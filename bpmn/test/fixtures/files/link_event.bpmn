@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_link_event" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="LinkEvent" name="Link Event" isExecutable="true">
+    <bpmn:startEvent id="Start">
+      <bpmn:outgoing>f1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="Choice" />
+    <bpmn:exclusiveGateway id="Choice" default="flowB">
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>flowA</bpmn:outgoing>
+      <bpmn:outgoing>flowB</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="flowA" sourceRef="Choice" targetRef="ThrowA">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=choice = "a"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flowB" sourceRef="Choice" targetRef="ThrowB" />
+    <!-- Two throw-links converging on one catch-link (many-to-one). -->
+    <bpmn:intermediateThrowEvent id="ThrowA" name="handler">
+      <bpmn:incoming>flowA</bpmn:incoming>
+      <bpmn:linkEventDefinition id="L1" name="handler" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:intermediateThrowEvent id="ThrowB" name="handler">
+      <bpmn:incoming>flowB</bpmn:incoming>
+      <bpmn:linkEventDefinition id="L2" name="handler" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:intermediateCatchEvent id="Handler" name="handler">
+      <bpmn:outgoing>f2</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="L3" name="handler" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="f2" sourceRef="Handler" targetRef="End" />
+    <bpmn:endEvent id="End">
+      <bpmn:incoming>f2</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_0">
+    <bpmndi:BPMNPlane id="Plane_0" bpmnElement="LinkEvent">
+      <bpmndi:BPMNShape id="di_Start" bpmnElement="Start">
+        <dc:Bounds x="160" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Handler" bpmnElement="Handler">
+        <dc:Bounds x="160" y="156" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_End" bpmnElement="End">
+        <dc:Bounds x="266" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Choice" bpmnElement="Choice">
+        <dc:Bounds x="266" y="156" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_ThrowA" bpmnElement="ThrowA">
+        <dc:Bounds x="386" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_ThrowB" bpmnElement="ThrowB">
+        <dc:Bounds x="386" y="156" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="di_f1" bpmnElement="f1">
+        <di:waypoint x="196" y="98" />
+        <di:waypoint x="266" y="181" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_flowA" bpmnElement="flowA">
+        <di:waypoint x="316" y="181" />
+        <di:waypoint x="386" y="98" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_flowB" bpmnElement="flowB">
+        <di:waypoint x="316" y="181" />
+        <di:waypoint x="386" y="174" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_f2" bpmnElement="f2">
+        <di:waypoint x="196" y="174" />
+        <di:waypoint x="266" y="98" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

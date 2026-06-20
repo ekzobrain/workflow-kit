@@ -5,7 +5,7 @@ module BPMN
     attr_accessor :event_definitions
 
     def initialize(attributes = {})
-      super(attributes.except(:message_event_definition, :signal_event_definition, :error_event_definition, :escalation_event_definition, :terminate_event_definition, :timer_event_definition))
+      super(attributes.except(:message_event_definition, :signal_event_definition, :error_event_definition, :escalation_event_definition, :terminate_event_definition, :timer_event_definition, :link_event_definition))
 
       @event_definitions = []
 
@@ -32,6 +32,10 @@ module BPMN
       Array.wrap(attributes[:timer_event_definition]).each do |ted|
         @event_definitions.push TimerEventDefinition.new(ted)
       end if attributes[:timer_event_definition].present?
+
+      Array.wrap(attributes[:link_event_definition]).each do |led|
+        @event_definitions.push LinkEventDefinition.new(led)
+      end if attributes[:link_event_definition].present?
     end
 
     def event_definition_ids
@@ -76,6 +80,18 @@ module BPMN
 
     def is_timer?
       timer_event_definition.present?
+    end
+
+    def is_link?
+      link_event_definitions.any?
+    end
+
+    def link_event_definitions
+      event_definitions.select { |ed| ed.is_a?(LinkEventDefinition) }
+    end
+
+    def link_name
+      link_event_definitions.first&.name
     end
 
     def conditional_event_definition
@@ -138,8 +154,25 @@ module BPMN
     end
 
     def execute(execution)
+      return throw_link(execution) if is_link?
+
       super
+      # Throwing an error/escalation may have triggered an interrupting boundary
+      # that terminated this scope (and this event with it) — don't then continue.
+      return if execution.ended?
+
       leave(execution)
+    end
+
+    private
+
+    # A throw-link has no outgoing flow — it jumps to the catch-link with the
+    # same name in the same scope, which then continues from there.
+    def throw_link(execution)
+      scope = execution.parent.step
+      target = scope.intermediate_catch_events.find { |event| event.is_link? && event.link_name == link_name }
+      execution.parent.execute_step(target) if target
+      execution.end(false)
     end
   end
 
@@ -151,6 +184,10 @@ module BPMN
 
     def execute(execution)
       super
+      # A catch-link is only reached via a throw-link jump, so it passes straight
+      # through instead of waiting for an external signal.
+      return leave(execution) if is_link?
+
       execution.wait
     end
 
@@ -195,6 +232,10 @@ module BPMN
 
     def execute(execution)
       super
+      # An error/escalation end event may have triggered an interrupting boundary
+      # that terminated this scope — it has already left via the boundary path.
+      return if execution.ended?
+
       execution.end(true)
     end
   end

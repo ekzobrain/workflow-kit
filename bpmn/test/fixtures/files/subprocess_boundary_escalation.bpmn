@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  id="Definitions_subprocess_boundary_escalation" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:escalation id="Esc" name="Rise" escalationCode="rise" />
+
+  <!-- Escalation thrown inside a sub-process bubbles to the interrupting
+       escalation boundary on that sub-process. -->
+  <bpmn:process id="EscalationBubble" name="Escalation Bubble" isExecutable="true">
+    <bpmn:startEvent id="S"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="S" targetRef="Sub" />
+    <bpmn:subProcess id="Sub">
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+      <bpmn:startEvent id="IS"><bpmn:outgoing>g1</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:sequenceFlow id="g1" sourceRef="IS" targetRef="Throw" />
+      <bpmn:intermediateThrowEvent id="Throw">
+        <bpmn:incoming>g1</bpmn:incoming>
+        <bpmn:outgoing>g2</bpmn:outgoing>
+        <bpmn:escalationEventDefinition id="TED" escalationRef="Esc" />
+      </bpmn:intermediateThrowEvent>
+      <bpmn:sequenceFlow id="g2" sourceRef="Throw" targetRef="IE" />
+      <bpmn:endEvent id="IE"><bpmn:incoming>g2</bpmn:incoming></bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="OnEscalation" attachedToRef="Sub">
+      <bpmn:outgoing>fb</bpmn:outgoing>
+      <bpmn:escalationEventDefinition id="BED" escalationRef="Esc" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="f2" sourceRef="Sub" targetRef="Normal" />
+    <bpmn:endEvent id="Normal"><bpmn:incoming>f2</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="fb" sourceRef="OnEscalation" targetRef="Caught" />
+    <bpmn:endEvent id="Caught"><bpmn:incoming>fb</bpmn:incoming></bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_0">
+    <bpmndi:BPMNPlane id="Plane_0" bpmnElement="EscalationBubble">
+      <bpmndi:BPMNShape id="di_S" bpmnElement="S">
+        <dc:Bounds x="160" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Caught" bpmnElement="Caught">
+        <dc:Bounds x="266" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Sub" bpmnElement="Sub" isExpanded="true">
+        <dc:Bounds x="266" y="156" width="328" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_IS" bpmnElement="IS">
+        <dc:Bounds x="306" y="220" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Throw" bpmnElement="Throw">
+        <dc:Bounds x="412" y="220" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_IE" bpmnElement="IE">
+        <dc:Bounds x="518" y="220" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Normal" bpmnElement="Normal">
+        <dc:Bounds x="664" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_OnEscalation" bpmnElement="OnEscalation">
+        <dc:Bounds x="412" y="278" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="di_f1" bpmnElement="f1">
+        <di:waypoint x="196" y="98" />
+        <di:waypoint x="266" y="226" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_f2" bpmnElement="f2">
+        <di:waypoint x="594" y="226" />
+        <di:waypoint x="664" y="98" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_fb" bpmnElement="fb">
+        <di:waypoint x="430" y="314" />
+        <di:waypoint x="284" y="80" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_g1" bpmnElement="g1">
+        <di:waypoint x="342" y="238" />
+        <di:waypoint x="412" y="238" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_g2" bpmnElement="g2">
+        <di:waypoint x="448" y="238" />
+        <di:waypoint x="518" y="238" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

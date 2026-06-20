@@ -99,7 +99,9 @@ module BPMN
       @started_at = Time.zone.now
       map_input_variables if step&.input_mappings.present?
       context.notify_listener(:execution_started, execution: self)
-      step.attachments.each { |attachment| parent.execute_step(attachment, attached_to: self) } if step.is_a?(BPMN::Activity)
+      # Start boundary events attached to this step. Hosts are activities and
+      # sub-processes / call activities; other steps simply have no attachments.
+      step.attachments.each { |attachment| parent.execute_step(attachment, attached_to: self) } if parent && step.respond_to?(:attachments)
       if multi_instance_body?
         start_multi_instance
       else
@@ -224,36 +226,37 @@ module BPMN
     end
 
     def throw_error(error_name, variables: {})
-      waiting_children.each do |child|
-        step = child.step
-        if step.is_a?(BPMN::Event) && step.error_event_definitions.any? { |error_event_definition| error_event_definition.error_name == error_name }
-          child.signal(variables)
-          break
-        end
-      end
+      boundary = catching_boundary { |step| step.error_event_definitions.any? { |ed| ed.error_name == error_name } }
+      boundary&.signal(variables)
       context.notify_listener(:error_thrown, execution: self, error_name: error_name)
     end
 
     def throw_escalation(escalation_name, variables: {})
-      caught = false
-      waiting_children.each do |child|
-        step = child.step
-        if step.is_a?(BPMN::Event) && step.escalation_event_definitions.any? { |eed| eed.escalation_name == escalation_name }
-          child.signal(variables)
-          caught = true
-          break
-        end
-      end
-      unless caught
-        waiting_children.each do |child|
-          step = child.step
-          if step.is_a?(BPMN::Event) && step.escalation_event_definitions.any? { |eed| eed.escalation_name.nil? }
-            child.signal(variables)
-            break
-          end
-        end
-      end
+      boundary =
+        catching_boundary { |step| step.escalation_event_definitions.any? { |ed| ed.escalation_name == escalation_name } } ||
+        catching_boundary { |step| step.escalation_event_definitions.any? { |ed| ed.escalation_name.nil? } }
+      boundary&.signal(variables)
       context.notify_listener(:escalation_thrown, execution: self, escalation_name: escalation_name)
+    end
+
+    # Finds the nearest enclosing boundary event matching the block, bubbling up
+    # the scope chain: first a boundary in this scope's own waiting children, then
+    # — out through each enclosing scope — a boundary attached to the scope we
+    # came from (so an error/escalation raised inside a sub-process is caught by a
+    # boundary on that sub-process). nil if uncaught.
+    def catching_boundary(&matches)
+      scope = self
+      host = nil
+      loop do
+        boundary = scope.waiting_children.find do |child|
+          child.step.is_a?(BPMN::BoundaryEvent) && (host.nil? || child.attached_to == host) && matches.call(child.step)
+        end
+        return boundary if boundary
+        return nil if scope.parent.nil?
+
+        host = scope
+        scope = scope.parent
+      end
     end
 
     def timer_expired?

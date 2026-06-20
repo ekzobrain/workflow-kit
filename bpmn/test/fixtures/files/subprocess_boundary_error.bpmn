@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  id="Definitions_subprocess_boundary_error" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:error id="Err" name="Boom" errorCode="boom" />
+
+  <!-- Error end event inside a sub-process bubbles to the interrupting error
+       boundary on that sub-process. -->
+  <bpmn:process id="ErrorBubble" name="Error Bubble" isExecutable="true">
+    <bpmn:startEvent id="S"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="S" targetRef="Sub" />
+    <bpmn:subProcess id="Sub">
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+      <bpmn:startEvent id="IS"><bpmn:outgoing>g1</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:sequenceFlow id="g1" sourceRef="IS" targetRef="ErrorEnd" />
+      <bpmn:endEvent id="ErrorEnd">
+        <bpmn:incoming>g1</bpmn:incoming>
+        <bpmn:errorEventDefinition id="EED" errorRef="Err" />
+      </bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="OnError" attachedToRef="Sub">
+      <bpmn:outgoing>fb</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="BED" errorRef="Err" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="f2" sourceRef="Sub" targetRef="Normal" />
+    <bpmn:endEvent id="Normal"><bpmn:incoming>f2</bpmn:incoming></bpmn:endEvent>
+    <bpmn:sequenceFlow id="fb" sourceRef="OnError" targetRef="Caught" />
+    <bpmn:endEvent id="Caught"><bpmn:incoming>fb</bpmn:incoming></bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_0">
+    <bpmndi:BPMNPlane id="Plane_0" bpmnElement="ErrorBubble">
+      <bpmndi:BPMNShape id="di_S" bpmnElement="S">
+        <dc:Bounds x="160" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Caught" bpmnElement="Caught">
+        <dc:Bounds x="266" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Sub" bpmnElement="Sub" isExpanded="true">
+        <dc:Bounds x="266" y="156" width="222" height="140" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_IS" bpmnElement="IS">
+        <dc:Bounds x="306" y="220" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_ErrorEnd" bpmnElement="ErrorEnd">
+        <dc:Bounds x="412" y="220" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Normal" bpmnElement="Normal">
+        <dc:Bounds x="558" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_OnError" bpmnElement="OnError">
+        <dc:Bounds x="359" y="278" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="di_f1" bpmnElement="f1">
+        <di:waypoint x="196" y="98" />
+        <di:waypoint x="266" y="226" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_f2" bpmnElement="f2">
+        <di:waypoint x="488" y="226" />
+        <di:waypoint x="558" y="98" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_fb" bpmnElement="fb">
+        <di:waypoint x="377" y="314" />
+        <di:waypoint x="284" y="80" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_g1" bpmnElement="g1">
+        <di:waypoint x="342" y="238" />
+        <di:waypoint x="412" y="238" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
