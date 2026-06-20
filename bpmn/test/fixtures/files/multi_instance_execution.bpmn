@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+<bpmn:definitions xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
                   xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
                   id="Definitions_multi_instance_execution" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn:process id="ParallelReview" name="Parallel Review" isExecutable="true">
@@ -41,4 +41,46 @@
       <bpmn:incoming>sf2</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_0">
+    <bpmndi:BPMNPlane id="Plane_0" bpmnElement="ParallelReview">
+      <bpmndi:BPMNShape id="di_PStart" bpmnElement="PStart">
+        <dc:Bounds x="160" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_PReview" bpmnElement="PReview">
+        <dc:Bounds x="266" y="80" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_PEnd" bpmnElement="PEnd">
+        <dc:Bounds x="456" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="di_pf1" bpmnElement="pf1">
+        <di:waypoint x="196" y="98" />
+        <di:waypoint x="266" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_pf2" bpmnElement="pf2">
+        <di:waypoint x="386" y="120" />
+        <di:waypoint x="456" y="98" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="SequentialReview">
+      <bpmndi:BPMNShape id="di_SStart" bpmnElement="SStart">
+        <dc:Bounds x="160" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_SReview" bpmnElement="SReview">
+        <dc:Bounds x="266" y="80" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_SEnd" bpmnElement="SEnd">
+        <dc:Bounds x="456" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="di_sf1" bpmnElement="sf1">
+        <di:waypoint x="196" y="98" />
+        <di:waypoint x="266" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_sf2" bpmnElement="sf2">
+        <di:waypoint x="386" y="120" />
+        <di:waypoint x="456" y="98" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
 </bpmn:definitions>
