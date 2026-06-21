@@ -2,7 +2,7 @@
 
 module BPMN
   class Execution
-    attr_accessor :id, :status, :started_at, :ended_at, :variables, :tokens_in, :tokens_out, :start_event_id, :timer_expires_at, :message_names, :error_names, :escalation_names, :condition
+    attr_accessor :id, :status, :started_at, :ended_at, :variables, :local_variables, :tokens_in, :tokens_out, :start_event_id, :timer_expires_at, :message_names, :error_names, :escalation_names, :condition
     attr_accessor :step, :parent, :children, :context, :attached_to_id
     attr_accessor :multi_instance_instance, :multi_instance_index, :multi_instance_items
 
@@ -47,6 +47,8 @@ module BPMN
       @id ||= gen_uid
       @status ||= "activated"
       @variables = @variables&.with_indifferent_access || {}.with_indifferent_access
+      # Input-mapped variables — local to this scope, never propagated up.
+      @local_variables = @local_variables&.with_indifferent_access || {}.with_indifferent_access
       @tokens_in ||= []
       @tokens_out ||= []
       @message_names ||= []
@@ -140,7 +142,9 @@ module BPMN
 
     def spawn_multi_instance(item, index)
       instance = Execution.new(context: context, step: step, parent: self, multi_instance_instance: true, multi_instance_index: index)
-      instance.variables[step.multi_instance.input_element] = item if step.multi_instance.input_element.present?
+      # The loop's input element is a LOCAL variable of the instance (like an input
+      # mapping) — visible to the instance, not propagated up.
+      instance.local_variables[step.multi_instance.input_element] = item if step.multi_instance.input_element.present?
       children.push(instance)
       instance.start
     end
@@ -187,8 +191,7 @@ module BPMN
 
     def end(notify_parent = false)
       @status = "completed" unless status == "terminated"
-      map_output_variables if step&.output_mappings.present?
-      parent.variables.merge!(variables) if parent && variables.present?
+      propagate_variables
       @ended_at = Time.zone.now
       context.notify_listener(:execution_ended, execution: self)
       children.each { |child| child.terminate unless child.ended? }
@@ -289,7 +292,10 @@ module BPMN
     # instances), matching Zeebe.
     def scope_variables
       base = parent ? parent.scope_variables : {}.with_indifferent_access
-      base.merge(variables)
+      # Visible to expressions: ancestors, then this scope's input-mapped locals,
+      # then its result variables (closer/newer shadows). Only `variables`
+      # propagates up on completion; `local_variables` stays local.
+      base.merge(local_variables).merge(variables)
     end
 
     def evaluate_expression(expression, variables: scope_variables)
@@ -377,6 +383,7 @@ module BPMN
         started_at: started_at,
         ended_at: ended_at,
         variables: variables.as_json,
+        local_variables: local_variables.as_json,
         tokens_in: tokens_in,
         tokens_out: tokens_out,
         message_names: message_names,
@@ -415,15 +422,34 @@ module BPMN
 
     def map_input_variables
       return unless step&.input_mappings.present?
+
+      # Input mappings create LOCAL variables (visible to the activity and its
+      # children, e.g. a multi-instance loop element) that do NOT propagate up.
       step.input_mappings.each do |parameter|
-        variables[parameter.target] = evaluate_expression(parameter.source)
+        local_variables[parameter.target] = evaluate_expression(parameter.source)
       end
     end
 
-    def map_output_variables
-      return unless step&.output_mappings.present?
-      step.output_mappings.each do |parameter|
-        variables[parameter.target] = evaluate_expression(parameter.source)
+    # Propagates this execution's variables to its parent scope on completion,
+    # following Zeebe semantics:
+    #   * output mappings define a LOCAL scope — only the mapped values leave; the
+    #     raw local variables (e.g. a task's completion payload) are discarded;
+    #   * without output mappings the local variables merge up wholesale.
+    # `propagate_unmapped_variables?` lets a step override the "merge everything"
+    # part (a call activity uses propagateAllChildVariables for it).
+    def propagate_variables
+      return unless parent
+
+      if step.nil? || step.propagate_unmapped_variables?
+        # Variables declared local to this scope (an input mapping or a loop
+        # element) stay local even if written to during execution — they don't
+        # leak up. To expose one to the parent, use an output mapping.
+        propagated = variables.except(*local_variables.keys)
+        parent.variables.merge!(propagated) if propagated.present?
+      end
+
+      Array(step&.output_mappings).each do |parameter|
+        parent.variables[parameter.target] = evaluate_expression(parameter.source)
       end
     end
 

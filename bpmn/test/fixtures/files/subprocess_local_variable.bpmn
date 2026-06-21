@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                  id="Definitions_subprocess_local" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="SubLocal" name="Sub-process Local Variable" isExecutable="true">
+    <bpmn:startEvent id="Start">
+      <bpmn:outgoing>f1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="Start" targetRef="Sub" />
+    <bpmn:subProcess id="Sub">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="=x" target="x" />
+          <zeebe:output source="=x" target="x_out" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+      <bpmn:startEvent id="IS"><bpmn:outgoing>g1</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:sequenceFlow id="g1" sourceRef="IS" targetRef="Calc" />
+      <bpmn:scriptTask id="Calc">
+        <bpmn:extensionElements><zeebe:script expression="= x + 1" resultVariable="x" /></bpmn:extensionElements>
+        <bpmn:incoming>g1</bpmn:incoming><bpmn:outgoing>g2</bpmn:outgoing>
+      </bpmn:scriptTask>
+      <bpmn:sequenceFlow id="g2" sourceRef="Calc" targetRef="IE" />
+      <bpmn:endEvent id="IE"><bpmn:incoming>g2</bpmn:incoming></bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="f2" sourceRef="Sub" targetRef="End" />
+    <bpmn:endEvent id="End">
+      <bpmn:incoming>f2</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_0">
+    <bpmndi:BPMNPlane id="Plane_0" bpmnElement="SubLocal">
+      <bpmndi:BPMNShape id="di_Start" bpmnElement="Start">
+        <dc:Bounds x="160" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Sub" bpmnElement="Sub" isExpanded="true">
+        <dc:Bounds x="266" y="80" width="412" height="184" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_IS" bpmnElement="IS">
+        <dc:Bounds x="306" y="144" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_Calc" bpmnElement="Calc">
+        <dc:Bounds x="412" y="144" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_IE" bpmnElement="IE">
+        <dc:Bounds x="602" y="144" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="di_End" bpmnElement="End">
+        <dc:Bounds x="748" y="80" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="di_f1" bpmnElement="f1">
+        <di:waypoint x="196" y="98" />
+        <di:waypoint x="266" y="172" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_f2" bpmnElement="f2">
+        <di:waypoint x="678" y="172" />
+        <di:waypoint x="748" y="98" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_g1" bpmnElement="g1">
+        <di:waypoint x="342" y="162" />
+        <di:waypoint x="412" y="184" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="di_g2" bpmnElement="g2">
+        <di:waypoint x="532" y="184" />
+        <di:waypoint x="602" y="162" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

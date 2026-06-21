@@ -18,7 +18,7 @@ module BPMN
       it "spawns one waiting instance per item with the input element bound" do
         _(instances.length).must_equal 3
         _(instances.map(&:status).uniq).must_equal ["waiting"]
-        _(instances.map { |instance| instance.variables["item"] }).must_equal [10, 20, 30]
+        _(instances.map { |instance| instance.local_variables["item"] }).must_equal [10, 20, 30]
       end
 
       it "completes the body only once every instance has finished" do
@@ -47,15 +47,15 @@ module BPMN
 
       it "activates one instance at a time" do
         _(body.multi_instance_instances.length).must_equal 1
-        _(body.multi_instance_instances.last.variables["item"]).must_equal 10
+        _(body.multi_instance_instances.last.local_variables["item"]).must_equal 10
 
         body.multi_instance_instances.last.signal({ score: 1 })
         _(body.multi_instance_instances.length).must_equal 2
-        _(body.multi_instance_instances.last.variables["item"]).must_equal 20
+        _(body.multi_instance_instances.last.local_variables["item"]).must_equal 20
 
         body.multi_instance_instances.last.signal({ score: 2 })
         _(body.multi_instance_instances.length).must_equal 3
-        _(body.multi_instance_instances.last.variables["item"]).must_equal 30
+        _(body.multi_instance_instances.last.local_variables["item"]).must_equal 30
       end
 
       it "assembles outputCollection in order and completes" do

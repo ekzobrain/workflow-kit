@@ -32,18 +32,27 @@ module BPMN
       let(:end_event) { execution.child_by_step_id("End") }
 
       describe :input_mapping do
-        it "should map input variables" do
-          _(collect_money.variables["sender"]).must_equal "John"
-          _(collect_money.variables["iban"]).must_equal "DE456"
-          _(collect_money.variables["price"]).must_equal 25
-          _(collect_money.variables["reference"]).must_equal "order-123"
+        it "creates input-mapped variables in the local scope, not the result variables" do
+          # Input mappings create LOCAL variables (visible to the activity and its
+          # children) — they are not result variables and do not propagate up.
+          _(collect_money.local_variables["sender"]).must_equal "John"
+          _(collect_money.local_variables["iban"]).must_equal "DE456"
+          _(collect_money.local_variables["price"]).must_equal 25
+          _(collect_money.local_variables["reference"]).must_equal "order-123"
+
+          _(collect_money.variables["sender"]).must_be_nil
+          _(collect_money.scope_variables["sender"]).must_equal "John"
         end
 
         describe :output_mapping do
           before { collect_money.signal({ payment_status: "OK" }) }
 
-          it "should map output variables" do
-            _(execution.variables["payment_status"]).must_equal "OK"
+          it "maps the payload through the output mapping (status), discarding the raw payload" do
+            # Output mappings define a local scope: only the mapped variable
+            # (status) propagates; the raw completion payload (payment_status) does
+            # not leak into the process variables.
+            _(execution.variables["status"]).must_equal "OK"
+            _(execution.variables["payment_status"]).must_be_nil
           end
         end
       end

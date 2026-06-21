@@ -182,5 +182,17 @@ module BPMN
       process = execution.context.process_by_id(@process_id) if @process_id
       execution.execute_step(process.default_start_event) if process
     end
+
+    # Completes the call activity when its called instance finishes (the called
+    # process runs as a separate instance, signaled back externally).
+    def signal(execution)
+      leave(execution)
+    end
+
+    # The called instance's variables are signaled in full; propagateAllChildVariables
+    # decides whether they all merge into the parent or only the output mappings do.
+    def propagate_unmapped_variables?
+      extension_elements&.called_element&.propagate_all_child_variables == true
+    end
   end
 end

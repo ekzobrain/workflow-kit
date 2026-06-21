@@ -55,6 +55,13 @@ module BPMN
     def output_mappings
       extension_elements&.io_mapping&.outputs || []
     end
+
+    # Whether the raw (un-mapped) local variables propagate to the parent scope on
+    # completion. By default they do only when there are no output mappings —
+    # output mappings turn the activity into a local scope (Zeebe semantics).
+    def propagate_unmapped_variables?
+      output_mappings.blank?
+    end
   end
 
   class Activity < Step
