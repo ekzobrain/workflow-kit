@@ -421,13 +421,15 @@ module BPMN
     private
 
     def map_input_variables
-      return unless step&.input_mappings.present?
+      expression = step&.input_mappings_expression
+      return unless expression
 
-      # Input mappings create LOCAL variables (visible to the activity and its
-      # children, e.g. a multi-instance loop element) that do NOT propagate up.
-      step.input_mappings.each do |parameter|
-        local_variables[parameter.target] = evaluate_expression(parameter.source)
-      end
+      # Input mappings are compiled (at parse time) into a single FEEL context
+      # (dotted targets nest, later entries can reference earlier ones) and just
+      # evaluated here. They create LOCAL variables (visible to the activity and
+      # its children, e.g. a multi-instance loop element) that do NOT propagate up.
+      mapped = evaluate_expression(expression)
+      local_variables.deep_merge!(mapped) if mapped.is_a?(Hash)
     end
 
     # Propagates this execution's variables to its parent scope on completion,
@@ -448,8 +450,9 @@ module BPMN
         parent.variables.merge!(propagated) if propagated.present?
       end
 
-      Array(step&.output_mappings).each do |parameter|
-        parent.variables[parameter.target] = evaluate_expression(parameter.source)
+      if step&.output_mappings_expression
+        mapped = evaluate_expression(step.output_mappings_expression)
+        parent.variables.deep_merge!(mapped) if mapped.is_a?(Hash)
       end
     end
 

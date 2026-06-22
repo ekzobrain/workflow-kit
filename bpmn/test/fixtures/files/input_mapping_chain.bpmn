@@ -8,6 +8,8 @@
         <zeebe:input source="=1" target="a" />
         <zeebe:input source="=a + 1" target="b" />
         <zeebe:input source="=b * 10" target="c" />
+        <zeebe:input source="=a" target="obj.x" />
+        <zeebe:input source="=b" target="obj.y" />
       </zeebe:ioMapping></bpmn:extensionElements>
       <bpmn:incoming>f1</bpmn:incoming><bpmn:outgoing>f2</bpmn:outgoing>
     </bpmn:userTask>
