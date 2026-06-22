@@ -12,7 +12,9 @@ module Zeebe
   end
 
   class CalledElement < BPMN::Extension
-    attr_accessor :process_id, :propagate_all_child_variables, :propagate_all_parent_variables
+    # binding_type: "latest" (default) | "deployment" | "versionTag" — which
+    # version of the called process to use; version_tag pins it when "versionTag".
+    attr_accessor :process_id, :propagate_all_child_variables, :propagate_all_parent_variables, :binding_type, :version_tag
 
     def initialize(attributes = {})
       super(attributes.except(:propagate_all_child_variables))
