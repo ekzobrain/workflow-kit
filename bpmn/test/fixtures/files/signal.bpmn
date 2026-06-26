@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Defs_signal" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:signal id="Sig_ready" name="ready" />
+  <bpmn:process id="SignalThrow" isExecutable="true">
+    <bpmn:startEvent id="TS"><bpmn:outgoing>tf1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:sequenceFlow id="tf1" sourceRef="TS" targetRef="Throw" />
+    <bpmn:intermediateThrowEvent id="Throw"><bpmn:incoming>tf1</bpmn:incoming><bpmn:outgoing>tf2</bpmn:outgoing><bpmn:signalEventDefinition signalRef="Sig_ready" /></bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="tf2" sourceRef="Throw" targetRef="TE" />
+    <bpmn:endEvent id="TE"><bpmn:incoming>tf2</bpmn:incoming></bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:process id="SignalCatch" isExecutable="true">
+    <bpmn:startEvent id="CS"><bpmn:outgoing>cf1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:sequenceFlow id="cf1" sourceRef="CS" targetRef="Catch" />
+    <bpmn:intermediateCatchEvent id="Catch"><bpmn:incoming>cf1</bpmn:incoming><bpmn:outgoing>cf2</bpmn:outgoing><bpmn:signalEventDefinition signalRef="Sig_ready" /></bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="cf2" sourceRef="Catch" targetRef="CE" />
+    <bpmn:endEvent id="CE"><bpmn:incoming>cf2</bpmn:incoming></bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

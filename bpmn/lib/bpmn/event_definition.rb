@@ -119,7 +119,14 @@ module BPMN
     def initialize(attributes = {})
       super(attributes.except(:signal_ref))
 
-      @signal_ref = moddle[:signal_ref]
+      @signal_ref = attributes[:signal_ref]
+    end
+
+    # A signal is a broadcast: a throw notifies a listener so the host runtime can
+    # deliver it to every waiting catcher (across all instances). Catching is just
+    # waiting (handled by IntermediateCatchEvent / BoundaryEvent).
+    def execute(execution)
+      execution.throw_signal(signal_name) if execution.step.is_throwing?
     end
 
     def signal_id

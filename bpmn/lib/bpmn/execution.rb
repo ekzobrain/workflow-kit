@@ -228,6 +228,13 @@ module BPMN
       context.notify_listener(:message_thrown, execution: self, message_name: message_name)
     end
 
+    # A signal is a 1:N broadcast across all instances, so (unlike throw_message)
+    # this does NOT signal locally — it only notifies the host runtime, which
+    # delivers it to every waiting catcher.
+    def throw_signal(signal_name, variables: {})
+      context.notify_listener(:signal_thrown, execution: self, signal_name: signal_name, variables: variables)
+    end
+
     def throw_error(error_name, variables: {})
       boundary = catching_boundary { |step| step.error_event_definitions.any? { |ed| ed.error_name == error_name } }
       boundary&.signal(variables)
