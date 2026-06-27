@@ -16,6 +16,26 @@
     <bpmn:startEvent id="Start">
       <bpmn:outgoing>Flow_09ni0ls</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:startEvent id="OnDate">
+      <bpmn:outgoing>Flow_date</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="Timer_date">
+        <bpmn:timeDate xsi:type="bpmn:tFormalExpression">2030-01-01T00:00:00Z</bpmn:timeDate>
+      </bpmn:timerEventDefinition>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_date" sourceRef="OnDate" targetRef="EndDate" />
+    <bpmn:endEvent id="EndDate">
+      <bpmn:incoming>Flow_date</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:startEvent id="OnCycle">
+      <bpmn:outgoing>Flow_cycle</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="Timer_cycle">
+        <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R/PT1H</bpmn:timeCycle>
+      </bpmn:timerEventDefinition>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_cycle" sourceRef="OnCycle" targetRef="EndCycle" />
+    <bpmn:endEvent id="EndCycle">
+      <bpmn:incoming>Flow_cycle</bpmn:incoming>
+    </bpmn:endEvent>
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="TimerEventDefinitionTest">

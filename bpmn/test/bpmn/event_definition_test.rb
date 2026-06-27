@@ -283,6 +283,53 @@ module BPMN
     let(:sources) { fixture_source("timer_event_definition_test.bpmn") }
     let(:context) { BPMN.new(sources) }
 
+    describe :time_due do
+      it "computes an absolute timeDate" do
+        definition = TimerEventDefinition.new(time_date: "2030-01-01T00:00:00Z")
+        _(definition.time_due).must_equal Time.zone.parse("2030-01-01T00:00:00Z")
+        _(definition.recurring?).must_equal false
+      end
+
+      it "computes a relative timeDuration from now" do
+        definition = TimerEventDefinition.new(time_duration: "PT30S")
+        _(definition.time_due).must_be_within_delta Time.zone.now + 30, 1
+        _(definition.recurring?).must_equal false
+      end
+
+      it "computes the next tick of an ISO repeating timeCycle and is recurring" do
+        definition = TimerEventDefinition.new(time_cycle: "R/PT1H")
+        _(definition.time_due).must_be_within_delta Time.zone.now + 3600, 1
+        _(definition.recurring?).must_equal true
+      end
+
+      it "computes the next tick of a cron timeCycle" do
+        definition = TimerEventDefinition.new(time_cycle: "0 0 * * *") # daily at midnight
+        _(definition.time_due).must_be :>, Time.zone.now
+        _(definition.recurring?).must_equal true
+      end
+    end
+
+    # The Catch event uses timeDuration; OnDate/OnCycle carry timeDate/timeCycle, to
+    # prove those are read off the element (the initialize fix) — not just assigned
+    # when passed to .new above.
+    describe "parsing timeDate / timeCycle" do
+      let(:process) { context.process_by_id("TimerEventDefinitionTest") }
+
+      it "reads a timeDate (one-shot)" do
+        timer = process.element_by_id("OnDate").timer_event_definition
+        _(timer.time_date).must_equal "2030-01-01T00:00:00Z"
+        _(timer.time_cycle).must_be_nil
+        _(timer.recurring?).must_equal false
+      end
+
+      it "reads a timeCycle (recurring)" do
+        timer = process.element_by_id("OnCycle").timer_event_definition
+        _(timer.time_cycle).must_equal "R/PT1H"
+        _(timer.time_date).must_be_nil
+        _(timer.recurring?).must_equal true
+      end
+    end
+
     describe :definitions do
       let(:process) { context.process_by_id("TimerEventDefinitionTest") }
       let(:start_event) { process.element_by_id("Start") }

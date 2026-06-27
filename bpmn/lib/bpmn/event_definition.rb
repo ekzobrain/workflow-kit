@@ -151,8 +151,10 @@ module BPMN
     def initialize(attributes = {})
       super(attributes.except(:time_date, :time_duration, :time_cycle))
 
+      @time_date = attributes[:time_date]
       @time_duration_type = attributes[:time_duration_type]
       @time_duration = attributes[:time_duration]
+      @time_cycle = attributes[:time_cycle]
     end
 
     def execute(execution)
@@ -161,16 +163,34 @@ module BPMN
       end
     end
 
+    # The next time this timer is due, computed from now: an absolute date
+    # (timeDate), a relative duration (timeDuration), or the next tick of a cycle
+    # (timeCycle). Public so the host runtime can schedule timer start events and
+    # reschedule recurring ones.
+    def time_due
+      if time_date
+        Time.zone.parse(time_date)
+      elsif time_duration
+        Time.zone.now + ActiveSupport::Duration.parse(time_duration)
+      elsif time_cycle
+        next_cycle(time_cycle)
+      end
+    end
+
+    # Whether the timer repeats (timeCycle) and should be rescheduled after firing.
+    def recurring?
+      time_cycle.present?
+    end
+
     private
 
-    def time_due
-      # Return the next time the timer is due
-      if time_date
-        return Date.parse(time_date)
-      elsif time_duration
-        return Time.zone.now + ActiveSupport::Duration.parse(time_duration)
+    # timeCycle is either an ISO 8601 repeating interval (`R[n]/[start/]<duration>`)
+    # or a cron expression. (Repeat counts like R5 are treated as unbounded.)
+    def next_cycle(expression)
+      if expression.start_with?("R")
+        Time.zone.now + ActiveSupport::Duration.parse(expression.split("/").last)
       else
-        return Time.zone.now # time_cycle not yet implemented
+        Fugit::Cron.parse(expression)&.next_time(Time.zone.now)&.to_t
       end
     end
   end

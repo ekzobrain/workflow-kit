@@ -9,6 +9,7 @@ require "active_support/core_ext/hash"
 require "active_support/core_ext/enumerable"
 require "active_support/core_ext/object/json"
 require "active_model"
+require "fugit"
 
 require "dmn"
 
