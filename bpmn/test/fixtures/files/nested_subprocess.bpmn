@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+                  id="Definitions_nested_subprocess" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:error id="Err" name="Boom" errorCode="boom" />
+
+  <!-- A sub-process inside a sub-process: the inner one hosts a boundary event
+       and an error raised in it is caught there, not at the outer level. -->
+  <bpmn:process id="Nested" name="Nested" isExecutable="true">
+    <bpmn:startEvent id="S"><bpmn:outgoing>f1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:sequenceFlow id="f1" sourceRef="S" targetRef="Outer" />
+    <bpmn:subProcess id="Outer">
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+      <bpmn:startEvent id="OuterStart"><bpmn:outgoing>g1</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:sequenceFlow id="g1" sourceRef="OuterStart" targetRef="Inner" />
+      <bpmn:subProcess id="Inner">
+        <bpmn:extensionElements>
+          <zeebe:properties>
+            <!-- A row left empty in the Modeler; carries neither name nor value. -->
+            <zeebe:property />
+            <zeebe:property name="note" value="kept" />
+          </zeebe:properties>
+        </bpmn:extensionElements>
+        <bpmn:incoming>g1</bpmn:incoming>
+        <bpmn:outgoing>g2</bpmn:outgoing>
+        <bpmn:startEvent id="InnerStart"><bpmn:outgoing>h1</bpmn:outgoing></bpmn:startEvent>
+        <bpmn:sequenceFlow id="h1" sourceRef="InnerStart" targetRef="InnerEnd" />
+        <bpmn:endEvent id="InnerEnd"><bpmn:incoming>h1</bpmn:incoming></bpmn:endEvent>
+      </bpmn:subProcess>
+      <bpmn:boundaryEvent id="OnInnerError" attachedToRef="Inner">
+        <bpmn:outgoing>gb</bpmn:outgoing>
+        <bpmn:errorEventDefinition id="BED" errorRef="Err" />
+      </bpmn:boundaryEvent>
+      <bpmn:sequenceFlow id="gb" sourceRef="OnInnerError" targetRef="Caught" />
+      <bpmn:endEvent id="Caught"><bpmn:incoming>gb</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="g2" sourceRef="Inner" targetRef="OuterEnd" />
+      <bpmn:endEvent id="OuterEnd"><bpmn:incoming>g2</bpmn:incoming></bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="f2" sourceRef="Outer" targetRef="End" />
+    <bpmn:endEvent id="End"><bpmn:incoming>f2</bpmn:incoming></bpmn:endEvent>
+  </bpmn:process>
+
+  <!-- Same shape, but the inner sub-process ends with an error, which the
+       boundary event on it catches. -->
+  <bpmn:process id="NestedError" name="Nested Error" isExecutable="true">
+    <bpmn:startEvent id="ES"><bpmn:outgoing>ef1</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:sequenceFlow id="ef1" sourceRef="ES" targetRef="EOuter" />
+    <bpmn:subProcess id="EOuter">
+      <bpmn:incoming>ef1</bpmn:incoming>
+      <bpmn:outgoing>ef2</bpmn:outgoing>
+      <bpmn:startEvent id="EOuterStart"><bpmn:outgoing>eg1</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:sequenceFlow id="eg1" sourceRef="EOuterStart" targetRef="EInner" />
+      <bpmn:subProcess id="EInner">
+        <bpmn:incoming>eg1</bpmn:incoming>
+        <bpmn:outgoing>eg2</bpmn:outgoing>
+        <bpmn:startEvent id="EInnerStart"><bpmn:outgoing>eh1</bpmn:outgoing></bpmn:startEvent>
+        <bpmn:sequenceFlow id="eh1" sourceRef="EInnerStart" targetRef="EInnerError" />
+        <bpmn:endEvent id="EInnerError">
+          <bpmn:incoming>eh1</bpmn:incoming>
+          <bpmn:errorEventDefinition id="EEED" errorRef="Err" />
+        </bpmn:endEvent>
+      </bpmn:subProcess>
+      <bpmn:boundaryEvent id="EOnInnerError" attachedToRef="EInner">
+        <bpmn:outgoing>egb</bpmn:outgoing>
+        <bpmn:errorEventDefinition id="EBED" errorRef="Err" />
+      </bpmn:boundaryEvent>
+      <bpmn:sequenceFlow id="egb" sourceRef="EOnInnerError" targetRef="ECaught" />
+      <bpmn:endEvent id="ECaught"><bpmn:incoming>egb</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="eg2" sourceRef="EInner" targetRef="ENormal" />
+      <bpmn:endEvent id="ENormal"><bpmn:incoming>eg2</bpmn:incoming></bpmn:endEvent>
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="ef2" sourceRef="EOuter" targetRef="EEnd" />
+    <bpmn:endEvent id="EEnd"><bpmn:incoming>ef2</bpmn:incoming></bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

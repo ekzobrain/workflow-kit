@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 module BPMN
+  # Raised while reading a BPMN file that parses as XML but does not describe a
+  # usable model — e.g. a reference pointing at an element that is not there.
+  class InvalidDefinitionError < StandardError; end
+
   class Element
     include ActiveModel::Model
 

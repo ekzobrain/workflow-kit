@@ -66,9 +66,21 @@ module BPMN
     def process_by_id(id)
       processes.each do |process|
         return process if process.id == id
-        process.sub_processes.each do |sub_process|
-          return sub_process if sub_process.id == id
-        end
+
+        found = sub_process_by_id(process, id)
+        return found if found
+      end
+      nil
+    end
+
+    # Sub-processes nest, so a scope is looked up at any depth — an execution can
+    # be parked on a sub-process inside a sub-process.
+    def sub_process_by_id(scope, id)
+      (scope.sub_processes + scope.ad_hoc_sub_processes).each do |sub_process|
+        return sub_process if sub_process.id == id
+
+        found = sub_process_by_id(sub_process, id)
+        return found if found
       end
       nil
     end

@@ -9,7 +9,14 @@ module BPMN
     def initialize(attributes = {})
       if attributes[:properties].present?
         @properties = HashWithIndifferentAccess.new
-        Array.wrap(attributes[:properties][:property]).each { |property_moddle| @properties[property_moddle[:name]] = property_moddle[:value] }
+        # An element may carry more than one <zeebe:properties> block, and the
+        # Modeler writes out a blank <zeebe:property /> for a row left empty —
+        # both are read here rather than crashing on the shape.
+        Array.wrap(attributes[:properties]).flat_map { |properties| Array.wrap(properties[:property]) }.each do |property_moddle|
+          next if property_moddle.blank? || property_moddle[:name].blank?
+
+          @properties[property_moddle[:name]] = property_moddle[:value]
+        end
       end
 
       @assignment_definition = Zeebe::AssignmentDefinition.new(attributes[:assignment_definition]) if attributes[:assignment_definition].present?

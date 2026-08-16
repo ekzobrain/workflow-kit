@@ -30,7 +30,7 @@ module BPMN
       @business_rule_tasks = Array.wrap(attributes[:business_rule_task]).map { |brt| BusinessRuleTask.new(brt) }
       @call_activities = Array.wrap(attributes[:call_activity]).map { |ca| CallActivity.new(ca) }
       @sub_processes = Array.wrap(attributes[:sub_process]).map { |sp| SubProcess.new(sp) }
-      @ad_hoc_sub_processes = Array.wrap(attributes[:ad_hoc_sub_processe]).map { |ahsp| AdHocSubProcess.new(ahsp) }
+      @ad_hoc_sub_processes = Array.wrap(attributes[:ad_hoc_sub_process]).map { |ahsp| AdHocSubProcess.new(ahsp) }
       @exclusive_gateways = Array.wrap(attributes[:exclusive_gateway]).map { |eg| ExclusiveGateway.new(eg) }
       @parallel_gateways = Array.wrap(attributes[:parallel_gateway]).map { |pg| ParallelGateway.new(pg) }
       @inclusive_gateways = Array.wrap(attributes[:inclusive_gateway]).map { |ig| InclusiveGateway.new(ig) }
@@ -83,6 +83,8 @@ module BPMN
 
             if element.is_a?(BoundaryEvent)
               host_element = element_by_id(element.attached_to_ref)
+              raise InvalidDefinitionError, "boundary event #{element.id.inspect} is attached to #{element.attached_to_ref.inspect}, which is not an element of its scope" if host_element.nil?
+
               host_element.attachments << element
               element.attached_to = host_element
             end
@@ -128,7 +130,7 @@ module BPMN
 
     def execute(execution)
       start_event = execution.start_event_id ? element_by_id(execution.start_event_id) : default_start_event
-      raise ExecutionErrorNew.new("Process must have at least one start event.") if start_event.blank?
+      raise ExecutionError.new("Process must have at least one start event.") if start_event.blank?
       execution.execute_step(start_event)
     end
 
@@ -155,7 +157,6 @@ module BPMN
       super(attributes.except(:triggered_by_event))
 
       @is_executable = false
-      @sub_processes = []
       @triggered_by_event = attributes[:triggered_by_event]
     end
 
