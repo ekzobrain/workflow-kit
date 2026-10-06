@@ -63,6 +63,59 @@ FEEL.evaluate('reverse("Hello World!")')
 # => "!dlroW olleH"
 ```
 
+Iterating, filtering and testing lists:
+
+```ruby
+FEEL.evaluate("for i in 1..3 return i * i")
+# => [1, 4, 9]
+
+FEEL.evaluate("some order in orders satisfies order.total > 100", variables: { orders: [{ total: 50 }, { total: 150 }] })
+# => true
+
+FEEL.evaluate("orders[total > 100].id", variables: { orders: [{ id: 1, total: 50 }, { id: 2, total: 150 }] })
+# => [2]
+
+FEEL.evaluate("[1, 2, 3][-1]")
+# => 3
+```
+
+Boolean logic (with three-valued semantics for `null`), `between`, `in` and `instance of`:
+
+```ruby
+FEEL.evaluate("age >= 18 and country in (\"NL\", \"BE\")", variables: { age: 21, country: "NL" })
+# => true
+
+FEEL.evaluate("score between 1 and 10 or score = null", variables: { score: 5 })
+# => true
+
+FEEL.evaluate("x instance of number", variables: { x: 42 })
+# => true
+```
+
+Defining functions:
+
+```ruby
+FEEL.evaluate("{ square: function(x) x * x, result: square(4) }.result")
+# => 16
+
+FEEL.evaluate("sort([3, 1, 2], function(x, y) x > y)")
+# => [3, 2, 1]
+
+FEEL.evaluate("{ sub: function(a, b) a - b }.sub(b: 1, a: 5)")
+# => 4
+```
+
+Comments:
+
+```ruby
+FEEL.evaluate(<<~FEEL)
+  /* compute the total */
+  price * quantity // without taxes
+FEEL
+```
+
+Names can't contain whitespace or reserved words (`and`, `or`, `in`, `then`, ...) unless they are escaped with backticks, e.g. `` `first name` ``. Names with whitespace are allowed for function names, parameter names and context keys.
+
 To evaluate a unary tests:
 
 ```ruby
@@ -72,6 +125,19 @@ FEEL.test(3, '<= 10, > 50'))
 
 ```ruby
 FEEL.test("Eric", '"Bob", "Holly", "Eric"')
+# => true
+```
+
+A unary test can also be any expression. If it uses the input value `?`, the result of the expression is the result of the test. Otherwise, the test passes if the expression evaluates to `true`, to a list that contains the input value or to a value equal to the input value:
+
+```ruby
+FEEL.test("Garbage cart pickup", 'starts with(?, "Garbage")')
+# => true
+
+FEEL.test(5, "? > limit and odd(?)", variables: { limit: 3 })
+# => true
+
+FEEL.test("NL", "countries", variables: { countries: ["NL", "BE"] })
 # => true
 ```
 
@@ -111,14 +177,17 @@ UnaryTests.new(text: '> speed - speed_limit').variable_names
 - [x] Comparison
 - [x] Function Invocation
 - [x] Positional Parameters
+- [x] Named Parameters
 - [x] If Expression
-- [ ] For Expression
-- [ ] Quantified Expression
-- [ ] Filter Expression
-- [ ] Disjunction
-- [ ] Conjuction
-- [ ] Instance Of
-- [ ] Function Definition
+- [x] For Expression
+- [x] Quantified Expression (`some`, `every`)
+- [x] Filter Expression
+- [x] Disjunction
+- [x] Conjunction
+- [x] Between
+- [x] In
+- [x] Instance Of
+- [x] Function Definition
 
 ### Unary Tests
 
@@ -126,7 +195,7 @@ UnaryTests.new(text: '> speed - speed_limit').variable_names
 - [x] Interval/Range (inclusive and exclusive)
 - [x] Disjunction
 - [x] Negation
-- [ ] Expression
+- [x] Expression
 
 ### Built-in Functions
 
@@ -136,11 +205,12 @@ UnaryTests.new(text: '> speed - speed_limit').variable_names
 - [x] Numeric: `decimal`, `floor`, `ceiling`, `round`, `abs`, `modulo`, `sqrt`, `log`, `exp`, `odd`, `even`, `random number`
 - [x] List: `list contains`, `count`, `min`, `max`, `sum`, `product`, `mean`, `median`, `stddev`, `mode`, `all`, `any`, `sublist`, `append`, `concatenate`, `insert before`, `remove`, `reverse`, `index of`, `union`, `distinct values`, `duplicate values`, `flatten`, `sort`, `string join`
 - [x] Context: `get entries`, `get value`, `get keys`
-- [x] Temporal: `now`, `today`, `day of week`, `day of year`, `month of year`, `week of year`
+- [x] Temporal: `date`, `time`, `date and time`, `duration`, `years and months duration`, `now`, `today`, `day of week`, `day of year`, `month of year`, `week of year`
 
 ### Comments
-- [ ] Single-line
-- [ ] Multi-line
+
+- [x] Single-line
+- [x] Multi-line
 
 ## Installation
 

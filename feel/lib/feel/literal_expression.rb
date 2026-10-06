@@ -37,53 +37,34 @@ module FEEL
     def named_functions
       return [] if text.blank?
 
-      # Initialize a set to hold the qualified names
       function_names = Set.new
-
-      # Define a lambda for the recursive function
-      walk_tree = lambda do |node|
-        # If the node is a qualified name, add it to the set
-        if node.is_a?(FEEL::FunctionInvocation)
-          function_names << node.fn_name.text_value
-        end
-
-        # Recursively walk the child nodes
-        node.elements&.each do |child|
-          walk_tree.call(child)
-        end
+      walk_tree(tree) do |node, _bound_names|
+        function_names << node.function_name if node.is_a?(FEEL::FunctionInvocation)
       end
-
-      # Start walking the tree from the root
-      walk_tree.call(tree)
-
-      # Return the array of functions
       function_names.to_a
     end
 
     def named_variables
       return [] if text.blank?
 
-      # Initialize a set to hold the qualified names
       qualified_names = Set.new
+      walk_tree(tree) do |node, bound_names|
+        next unless node.is_a?(FEEL::QualifiedName)
+        next if bound_names.include?(node.head.eval)
 
-      # Define a lambda for the recursive function
-      walk_tree = lambda do |node|
-        # If the node is a qualified name, add it to the set
-        if node.is_a?(FEEL::QualifiedName)
-          qualified_names << node.text_value
-        end
-
-        # Recursively walk the child nodes
-        node.elements&.each do |child|
-          walk_tree.call(child)
-        end
+        qualified_names << node.text_value.gsub(/\s+/, "")
       end
-
-      # Start walking the tree from the root
-      walk_tree.call(tree)
-
-      # Return the array of qualified names
       qualified_names.to_a
+    end
+
+    # Walks the tree, yielding each node with the names bound by enclosing
+    # for/quantified expressions, filters and function definitions.
+    def walk_tree(node, bound_names = Set.new, &block)
+      bound_names = bound_names | node.local_names if node.respond_to?(:local_names)
+      bound_names = bound_names | node.parameter_names if node.is_a?(FEEL::FunctionDefinition)
+      yield node, bound_names
+
+      node.elements&.each { |child| walk_tree(child, bound_names, &block) }
     end
 
     def self.builtin_functions
@@ -96,6 +77,47 @@ module FEEL
         "number": ->(from) {
           return if from.nil?
           from.include?(".") ? from.to_f : from.to_i
+        },
+        "date": ->(from, month = nil, day = nil) {
+          return if from.nil?
+          return Date.new(from, month, day) if from.is_a?(Integer) && month && day
+          case from
+          when DateTime, Time, ActiveSupport::TimeWithZone then from.to_date
+          when Date then from
+          when String then Date.parse(from)
+          end
+        },
+        "time": ->(from) {
+          return if from.nil?
+          case from
+          when Time, ActiveSupport::TimeWithZone then from
+          when DateTime then from.to_time
+          when String then Time.parse(from)
+          end
+        },
+        "date and time": ->(from, time = nil) {
+          return if from.nil?
+          if time
+            return DateTime.new(from.year, from.month, from.day, time.hour, time.min, time.sec, time.respond_to?(:utc_offset) ? Rational(time.utc_offset, 86_400) : 0)
+          end
+          case from
+          when DateTime, Time, ActiveSupport::TimeWithZone then from
+          when Date then from.to_datetime
+          when String then DateTime.parse(from)
+          end
+        },
+        "duration": ->(from, to = nil) {
+          return if from.nil?
+          return from if from.is_a?(ActiveSupport::Duration)
+          return (Date.parse(to.to_s) - Date.parse(from.to_s)).to_i.days if to
+          ActiveSupport::Duration.parse(from)
+        },
+        "years and months duration": ->(from, to) {
+          return if from.nil? || to.nil?
+          months = (to.year * 12 + to.month) - (from.year * 12 + from.month)
+          months -= 1 if months.positive? && to.day < from.day
+          months += 1 if months.negative? && to.day > from.day
+          ActiveSupport::Duration.build(0) + (months / 12).years + (months % 12).months
         },
         # Boolean functions
         "not": ->(value) {
@@ -302,8 +324,7 @@ module FEEL
         },
         "index of": ->(list, match) {
           return if list.nil?
-          return [] if match.nil?
-          list.index(match) + 1
+          list.each_index.select { |index| list[index] == match }.map { |index| index + 1 }
         },
         "union": ->(list1, list2) {
           return if list1.nil? || list2.nil?
@@ -321,9 +342,10 @@ module FEEL
           return if list.nil?
           list.flatten
         },
-        "sort": ->(list) {
+        "sort": ->(list, precedes = nil) {
           return if list.nil?
-          list.sort
+          return list.sort unless precedes
+          list.sort { |a, b| precedes.call(a, b) == true ? -1 : (precedes.call(b, a) == true ? 1 : 0) }
         },
         "string join": ->(list, separator) {
           return if list.nil?

@@ -21,7 +21,7 @@ module FEEL
 
     def test(input, variables = {})
       return true if text.nil? || text == "-"
-      tree.eval(functions.merge(variables)).call(input)
+      tree.eval(functions.merge(variables)).call(input) == true
     end
   end
 end

@@ -510,40 +510,47 @@ module FEEL
       it "should parse if expressions" do
         _(LiteralExpression.new(text: 'if age >= 18 then "adult" else "minor"').evaluate(age: 18)).must_equal("adult")
         _(LiteralExpression.new(text: 'if true then "Eric" else "Eli"').evaluate).must_equal("Eric")
-        # TODO: Why is this parsing as an invalid expression?
-        #_(LiteralExpression.new(text: 'if condition then "Eric" else "Eli"').evaluate(condition: true)).must_equal("Eric")
+        _(LiteralExpression.new(text: 'if condition then "Eric" else "Eli"').evaluate(condition: true)).must_equal("Eric")
       end
     end
 
     describe :for_expression do
-      # for i in [1, 2, 3] return i * i   //➔ [1, 4, 9]
-      # for i in 1..3 return i * i   //➔ [1, 4, 9]
-      # for i in [1,2,3], j in [1,2,3] return i*j   //➔ [1, 2, 3, 2, 4, 6, 3, 6, 9]
+      it "should iterate over lists and ranges" do
+        _(LiteralExpression.new(text: "for i in [1, 2, 3] return i * i").evaluate).must_equal [1, 4, 9]
+        _(LiteralExpression.new(text: "for i in 1..3 return i * i").evaluate).must_equal [1, 4, 9]
+        _(LiteralExpression.new(text: "for i in [1,2,3], j in [1,2,3] return i*j").evaluate).must_equal [1, 2, 3, 2, 4, 6, 3, 6, 9]
+      end
     end
 
     describe :quantified_expression do
-      # some i in [1, 2, 3] satisfies i > 2   //➔ true
-      # some i in [1, 2, 3] satisfies i > 4   //➔ false
-      # every i in [1, 2, 3] satisfies i > 1   //➔ false
-      # every i in [1, 2, 3] satisfies i > 0   //➔ true
+      it "should evaluate some and every" do
+        _(LiteralExpression.new(text: "some i in [1, 2, 3] satisfies i > 2").evaluate).must_equal true
+        _(LiteralExpression.new(text: "some i in [1, 2, 3] satisfies i > 4").evaluate).must_equal false
+        _(LiteralExpression.new(text: "every i in [1, 2, 3] satisfies i > 1").evaluate).must_equal false
+        _(LiteralExpression.new(text: "every i in [1, 2, 3] satisfies i > 0").evaluate).must_equal true
+      end
     end
 
     describe :in_expression do
-      # 1 in [1..10]   //➔ true
-      # 1 in (1..10]   //➔ false
-      # 10 in [1..10]   //➔ true
-      # 10 in [1..10)   //➔ false
+      it "should test a value against unary tests" do
+        _(LiteralExpression.new(text: "1 in [1..10]").evaluate).must_equal true
+        _(LiteralExpression.new(text: "1 in (1..10]").evaluate).must_equal false
+        _(LiteralExpression.new(text: "10 in [1..10]").evaluate).must_equal true
+        _(LiteralExpression.new(text: "10 in [1..10)").evaluate).must_equal false
+      end
     end
 
     describe :conjunction_disjunction do
-      # true and true   //➔ true
-      # true and false and null   //➔ false
-      # true and null and true   //➔ null
-      # true or false or null   //➔ true
-      # false or false   //➔ false
-      # false or null or false  //➔ null
-      # true or false and false   //➔ true
-      # (true or false) and false   //➔ false
+      it "should evaluate with ternary logic" do
+        _(LiteralExpression.new(text: "true and true").evaluate).must_equal true
+        _(LiteralExpression.new(text: "true and false and null").evaluate).must_equal false
+        _(LiteralExpression.new(text: "true and null and true").evaluate).must_be_nil
+        _(LiteralExpression.new(text: "true or false or null").evaluate).must_equal true
+        _(LiteralExpression.new(text: "false or false").evaluate).must_equal false
+        _(LiteralExpression.new(text: "false or null or false").evaluate).must_be_nil
+        _(LiteralExpression.new(text: "true or false and false").evaluate).must_equal true
+        _(LiteralExpression.new(text: "(true or false) and false").evaluate).must_equal false
+      end
     end
 
     describe :string_concatenation do
@@ -857,7 +864,9 @@ module FEEL
         end
 
         it "should eval index of" do
-          _(LiteralExpression.new(text: "index of([1, 2, 3], 2)").evaluate).must_equal 2
+          _(LiteralExpression.new(text: "index of([1, 2, 3], 2)").evaluate).must_equal [2]
+          _(LiteralExpression.new(text: "index of([1, 2, 3, 2], 2)").evaluate).must_equal [2, 4]
+          _(LiteralExpression.new(text: "index of([1, 2, 3], 4)").evaluate).must_equal []
           _(LiteralExpression.new(text: "index of([1, 2, 3], null)").evaluate).must_equal []
           _(LiteralExpression.new(text: "index of(null, 2)").evaluate).must_be_nil
           _(LiteralExpression.new(text: "index of(null, null)").evaluate).must_be_nil

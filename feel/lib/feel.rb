@@ -14,6 +14,8 @@ require "treetop"
 $VERBOSE = verbose
 
 require "feel/configuration"
+require "feel/scope"
+require "feel/function"
 require "feel/nodes"
 require "feel/parser"
 
