@@ -12,6 +12,13 @@ module FEEL
       case result
       when ->(value) { Temporal.temporal?(value) }
         Temporal.property(result, property_name)
+      when FEEL::Range
+        case property_name
+        when "start" then result.start
+        when "end" then result.end
+        when "start included" then result.start_included
+        when "end included" then result.end_included
+        end
       when Hash, Scope
         if result.key?(property_name.to_sym)
           result[property_name.to_sym]

@@ -16,12 +16,18 @@ module FEEL
     # the system zone.
     attr_accessor :time_zone
 
+    # Enables the built-in functions that are Camunda extensions of FEEL
+    # (e.g. `uuid()`, `is blank()`, `to json()`, see
+    # FEEL::Builtins::CAMUNDA_EXTENSIONS). Default: true.
+    attr_accessor :camunda_extensions
+
     attr_reader :expression_cache_size
 
     def initialize
       @functions = {}
       @strict = false
       @time_zone = nil
+      @camunda_extensions = true
       @expression_cache_size = DEFAULT_EXPRESSION_CACHE_SIZE
     end
 

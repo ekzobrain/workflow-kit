@@ -97,8 +97,15 @@ module FEEL
 
     public
 
-    def self.builtin_functions
-      @builtin_functions ||= (
+    # The built-in functions by name: the standard DMN functions and, unless
+    # `config.camunda_extensions` is false, the extensions of Camunda
+    # (Builtins::CAMUNDA_EXTENSIONS).
+    def self.builtin_functions(camunda_extensions: FEEL.config.camunda_extensions)
+      camunda_extensions ? all_builtin_functions : standard_builtin_functions
+    end
+
+    def self.all_builtin_functions
+      @all_builtin_functions ||= (
         Builtins::CONVERSION
           .merge(Builtins::BOOLEAN)
           .merge(Builtins::STRING)
@@ -108,6 +115,10 @@ module FEEL
           .merge(Builtins::TEMPORAL)
           .merge(Builtins::RANGE)
       ).transform_keys(&:to_s).freeze
+    end
+
+    def self.standard_builtin_functions
+      @standard_builtin_functions ||= all_builtin_functions.except(*Builtins::CAMUNDA_EXTENSIONS).freeze
     end
 
     def as_json

@@ -91,7 +91,7 @@ module FEEL
       end
 
       def position?(value)
-        value.is_a?(Numeric) && value.to_i != 0
+        Numbers.number?(value) && value.to_i != 0
       end
 
       # Ruby equivalent of Scala's Seq#slice(from, until).
@@ -269,6 +269,29 @@ module FEEL
         position = position.to_i
         list.take([ListSupport.list_index(list, position), 0].max) +
           list.drop([ListSupport.list_index(list, position + 1), 0].max)
+      },
+      # list replace(list, position, newItem) and list replace(list, match,
+      # newItem), where match is a function(item, newItem) returning a
+      # boolean (DMN 1.5).
+      "list replace": ->(list, position = nil, newItem = ListSupport::NOT_GIVEN, match = nil) { # rubocop:disable Naming/VariableName
+        return unless list.is_a?(Array) && !newItem.equal?(ListSupport::NOT_GIVEN)
+
+        match ||= position if position.respond_to?(:call)
+        if match
+          return unless match.respond_to?(:call)
+
+          results = list.map { |item| match.call(item, newItem) }
+          return unless results.all? { |result| result == true || result == false }
+
+          list.zip(results).map { |item, replace| replace ? newItem : item }
+        else
+          return unless ListSupport.position?(position)
+
+          index = ListSupport.list_index(list, position.to_i)
+          return unless index.between?(0, list.length - 1)
+
+          list.dup.tap { |copy| copy[index] = newItem }
+        end
       },
       "reverse": ->(list) {
         return unless list.is_a?(Array)

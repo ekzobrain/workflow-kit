@@ -263,7 +263,7 @@ grammar FEEL
   end
 
   rule property_name
-    "time offset" !name_part_char /
+    ("time offset" / "start included" / "end included") !name_part_char /
     name
   end
 

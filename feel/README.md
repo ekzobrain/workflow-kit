@@ -6,7 +6,7 @@ This gem implements a subset of FEEL (Friendly Enough Expression Language) as de
 
 FEEL expressions are parsed into an abstract syntax tree (AST) and then evaluated in a context. The context is a hash of variables and functions to be resolved inside the expression.
 
-Expressions are safe, side-effect free, and deterministic. They are ideal for capturing business logic for storage in a database or embedded in DMN, BPMN, or Form documents for execution in a workflow engine.
+Expressions are safe and side-effect free. They are deterministic, except for the functions that return the current time (`now()`, `today()`) or random values (the Camunda extensions `random number()` and `uuid()`). They are ideal for capturing business logic for storage in a database or embedded in DMN, BPMN, or Form documents for execution in a workflow engine.
 
 This project was inspired by these excellent libraries:
 
@@ -251,14 +251,36 @@ bundle exec ruby benchmarks/evaluate.rb
 
 ### Built-in Functions
 
-- [x] Conversion: `string`, `number`, `from json`, `to json`
-- [x] Boolean: `not`, `is defined`, `get or else`, `assert`
-- [x] String: `substring`, `substring before`, `substring after`, `string length`, `upper case`, `lower case`, `contains`, `starts with`, `ends with`, `matches`, `replace`, `split`, `extract`, `trim`, `strip`, `uuid`, `to base64`, `from base64`, `is blank`
-- [x] Numeric: `decimal`, `floor`, `ceiling`, `round up`, `round down`, `round half up`, `round half down`, `abs`, `modulo`, `sqrt`, `log`, `exp`, `odd`, `even`, `random number`
-- [x] List: `list contains`, `count`, `min`, `max`, `sum`, `product`, `mean`, `median`, `stddev`, `mode`, `and`, `all`, `or`, `any`, `sublist`, `append`, `concatenate`, `insert before`, `remove`, `reverse`, `index of`, `union`, `distinct values`, `duplicate values`, `flatten`, `sort`, `string join`, `is empty`, `partition`
-- [x] Context: `get value`, `get entries`, `context put`, `put`, `context merge`, `put all`, `context`
-- [x] Temporal: `date`, `time`, `date and time`, `duration`, `years and months duration`, `now`, `today`, `day of week`, `day of year`, `week of year`, `month of year`, `last day of month`
-- [x] Range: `before`, `after`, `meets`, `met by`, `overlaps`, `overlaps before`, `overlaps after`, `finishes`, `finished by`, `includes`, `during`, `starts`, `started by`, `coincides`
+The built-in functions of the DMN 1.5 standard:
+
+- [x] Conversion: `string`, `number`
+- [x] Boolean: `not`, `is`
+- [x] String: `substring`, `substring before`, `substring after`, `string length`, `upper case`, `lower case`, `contains`, `starts with`, `ends with`, `matches`, `replace`, `split`
+- [x] Numeric: `decimal`, `floor`, `ceiling`, `round up`, `round down`, `round half up`, `round half down`, `abs`, `modulo`, `sqrt`, `log`, `exp`, `odd`, `even`
+- [x] List: `list contains`, `count`, `min`, `max`, `sum`, `product`, `mean`, `median`, `stddev`, `mode`, `and`, `all`, `or`, `any`, `sublist`, `append`, `concatenate`, `insert before`, `remove`, `list replace`, `reverse`, `index of`, `union`, `distinct values`, `flatten`, `sort`, `string join`
+- [x] Context: `get value`, `get entries`, `context put`, `context merge`, `context`
+- [x] Temporal: `date`, `time`, `date and time`, `duration`, `years and months duration`, `now`, `today`, `day of week`, `day of year`, `week of year`, `month of year`
+- [x] Range: `range`, `before`, `after`, `meets`, `met by`, `overlaps`, `overlaps before`, `overlaps after`, `finishes`, `finished by`, `includes`, `during`, `starts`, `started by`, `coincides`
+
+#### Camunda extensions
+
+These functions are not part of the DMN standard. They are extensions of [Camunda](https://docs.camunda.io/docs/components/modeler/feel/builtin-functions/feel-built-in-functions-introduction/) (feel-scala), supported for compatibility with expressions written for Camunda / Zeebe (`strip` is kept for compatibility with earlier versions of this gem, see `trim`):
+
+- Conversion: `from json`, `to json`
+- Boolean: `is defined`, `get or else`, `assert`
+- String: `extract`, `trim`, `strip`, `uuid`, `to base64`, `from base64`, `is blank`
+- Numeric: `random number`
+- List: `duplicate values`, `is empty`, `partition`
+- Context: `put`, `put all`
+- Temporal: `last day of month`
+
+They are enabled by default and can be disabled to allow only standard functions (they then evaluate to null, or raise `FEEL::EvaluationError` in strict mode):
+
+```ruby
+FEEL.configure do |config|
+  config.camunda_extensions = false
+end
+```
 
 ### Values
 

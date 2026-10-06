@@ -25,6 +25,7 @@ class Minitest::Spec
     FEEL.config.functions = {}
     FEEL.config.strict = false
     FEEL.config.time_zone = nil
+    FEEL.config.camunda_extensions = true
   end
 
   # Pins the current time (Time.now) during the block.

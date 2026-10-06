@@ -243,7 +243,7 @@ module FEEL
     DATE = "#{YEAR}-([01]\\d)-([0-3]\\d)"
     FRACTION = '(?:\.(\d{1,9}))?'
     LOCAL_TIME = "(\\d{2}):(\\d{2})(?::(\\d{2}))?#{FRACTION}"
-    OFFSET = '(Z|[+-]\d{2}:\d{2})'
+    OFFSET = '([Zz]|[+-]\d{2}:\d{2})'
 
     DATE_PATTERN = /\A#{DATE}\z/
     LOCAL_TIME_PATTERN = /\AT?#{LOCAL_TIME}\z/
@@ -346,7 +346,7 @@ module FEEL
     end
 
     def parse_offset(offset)
-      return 0 if offset == "Z"
+      return 0 if offset.casecmp?("Z")
 
       sign = offset.start_with?("-") ? -1 : 1
       hours, minutes = offset[1..].split(":").map(&:to_i)

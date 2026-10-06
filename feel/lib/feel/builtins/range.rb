@@ -176,7 +176,21 @@ module FEEL
     # The lambda parameters list the parameter names of all signatures of a
     # function (e.g. `before(point1, point2)`, `before(point, range)`,
     # `before(range1, range2)`); positional arguments fill the first signature.
+    # range(from): a range value from the text of a range literal, e.g.
+    # "[1..10]", "(date(\"2020-01-01\")..date(\"2020-12-31\")]" or "< 5"
+    # (DMN 1.5). The endpoints are evaluated without variables.
+    def self.parse_range(text)
+      return unless text.is_a?(String)
+
+      node = FEEL::Parser.parse(text.strip, root: :range_literal)
+      value = node.eval(FEEL::RootScope.build({}))
+      value.is_a?(FEEL::Range) ? value : nil
+    rescue FEEL::SyntaxError, FEEL::EvaluationError
+      nil
+    end
+
     RANGE = {
+      "range": ->(from) { Builtins.parse_range(from) },
       "before": ->(point1 = nil, point2 = nil, point = nil, range = nil, range1 = nil, range2 = nil) {
         RangeRelations.invoke(:before, [point1, point2], [point, range], [range1, range2])
       },
