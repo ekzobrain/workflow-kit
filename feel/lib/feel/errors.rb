@@ -14,4 +14,9 @@ module FEEL
   # A value can't be serialized (FEEL.serialize) or deserialized
   # (FEEL.deserialize).
   class SerializationError < Error; end
+
+  module AST
+    # An AST can't be turned into text (FEEL.unparse).
+    class Error < FEEL::Error; end
+  end
 end

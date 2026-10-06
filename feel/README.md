@@ -276,6 +276,20 @@ end
 # => the tree of "input.a + 1"
 ```
 
+`FEEL.unparse` does the opposite: it builds the text of an expression or unary tests from a tree, e.g. one translated from another language. Trees with string keys (e.g. read from JSON) are accepted too:
+
+```ruby
+FEEL.unparse({ type: "conjunction", operands: [
+  { type: "comparison", operator: ">=", left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } },
+  { type: "in", value: { type: "name", path: ["status"] }, tests: [{ type: "string", value: "A" }, { type: "string", value: "B" }] }
+] })
+# => 'age >= 18 and status in ("A", "B")'
+
+FEEL.unparse(FEEL.parse_test("<10,[1..2]")) # => "< 10, [1..2]"
+```
+
+The text is canonical (`FEEL.parse(FEEL.unparse(ast)) == ast` for any tree returned by `FEEL.parse`): parentheses are added only where the precedence requires them, names are escaped with backticks if need be (`` `first name` ``, `` `a-b` ``), strings are escaped, and numbers are written without exponent (a negative number as a negation, e.g. `-5`). A `temporal` node needs either a `text` or a `value` (Date, Time, FEEL::Duration…). In a node, `type` of a function definition parameter, `key` of a context entry (`null`) and `start` or `end` of a range (unbounded) are optional. An invalid tree (unknown type, missing key, operator, a name that can't be written in FEEL…) raises `FEEL::AST::Error`.
+
 ## Supported Features
 
 ### Data Types

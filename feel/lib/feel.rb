@@ -27,6 +27,7 @@ require "feel/temporal"
 require "feel/nodes"
 require "feel/compiler"
 require "feel/ast"
+require "feel/unparser"
 require "feel/parser"
 
 Dir[File.join(__dir__, "feel/builtins/*.rb")].sort.each { |file| require file }
@@ -93,6 +94,18 @@ module FEEL
   # `not("A")` or `-`. Raises FEEL::SyntaxError if the tests are not valid.
   def self.parse_test(unary_tests_text)
     compile_test(unary_tests_text).tree.to_ast
+  end
+
+  # Builds the text of an expression or unary tests from an AST as returned
+  # by FEEL.parse / FEEL.parse_test (symbol or string keys):
+  #
+  #   FEEL.unparse({ type: "comparison", operator: ">=",
+  #                  left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } })
+  #   # => "age >= 18"
+  #
+  # Raises FEEL::AST::Error if the AST is not valid.
+  def self.unparse(ast)
+    AST::Unparser.new.unparse(ast)
   end
 
   def self.expression_cache
