@@ -3,7 +3,7 @@
 module FEEL
   module AST
     # Builds the text of an expression or unary tests from an AST (see
-    # FEEL::AST.to_feel). Parentheses are added where the precedence of the
+    # FEEL::AST.to_text). Parentheses are added where the precedence of the
     # operators requires them, names are escaped with backticks if need be.
     class Generator
       # Precedence levels, from the lowest. A node is put in parentheses

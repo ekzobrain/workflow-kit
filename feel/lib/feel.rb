@@ -78,24 +78,6 @@ module FEEL
     unary_tests
   end
 
-  # Returns the abstract syntax tree of an expression as plain Hashes (see
-  # FEEL::AST and the README for the node types):
-  #
-  #   FEEL.parse("age >= 18")
-  #   # => { type: "comparison", operator: ">=",
-  #   #      left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } }
-  #
-  # Raises FEEL::SyntaxError if the expression is not valid.
-  def self.parse(expression_text)
-    compile(expression_text).tree.to_ast
-  end
-
-  # Returns the abstract syntax tree of unary tests, e.g. `< 10, [20..30]`,
-  # `not("A")` or `-`. Raises FEEL::SyntaxError if the tests are not valid.
-  def self.parse_test(unary_tests_text)
-    compile_test(unary_tests_text).tree.to_ast
-  end
-
   def self.expression_cache
     @expression_cache ||= ExpressionCache.new(config.expression_cache_size)
   end

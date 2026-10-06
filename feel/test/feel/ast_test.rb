@@ -2,12 +2,16 @@
 
 require "test_helper"
 
-# The AST format of FEEL.parse / FEEL.parse_test is a public API: these tests
+# The AST format of FEEL::AST.from_text is a public API: these tests
 # fix it.
 module FEEL
   describe "AST" do
     def parse(text)
-      FEEL.parse(text)
+      AST.from_text(text)
+    end
+
+    def parse_tests(text)
+      AST.from_text(text, unary_tests: true)
     end
 
     def var(*path)
@@ -221,7 +225,7 @@ module FEEL
 
     describe :unary_tests do
       it "should parse unary tests" do
-        _(FEEL.parse_test('< 10, [20..30), "A", ? > 1')).must_equal({
+        _(parse_tests('< 10, [20..30), "A", ? > 1')).must_equal({
           type: "unary tests",
           tests: [
             { type: "unary comparison", operator: "<", value: number(10) },
@@ -233,13 +237,13 @@ module FEEL
       end
 
       it "should parse negated and any unary tests" do
-        _(FEEL.parse_test("not(1, 2)")).must_equal({ type: "not", tests: [number(1), number(2)] })
-        _(FEEL.parse_test("-")).must_equal({ type: "any" })
-        _(FEEL.parse_test(nil)).must_equal({ type: "any" })
+        _(parse_tests("not(1, 2)")).must_equal({ type: "not", tests: [number(1), number(2)] })
+        _(parse_tests("-")).must_equal({ type: "any" })
+        _(parse_tests(nil)).must_equal({ type: "any" })
       end
 
       it "should raise a syntax error for invalid unary tests" do
-        _ { FEEL.parse_test("< ") }.must_raise FEEL::SyntaxError
+        _ { parse_tests("< ") }.must_raise FEEL::SyntaxError
       end
     end
 
@@ -264,7 +268,7 @@ module FEEL
 
       it "should yield the nodes of entries" do
         names = []
-        AST.walk(FEEL.parse('{a: x, b: for i in l return i}')) { |node| names << node[:path] if node[:type] == "name" }
+        AST.walk(FEEL::AST.from_text('{a: x, b: for i in l return i}')) { |node| names << node[:path] if node[:type] == "name" }
         _(names).must_equal [["x"], ["l"], ["i"]]
       end
     end

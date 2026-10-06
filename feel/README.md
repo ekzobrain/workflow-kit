@@ -212,23 +212,23 @@ bundle exec ruby benchmarks/evaluate.rb
 
 ### Abstract syntax tree
 
-`FEEL.parse` returns the abstract syntax tree of an expression, e.g. to translate it into another language. The tree is made of plain Hashes (symbol keys) with a `type`; whitespace, comments and parentheses are dropped, and literal values are ready to use:
+`FEEL::AST.from_text` returns the abstract syntax tree of an expression (or of unary tests with `unary_tests: true`), e.g. to translate it into another language. The tree is made of plain Hashes (symbol keys) with a `type`; whitespace, comments and parentheses are dropped, and literal values are ready to use:
 
 ```ruby
-FEEL.parse('age >= 18 and status in ("A", "B")')
+FEEL::AST.from_text('age >= 18 and status in ("A", "B")')
 # => { type: "conjunction", operands: [
 #      { type: "comparison", operator: ">=", left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } },
 #      { type: "in", value: { type: "name", path: ["status"] }, tests: [{ type: "string", value: "A" }, { type: "string", value: "B" }] }
 #    ] }
 
-FEEL.parse_test('< 10, [20..30)')
+FEEL::AST.from_text('< 10, [20..30)', unary_tests: true)
 # => { type: "unary tests", tests: [
 #      { type: "unary comparison", operator: "<", value: { type: "number", value: 10 } },
 #      { type: "range", start: { type: "number", value: 20 }, end: { type: "number", value: 30 }, start_included: true, end_included: false }
 #    ] }
 ```
 
-Both raise `FEEL::SyntaxError` for invalid input and return a new tree on each call. Node types:
+It raises `FEEL::SyntaxError` for invalid input and returns a new tree on each call. Node types:
 
 | Type | Keys | Example |
 | --- | --- | --- |
@@ -267,28 +267,28 @@ A unary test that is an expression (e.g. `"A"` or `? > 1` in `x in ("A", ? > 1)`
 `FEEL::AST.walk` yields each node of a tree (parents first), and `FEEL::AST.transform` rebuilds a tree bottom-up with the result of the block for each node:
 
 ```ruby
-FEEL::AST.walk(FEEL.parse("a.b > c")).select { |node| node[:type] == "name" }.map { |node| node[:path] }
+FEEL::AST.walk(FEEL::AST.from_text("a.b > c")).select { |node| node[:type] == "name" }.map { |node| node[:path] }
 # => [["a", "b"], ["c"]]
 
-FEEL::AST.transform(FEEL.parse("a + 1")) do |node|
+FEEL::AST.transform(FEEL::AST.from_text("a + 1")) do |node|
   node[:type] == "name" ? node.merge(path: ["input", *node[:path]]) : node
 end
 # => the tree of "input.a + 1"
 ```
 
-`FEEL::AST.to_feel` does the opposite: it builds the text of an expression or unary tests from a tree, e.g. one translated from another language. Trees with string keys (e.g. read from JSON) are accepted too:
+`FEEL::AST.to_text` does the opposite: it builds the text of an expression or unary tests from a tree, e.g. one translated from another language. Trees with string keys (e.g. read from JSON) are accepted too:
 
 ```ruby
-FEEL::AST.to_feel({ type: "conjunction", operands: [
+FEEL::AST.to_text({ type: "conjunction", operands: [
   { type: "comparison", operator: ">=", left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } },
   { type: "in", value: { type: "name", path: ["status"] }, tests: [{ type: "string", value: "A" }, { type: "string", value: "B" }] }
 ] })
 # => 'age >= 18 and status in ("A", "B")'
 
-FEEL::AST.to_feel(FEEL.parse_test("<10,[1..2]")) # => "< 10, [1..2]"
+FEEL::AST.to_text(FEEL::AST.from_text("<10,[1..2]", unary_tests: true)) # => "< 10, [1..2]"
 ```
 
-The text is canonical (`FEEL.parse(FEEL::AST.to_feel(ast)) == ast` for any tree returned by `FEEL.parse`): parentheses are added only where the precedence requires them, names are escaped with backticks if need be (`` `first name` ``, `` `a-b` ``), strings are escaped, and numbers are written without exponent (a negative number as a negation, e.g. `-5`). A `temporal` node needs either a `text` or a `value` (Date, Time, FEEL::Duration…). In a node, `type` of a function definition parameter, `key` of a context entry (`null`) and `start` or `end` of a range (unbounded) are optional. An invalid tree (unknown type, missing key, operator, a name that can't be written in FEEL…) raises `FEEL::AST::Error`.
+The text is canonical (`FEEL::AST.from_text(FEEL::AST.to_text(ast)) == ast` for any tree returned by `FEEL::AST.from_text`): parentheses are added only where the precedence requires them, names are escaped with backticks if need be (`` `first name` ``, `` `a-b` ``), strings are escaped, and numbers are written without exponent (a negative number as a negation, e.g. `-5`). A `temporal` node needs either a `text` or a `value` (Date, Time, FEEL::Duration…). In a node, `type` of a function definition parameter, `key` of a context entry (`null`) and `start` or `end` of a range (unbounded) are optional. An invalid tree (unknown type, missing key, operator, a name that can't be written in FEEL…) raises `FEEL::AST::Error`.
 
 ## Supported Features
 

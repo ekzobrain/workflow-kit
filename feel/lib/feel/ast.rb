@@ -2,7 +2,7 @@
 
 module FEEL
   # The abstract syntax tree of FEEL expressions and unary tests, as plain
-  # Hashes (see FEEL.parse and FEEL.parse_test). Each node has a `:type` and
+  # Hashes (see FEEL::AST.from_text and FEEL::AST.to_text). Each node has a `:type` and
   # its own keys; the format is documented in the README.
   module AST
     module_function
@@ -34,15 +34,27 @@ module FEEL
       end
     end
 
-    # Builds the text of an expression or unary tests from an AST as returned
-    # by FEEL.parse / FEEL.parse_test (symbol or string keys):
+    # Returns the AST of an expression, or of unary tests (e.g. `< 10, [20..30]`,
+    # `not("A")` or `-`) with `unary_tests: true`:
     #
-    #   FEEL::AST.to_feel({ type: "comparison", operator: ">=",
+    #   FEEL::AST.from_text("age >= 18")
+    #   # => { type: "comparison", operator: ">=",
+    #   #      left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } }
+    #
+    # Raises FEEL::SyntaxError if the text is not valid.
+    def from_text(text, unary_tests: false)
+      (unary_tests ? FEEL.compile_test(text) : FEEL.compile(text)).tree.to_ast
+    end
+
+    # Builds the text of an expression or unary tests from an AST as returned
+    # by FEEL::AST.from_text (symbol or string keys):
+    #
+    #   FEEL::AST.to_text({ type: "comparison", operator: ">=",
     #                       left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } })
     #   # => "age >= 18"
     #
     # Raises FEEL::AST::Error if the AST is not valid.
-    def to_feel(ast)
+    def to_text(ast)
       Generator.new.generate(ast)
     end
 
