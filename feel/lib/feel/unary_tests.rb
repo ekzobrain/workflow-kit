@@ -14,14 +14,18 @@ module FEEL
 
     def valid?
       return true if text.nil? || text == "-"
-      tree.present?
-    rescue SyntaxError
-      false
+      return @valid if defined?(@valid)
+
+      @valid = begin
+        !tree.nil?
+      rescue SyntaxError
+        false
+      end
     end
 
     def test(input, variables = {})
       return true if text.nil? || text == "-"
-      tree.eval(functions.merge(variables)).call(input) == true
+      tree.matches(input, RootScope.build(variables)) == true
     end
   end
 end

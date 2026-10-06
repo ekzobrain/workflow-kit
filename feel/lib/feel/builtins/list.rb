@@ -31,7 +31,7 @@ module FEEL
       end
 
       def numbers?(list)
-        list.is_a?(Array) && list.all? { |item| item.is_a?(Numeric) }
+        list.is_a?(Array) && list.all? { |item| Numbers.number?(item) }
       end
 
       def to_decimal(number)
@@ -186,7 +186,11 @@ module FEEL
         ListSupport.comparable?(list) ? ListSupport.feel_sort(list).last : nil
       },
       "sum": ->(*list) {
-        ListSupport.with_numbers(ListSupport.varargs(list)) { |numbers| ListSupport.sum(numbers) }
+        list = ListSupport.varargs(list)
+        # fast path: integers are summed exactly without conversions
+        return list.sum if list.is_a?(Array) && !list.empty? && list.all? { |item| Integer === item }
+
+        ListSupport.with_numbers(list) { |numbers| ListSupport.sum(numbers) }
       },
       "product": ->(*list) {
         ListSupport.with_numbers(ListSupport.varargs(list)) { |numbers| numbers.reduce(:*) }

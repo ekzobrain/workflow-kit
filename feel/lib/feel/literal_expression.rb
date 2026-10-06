@@ -18,14 +18,17 @@ module FEEL
     end
 
     def valid?
-      return false if text.blank?
-      tree.present?
-    rescue SyntaxError
-      false
+      return @valid if defined?(@valid)
+
+      @valid = begin
+        text.present? && !tree.nil?
+      rescue SyntaxError
+        false
+      end
     end
 
     def evaluate(variables = {})
-      Numbers.normalize(tree.eval(functions.merge(variables)))
+      Numbers.normalize(tree.eval(RootScope.build(variables)))
     end
 
     def functions

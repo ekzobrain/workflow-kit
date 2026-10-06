@@ -11,16 +11,20 @@ module FEEL
 
   # Reopen the Treetop-generated Parser class to add convenience methods
   class Parser
-    @@parser = new
+    # Treetop parsers keep the parsing state in the instance, so each thread
+    # uses its own parser.
+    def self.instance
+      Thread.current[:feel_parser] ||= new
+    end
 
     def self.parse(expression, root: nil)
-      @@parser.parse(expression, root: root).tap do |ast|
+      instance.parse(expression, root: root).tap do |ast|
         raise SyntaxError, "Invalid expression: #{expression.inspect}" unless ast
       end
     end
 
     def self.parse_test(expression)
-      @@parser.parse(expression || "-", root: :unary_tests).tap do |ast|
+      instance.parse(expression || "-", root: :unary_tests).tap do |ast|
         raise SyntaxError, "Invalid unary test: #{expression.inspect}" unless ast
       end
     end

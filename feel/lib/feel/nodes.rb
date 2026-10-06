@@ -4,11 +4,25 @@ module FEEL
   class Node < Treetop::Runtime::SyntaxNode
     include Values
 
-    def contains_input_placeholder?(node = self)
+    # Whether the subtree uses the input value `?` (memoized: the tree is
+    # immutable once parsed).
+    def contains_input_placeholder?
+      return @contains_input_placeholder if defined?(@contains_input_placeholder)
+
+      @contains_input_placeholder = Node.input_placeholder_in?(self)
+    end
+
+    def self.input_placeholder_in?(node)
       return true if node.is_a?(InputValue)
       return false unless node.elements
 
-      node.elements.any? { |element| contains_input_placeholder?(element) }
+      node.elements.any? { |element| input_placeholder_in?(element) }
+    end
+
+    # Unary test nodes match an input value with `matches(input, context)`.
+    # `eval` returns the test as a lambda for callers that need one.
+    def test_lambda(context)
+      ->(input) { matches(input, context) }
     end
 
     #
@@ -83,11 +97,25 @@ module FEEL
       return count == fn.params.length if fn.is_a?(Function)
       return true unless fn.respond_to?(:lambda?) && fn.lambda?
 
-      parameters = fn.parameters
-      required = parameters.count { |type, _| type == :req }
-      optional = parameters.count { |type, _| type == :opt }
-      rest = parameters.any? { |type, _| type == :rest }
-      count >= required && (rest || count <= required + optional)
+      arity = fn.arity
+      return count == arity if arity >= 0
+
+      required, maximum = Node.arity_range(fn)
+      count >= required && (maximum.nil? || count <= maximum)
+    end
+
+    ARITY_RANGES = ObjectSpace::WeakKeyMap.new
+
+    # [required, maximum or nil (varargs)] of a lambda with optional
+    # parameters, cached per lambda.
+    def self.arity_range(fn)
+      ARITY_RANGES[fn] ||= begin
+        parameters = fn.parameters
+        required = parameters.count { |type, _| type == :req }
+        optional = parameters.count { |type, _| type == :opt }
+        rest = parameters.any? { |type, _| type == :rest }
+        [required, rest ? nil : required + optional].freeze
+      end
     end
 
     # Three-valued equality: null if the values are not comparable (different
@@ -136,29 +164,38 @@ module FEEL
   class UnaryTestRoot < Node
     def eval(context = {})
       scope = Scope.wrap(context)
-      expr.eval(scope).call(scope["?"])
+      expr.matches(scope["?"], scope)
     end
   end
 
   class AnyUnaryTest < Node
-    def eval(_context = {})
-      ->(_input) { true }
+    def eval(context = {})
+      test_lambda(context)
+    end
+
+    def matches(_input, _context)
+      true
     end
   end
 
   class UnaryTestsRoot < Node
     def eval(context = {})
-      tests.eval(Scope.wrap(context))
+      test_lambda(Scope.wrap(context))
+    end
+
+    def matches(input, context)
+      tests.matches(input, Scope.wrap(context))
     end
   end
 
   class NegatedUnaryTests < Node
     def eval(context = {})
-      test = tests.eval(Scope.wrap(context))
-      ->(input) {
-        result = test.call(input)
-        result.nil? ? nil : !result
-      }
+      test_lambda(Scope.wrap(context))
+    end
+
+    def matches(input, context)
+      result = tests.matches(input, Scope.wrap(context))
+      result.nil? ? nil : !result
     end
   end
 
@@ -167,8 +204,22 @@ module FEEL
   #
   class PositiveUnaryTests < Node
     def eval(context = {})
-      tests = ([head] + tail.elements.map(&:positive_unary_test)).map { |test| test.eval(context) }
-      ->(input) { any_true(tests.map { |test| test.call(input) }) }
+      test_lambda(context)
+    end
+
+    # Three-valued OR: true if a test matches, false if none matches, null otherwise.
+    def matches(input, context)
+      undecided = false
+      unary_tests.each do |test|
+        result = test.matches(input, context)
+        return true if result == true
+        undecided = true unless result == false
+      end
+      undecided ? nil : false
+    end
+
+    def unary_tests
+      @unary_tests ||= [head] + tail.elements.map(&:positive_unary_test)
     end
   end
 
@@ -184,19 +235,18 @@ module FEEL
   #
   class ExpressionUnaryTest < Node
     def eval(context = {})
+      test_lambda(context)
+    end
+
+    def matches(input, context)
       if expr.contains_input_placeholder?
-        ->(input) {
-          result = expr.eval(context.merge("?" => input))
-          result == true || result == false ? result : nil
-        }
+        result = expr.eval(context.merge("?" => input))
+        result == true || result == false ? result : nil
       elsif expr.is_a?(BooleanLiteral)
-        value = expr.eval(context)
-        ->(input) { feel_equal_or_nil(input, value) }
+        feel_equal_or_nil(input, expr.eval(context))
       else
         value = expr.eval(context)
-        return ->(input) { value.include?(input) } if value.is_a?(FEEL::Range)
-
-        ->(input) { unary_match(input, value) }
+        value.is_a?(FEEL::Range) ? value.include?(input) : unary_match(input, value)
       end
     end
   end
@@ -208,9 +258,15 @@ module FEEL
   #
   class UnaryComparison < Node
     def eval(context = {})
-      operator_text = operator.text_value
-      endpoint_value = endpoint.eval(context)
-      ->(input) { compare_values(operator_text, input, endpoint_value) }
+      test_lambda(context)
+    end
+
+    def matches(input, context)
+      compare_values(operator_text, input, endpoint.eval(context))
+    end
+
+    def operator_text
+      @operator_text ||= operator.text_value.freeze
     end
   end
 
@@ -219,18 +275,17 @@ module FEEL
   #
   class Interval < Node
     def eval(context = {})
-      low_value = low.eval(context)
-      high_value = high.eval(context)
-      low_operator = start_token.text_value == "[" ? ">=" : ">"
-      high_operator = end_token.text_value == "]" ? "<=" : "<"
+      test_lambda(context)
+    end
 
-      ->(input) {
-        lower = compare_values(low_operator, input, low_value)
-        upper = compare_values(high_operator, input, high_value)
-        return nil if lower.nil? || upper.nil?
+    def matches(input, context)
+      @low_operator ||= start_token.text_value == "[" ? ">=" : ">"
+      @high_operator ||= end_token.text_value == "]" ? "<=" : "<"
+      lower = compare_values(@low_operator, input, low.eval(context))
+      upper = compare_values(@high_operator, input, high.eval(context))
+      return nil if lower.nil? || upper.nil?
 
-        lower && upper
-      }
+      lower && upper
     end
   end
 
@@ -299,7 +354,7 @@ module FEEL
     end
 
     def iteration_contexts
-      [head] + tail.elements.map(&:iteration_context)
+      @iteration_contexts ||= [head] + tail.elements.map(&:iteration_context)
     end
 
     def local_names
@@ -357,7 +412,7 @@ module FEEL
   #
   class QuantifiedExpression < Node
     def eval(context = {})
-      @some = quantifier.text_value == "some"
+      @some = quantifier.text_value == "some" unless defined?(@some)
       result = iterate(iteration_contexts, context)
       return nil if result == :invalid
 
@@ -365,7 +420,7 @@ module FEEL
     end
 
     def iteration_contexts
-      [head] + tail.elements.map(&:iteration_context)
+      @iteration_contexts ||= [head] + tail.elements.map(&:iteration_context)
     end
 
     def local_names
@@ -409,7 +464,7 @@ module FEEL
     end
 
     def operands
-      [head] + tail.elements.map(&:operand)
+      @operands ||= [head] + tail.elements.map(&:operand)
     end
   end
 
@@ -428,7 +483,7 @@ module FEEL
     end
 
     def operands
-      [head] + tail.elements.map(&:operand)
+      @operands ||= [head] + tail.elements.map(&:operand)
     end
   end
 
@@ -440,8 +495,9 @@ module FEEL
     def eval(context = {})
       left_val = left.eval(context)
       right_val = right.eval(context)
-      case operator.text_value
-      when "<", "<=", ">=", ">" then compare_values(operator.text_value, left_val, right_val)
+      operator_text = (@operator_text ||= operator.text_value.freeze)
+      case operator_text
+      when "<", "<=", ">=", ">" then compare_values(operator_text, left_val, right_val)
       when "!=" then (equal = equal_values(left_val, right_val)).nil? ? nil : !equal
       when "=" then equal_values(left_val, right_val)
       end
@@ -468,7 +524,7 @@ module FEEL
   #
   class InExpression < Node
     def eval(context = {})
-      tests.eval(context).call(value.eval(context))
+      tests.matches(value.eval(context), context)
     end
   end
 
@@ -477,7 +533,7 @@ module FEEL
   #
   class InstanceOf < Node
     def eval(context = {})
-      feel_instance_of?(value.eval(context), type.text_value.gsub(/\s+/, " "))
+      feel_instance_of?(value.eval(context), @type_name ||= type.text_value.gsub(/\s+/, " ").freeze)
     end
   end
 
@@ -489,10 +545,17 @@ module FEEL
     include Arithmetic
 
     def eval(context = {})
-      tail.elements.inject(head.eval(context)) do |result, element|
-        operand = element.operand.eval(context)
-        element.operator.text_value == "+" ? add(result, operand) : subtract(result, operand)
+      result = head.eval(context)
+      operations.each do |plus, operand|
+        value = operand.eval(context)
+        result = plus ? add(result, value) : subtract(result, value)
       end
+      result
+    end
+
+    # [[plus?, operand node], ...]
+    def operations
+      @operations ||= tail.elements.map { |element| [element.operator.text_value == "+", element.operand] }
     end
   end
 
@@ -504,10 +567,17 @@ module FEEL
     include Arithmetic
 
     def eval(context = {})
-      tail.elements.inject(head.eval(context)) do |result, element|
-        operand = element.operand.eval(context)
-        element.operator.text_value == "*" ? multiply(result, operand) : divide(result, operand)
+      result = head.eval(context)
+      operations.each do |times, operand|
+        value = operand.eval(context)
+        result = times ? multiply(result, value) : divide(result, value)
       end
+      result
+    end
+
+    # [[multiply?, operand node], ...]
+    def operations
+      @operations ||= tail.elements.map { |element| [element.operator.text_value == "*", element.operand] }
     end
   end
 
@@ -542,9 +612,13 @@ module FEEL
   #
   class PostfixExpression < Node
     def eval(context = {})
-      tail.elements.inject(head.eval(context)) do |value, operation|
-        operation.apply(value, context)
-      end
+      value = head.eval(context)
+      operations.each { |operation| value = operation.apply(value, context) }
+      value
+    end
+
+    def operations
+      @operations ||= tail.elements
     end
 
     # The names that a filter can access as variables if the filtered
@@ -561,7 +635,7 @@ module FEEL
   #
   class PathOperation < Node
     def apply(value, context)
-      path_get(value, property.respond_to?(:eval) ? property.eval(context) : property.text_value)
+      path_get(value, @property_name ||= (property.respond_to?(:eval) ? property.eval(context) : property.text_value).freeze)
     end
   end
 
@@ -639,7 +713,7 @@ module FEEL
         return nil
       end
 
-      args_count = params.empty? ? 0 : params.size
+      args_count = params_count
       unless params.is_a?(NamedParameters) || arity_matches?(fn, args_count)
         return function_not_found(function_name, args_count, context)
       end
@@ -648,14 +722,19 @@ module FEEL
     end
 
     def function_name
-      fn_name.text_value.gsub(/\s+/, " ")
+      @function_name ||= fn_name.text_value.gsub(/\s+/, " ").freeze
     end
 
     private
 
+    def params_count
+      @params_count ||= params.empty? ? 0 : params.size
+    end
+
     def lookup_function(context)
       name = function_name
-      return context[name] if context.key?(name)
+      fn = context[name]
+      return fn unless fn.nil?
       return context[name.to_sym] if context.key?(name.to_sym)
       return nil unless fn_name.is_a?(QualifiedName) && !fn_name.tail.empty?
 
@@ -674,7 +753,7 @@ module FEEL
     end
 
     def parameters
-      [head] + tail.elements.map(&:named_parameter)
+      @parameters ||= [head] + tail.elements.map(&:named_parameter)
     end
 
     def size
@@ -694,7 +773,7 @@ module FEEL
     end
 
     def expressions
-      [head] + tail.elements.map(&:argument)
+      @expressions ||= [head] + tail.elements.map(&:argument)
     end
 
     def size
@@ -711,14 +790,13 @@ module FEEL
     end
 
     def resolve(context, strict:)
-      value = context_get(context, head.eval(context), strict: strict, root: context)
+      value = context_get(context, head_name, head_symbol, strict: strict, root: context)
 
-      tail.elements.each do |element|
+      path_keys.each do |key, symbol|
         return nil if value.nil?
 
-        key = element.name.respond_to?(:eval) ? element.name.eval(context) : element.name.text_value
         value = if value.respond_to?(:key?)
-          context_get(value, key, strict: strict, root: context)
+          context_get(value, key, symbol, strict: strict, root: context)
         else
           path_get(value, key)
         end
@@ -729,17 +807,30 @@ module FEEL
 
     private
 
-    # Get a key from the context, using symbol/string lookup, with errors if
-    # need be, using the root object for the full path during errors.
-    def context_get(context, key, strict:, root:)
-      if context.key?(key.to_sym)
-        context[key.to_sym]
-      elsif context.key?(key)
-        context[key]
-      else
-        raise_evaluation_error(text_value.gsub(/\s+/, ""), root) if strict
-        nil
+    def head_name
+      @head_name ||= head.eval.freeze
+    end
+
+    def head_symbol
+      @head_symbol ||= head_name.to_sym
+    end
+
+    # [[name, symbol], ...] of the path after the head name
+    def path_keys
+      @path_keys ||= tail.elements.map do |element|
+        key = (element.name.respond_to?(:eval) ? element.name.eval : element.name.text_value).freeze
+        [key, key.to_sym]
       end
+    end
+
+    # Get a key from the context, using string/symbol lookup, with errors if
+    # need be, using the root object for the full path during errors.
+    def context_get(context, key, symbol, strict:, root:)
+      value = context.is_a?(Scope) ? context.lookup(key, symbol) : Scope.hash_lookup(context, key, symbol)
+      return value unless Scope::MISSING.equal?(value)
+
+      raise_evaluation_error(text_value.gsub(/\s+/, ""), root) if strict
+      nil
     end
   end
 
@@ -748,13 +839,13 @@ module FEEL
   #
   class Name < Node
     def eval(_context = {})
-      text_value.strip.gsub(/\s+/, " ")
+      @name ||= text_value.strip.gsub(/\s+/, " ").freeze
     end
   end
 
   class BacktickName < Node
     def eval(_context = {})
-      content.text_value.gsub(/[[:space:]\u0085\u180E\u200B\uFEFF]+/, " ").strip
+      @name ||= content.text_value.gsub(/[[:space:]\u0085\u180E\u200B\uFEFF]+/, " ").strip.freeze
     end
   end
 
@@ -762,11 +853,16 @@ module FEEL
   # 35. string literal = '"' , { character - ('"' | vertical space) }, '"' ;
   #
   class StringLiteral < Node
+    # Returns a new (unfrozen) copy of the literal so callers may modify it.
     def eval(_context = {})
-      chars.elements.map do |char|
+      value.dup
+    end
+
+    def value
+      @value ||= chars.elements.map do |char|
         text = char.text_value
         text.start_with?("\\") ? process_escape_sequence(text) : text
-      end.join
+      end.join.freeze
     end
 
     private
@@ -792,7 +888,9 @@ module FEEL
   #
   class BooleanLiteral < Node
     def eval(_context = {})
-      text_value == "true"
+      return @value if defined?(@value)
+
+      @value = text_value == "true"
     end
   end
 
@@ -802,11 +900,7 @@ module FEEL
   class NumericLiteral < Node
     # Decimal literals are exact (BigDecimal), integer literals are Integers.
     def eval(_context = {})
-      if text_value.include?(".")
-        BigDecimal(text_value)
-      else
-        text_value.to_i
-      end
+      @value ||= text_value.include?(".") ? BigDecimal(text_value) : text_value.to_i
     end
   end
 
@@ -833,9 +927,7 @@ module FEEL
     end
 
     def expressions
-      return [] unless respond_to?(:head)
-
-      [head] + tail.elements.map(&:expression)
+      @expressions ||= respond_to?(:head) ? [head] + tail.elements.map(&:expression) : []
     end
   end
 
@@ -860,9 +952,7 @@ module FEEL
     end
 
     def entries
-      return [] unless respond_to?(:head)
-
-      [head] + tail.elements.map(&:context_entry)
+      @entries ||= respond_to?(:head) ? [head] + tail.elements.map(&:context_entry) : []
     end
 
     # The entries of a context can be referenced by the following entries.
@@ -885,8 +975,10 @@ module FEEL
   #
   class ContextKey < Node
     def eval(_context = {})
-      name = text_value.gsub(/[[:space:]\u0085\u180E\u200B\uFEFF]+/, " ").strip
-      name == "null" ? nil : name
+      return @name if defined?(@name)
+
+      name = text_value.gsub(/[[:space:]\u0085\u180E\u200B\uFEFF]+/, " ").strip.freeze
+      @name = name == "null" ? nil : name
     end
   end
 end

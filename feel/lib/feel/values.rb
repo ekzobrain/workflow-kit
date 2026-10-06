@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "bigdecimal"
+
 module FEEL
   #
   # Semantics of FEEL values: type kinds, equality, comparison and property
@@ -48,10 +50,14 @@ module FEEL
       end
     end
 
+    # Fast paths use `Class === value` rather than `is_a?`, because
+    # ActiveSupport::Duration pretends to be an Integer with `is_a?`.
     def type_kind(value)
       case value
       when nil then :null
       when true, false then :boolean
+      when String then :string
+      when Integer, Float, BigDecimal then :number
       when ->(v) { Temporal.temporal?(v) } then Temporal.kind(value)
       when Numeric then :number
       when String then :string
@@ -63,6 +69,8 @@ module FEEL
     end
 
     def feel_equal(left, right)
+      return left == right if plain_value?(left) && plain_value?(right)
+
       if Temporal.temporal?(left) || Temporal.temporal?(right)
         Temporal.equal(left, right)
       elsif left.is_a?(Array) && right.is_a?(Array)
@@ -85,6 +93,9 @@ module FEEL
     end
 
     def feel_compare(operator, left, right)
+      if (plain_number?(left) && plain_number?(right)) || (String === left && String === right)
+        return compare_plain(operator, left, right)
+      end
       return nil if left.nil? || right.nil?
       return nil if left == true || left == false || right == true || right == false
       return Temporal.compare(operator, left, right) if Temporal.temporal?(left) || Temporal.temporal?(right)
@@ -92,6 +103,25 @@ module FEEL
       left.public_send(operator, right)
     rescue ArgumentError, NoMethodError, TypeError
       nil
+    end
+
+    # Strings and numbers (not durations).
+    def plain_value?(value)
+      String === value || Integer === value || Float === value || BigDecimal === value
+    end
+
+    def plain_number?(value)
+      Integer === value || Float === value || BigDecimal === value
+    end
+
+    def compare_plain(operator, left, right)
+      case operator
+      when "<" then left < right
+      when "<=" then left <= right
+      when ">" then left > right
+      when ">=" then left >= right
+      else left.public_send(operator, right)
+      end
     end
 
     # Three-valued OR of the given results: true if any is true, false if all
@@ -174,6 +204,7 @@ module FEEL
   #
   module Arithmetic
     def add(left, right)
+      return left + right if (Integer === left && Integer === right) || (String === left && String === right)
       return temporal_add(left, right) if temporal_operand?(left, right)
       return numeric_operation(left, right) { |l, r| l + r } if Numbers.number?(left) && Numbers.number?(right)
       return nil if left.nil? || right.nil?
@@ -186,6 +217,7 @@ module FEEL
     end
 
     def subtract(left, right)
+      return left - right if Integer === left && Integer === right
       return temporal_subtract(left, right) if temporal_operand?(left, right)
       return numeric_operation(left, right) { |l, r| l - r } if Numbers.number?(left) && Numbers.number?(right)
       return nil if left.nil? || right.nil?
@@ -197,6 +229,7 @@ module FEEL
     end
 
     def multiply(left, right)
+      return left * right if Integer === left && Integer === right
       return temporal_multiply(left, right) if temporal_operand?(left, right)
       return numeric_operation(left, right) { |l, r| l * r } if Numbers.number?(left) && Numbers.number?(right)
       return nil unless numeric_or_duration?(left) && numeric_or_duration?(right)

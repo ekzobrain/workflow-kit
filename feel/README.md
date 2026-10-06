@@ -158,6 +158,38 @@ UnaryTests.new(text: '> speed - speed_limit').variable_names
 # => ["speed, speed_limit"]
 ```
 
+### Compiling and caching expressions
+
+Parsing an expression is much more expensive than evaluating it. `FEEL.compile` parses an expression once and returns an object that can be evaluated many times with different variables:
+
+```ruby
+expression = FEEL.compile("a + b")
+expression.evaluate(a: 1, b: 2)   # => 3
+expression.evaluate(a: 10, b: 20) # => 30
+
+tests = FEEL.compile_test("< 10, > 50")
+tests.test(5)  # => true
+tests.test(20) # => false
+```
+
+`FEEL.evaluate` and `FEEL.test` use the same cache, so repeatedly evaluating the same text is cheap too. The cache is a thread-safe LRU cache keyed by the expression text; compiled expressions can be shared between threads. Its size is configurable (`0` disables it):
+
+```ruby
+FEEL.configure do |config|
+  config.expression_cache_size = 10_000 # default: 1_000
+end
+
+FEEL.clear_expression_cache
+```
+
+A compiled expression doesn't depend on the variables: names with whitespace or operators (e.g. `` `first name` ``, `` `a+b` ``) must be escaped with backticks, so `a+b` always means an addition, whatever the context contains. Variables take precedence over custom functions (`config.functions`), which take precedence over built-in functions.
+
+Benchmarks of small expressions are in `benchmarks/evaluate.rb`:
+
+```bash
+bundle exec ruby benchmarks/evaluate.rb
+```
+
 ## Supported Features
 
 ### Data Types
