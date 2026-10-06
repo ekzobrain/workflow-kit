@@ -167,6 +167,8 @@ module FEEL
         ->(input) { feel_equal_or_nil(input, value) }
       else
         value = expr.eval(context)
+        return ->(input) { value.include?(input) } if value.is_a?(FEEL::Range)
+
         ->(input) { unary_match(input, value) }
       end
     end
@@ -202,6 +204,36 @@ module FEEL
 
         lower && upper
       }
+    end
+  end
+
+  #
+  # A range value used as a function argument, e.g. `[1..10]` or `(1..10]`.
+  #
+  class RangeLiteral < Node
+    def eval(context = {})
+      low_value = low.eval(context)
+      high_value = high.eval(context)
+      return nil if low_value.nil? || high_value.nil?
+
+      FEEL::Range.build(low_value, high_value, start_token.text_value == "[", end_token.text_value == "]")
+    end
+  end
+
+  #
+  # An open-ended range value used as a function argument, e.g. `< 10`.
+  #
+  class OpenRangeLiteral < Node
+    def eval(context = {})
+      value = endpoint.eval(context)
+      return nil if value.nil?
+
+      case operator.text_value
+      when "<" then FEEL::Range.build(nil, value, false, false)
+      when "<=" then FEEL::Range.build(nil, value, false, true)
+      when ">" then FEEL::Range.build(value, nil, false, false)
+      when ">=" then FEEL::Range.build(value, nil, true, false)
+      end
     end
   end
 
@@ -626,7 +658,7 @@ module FEEL
     end
 
     def expressions
-      [head] + tail.elements.map(&:expression)
+      [head] + tail.elements.map(&:argument)
     end
 
     def size
