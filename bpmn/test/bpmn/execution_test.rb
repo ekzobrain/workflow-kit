@@ -140,6 +140,26 @@ module BPMN
           end
         end
       end
+
+      describe :typed_variables do
+        it "should restore FEEL values with their types" do
+          execution = context.start(variables: {
+            due: Date.new(2020, 1, 31),
+            wait: FEEL::Duration.months(1),
+            at: FEEL.evaluate('date and time("2020-07-01T10:30:00@Europe/Berlin")'),
+            nested: { times: [FEEL.evaluate('time("10:30:00")')] },
+          })
+          restored = Context.new(sources).restore(execution.serialize)
+
+          _(restored.variables[:due]).must_equal Date.new(2020, 1, 31)
+          _(restored.variables[:wait]).must_equal FEEL::Duration.months(1)
+          _(restored.variables[:at].zone.identifier).must_equal "Europe/Berlin"
+          _(restored.variables[:nested][:times].first).must_equal FEEL.evaluate('time("10:30:00")')
+          _(restored.evaluate_expression("=due + wait")).must_equal Date.new(2020, 2, 29)
+          _(restored.evaluate_expression('=string(at + duration("PT1H"))')).must_equal "2020-07-01T11:30:00@Europe/Berlin"
+          _(restored.serialize).must_equal execution.serialize
+        end
+      end
     end
   end
 end

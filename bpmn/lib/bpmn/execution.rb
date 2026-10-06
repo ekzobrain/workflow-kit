@@ -24,7 +24,14 @@ module BPMN
       Execution.from_json(attributes, context: context)
     end
 
+    # Variables are stored with FEEL.serialize so that FEEL values (dates,
+    # times, durations...) keep their types when the execution is restored.
+    SERIALIZED_ATTRIBUTES = %w[variables local_variables multi_instance_items].freeze
+
     def self.from_json(attributes, context:)
+      SERIALIZED_ATTRIBUTES.each do |name|
+        attributes[name] = FEEL.deserialize(attributes[name]) if attributes.key?(name)
+      end
       step_id = attributes.delete("step_id")
       step_type = attributes.delete("step_type")
       step = step_type == "Process" ? context.process_by_id(step_id) : context.element_by_id(step_id)
@@ -389,8 +396,8 @@ module BPMN
         status: status,
         started_at: started_at,
         ended_at: ended_at,
-        variables: variables.as_json,
-        local_variables: local_variables.as_json,
+        variables: FEEL.serialize(variables),
+        local_variables: FEEL.serialize(local_variables),
         tokens_in: tokens_in,
         tokens_out: tokens_out,
         message_names: message_names,
@@ -400,7 +407,7 @@ module BPMN
         condition: condition,
         multi_instance_instance: multi_instance_instance,
         multi_instance_index: multi_instance_index,
-        multi_instance_items: multi_instance_items,
+        multi_instance_items: multi_instance_items && FEEL.serialize(multi_instance_items),
         children: children.map { |child| child.as_json },
       }.transform_values(&:presence).compact
     end
