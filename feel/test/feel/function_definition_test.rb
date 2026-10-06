@@ -2,7 +2,8 @@
 
 require "test_helper"
 
-# Ported from feel-scala: InterpreterFunctionTest
+# Function definition tests that are not covered by the ported feel-scala
+# tests (see test/feel/interpreter/interpreter_function_test.rb).
 module FEEL
   describe "function definitions" do
     def evaluate(expression, variables = {})
@@ -11,89 +12,6 @@ module FEEL
 
     def function(text)
       FEEL.evaluate(text)
-    end
-
-    it "should be returned as a function" do
-      fn = function("function(x) x + 1")
-      _(fn).must_be_kind_of FEEL::Function
-      _(fn.params).must_equal ["x"]
-      _(fn.call(1)).must_equal 2
-    end
-
-    it "should invoke a function without parameters" do
-      _(evaluate("f()", f: function('function() "invoked"'))).must_equal "invoked"
-    end
-
-    it "should invoke a function with a positional parameter" do
-      f = function("function(x) x + 1")
-      _(evaluate("f(1)", f: f)).must_equal 2
-      _(evaluate("f(2)", f: f)).must_equal 3
-    end
-
-    it "should invoke a function with positional parameters" do
-      add = function("function(x,y) x + y")
-      _(evaluate("add(1,2)", add: add)).must_equal 3
-      _(evaluate("add(2,3)", add: add)).must_equal 5
-    end
-
-    it "should invoke a function with a named parameter" do
-      f = function("function(x) x + 1")
-      _(evaluate("f(x:1)", f: f)).must_equal 2
-      _(evaluate("f(x:2)", f: f)).must_equal 3
-    end
-
-    it "should invoke a function with named parameters" do
-      sub = function("function(x,y) x - y")
-      _(evaluate("sub(x:4,y:2)", sub: sub)).must_equal 2
-      _(evaluate("sub(y:2,x:4)", sub: sub)).must_equal 2
-    end
-
-    it "should take an expression as parameter" do
-      _(evaluate("f(2 + 3)", f: function("function(x) x + 1"))).must_equal 6
-    end
-
-    it "should take another function as parameter" do
-      a = function("function(x) x + 1")
-      b = function("function(x) x + 2")
-      _(evaluate("a(b(1))", a: a, b: b)).must_equal 4
-    end
-
-    it "should return null if invoked with wrong parameters" do
-      f = function("function(x,y) true")
-      _(evaluate("f()", f: f)).must_be_nil
-      _(evaluate("f(1)", f: f)).must_be_nil
-      _(evaluate("f(x:1,z:3)", f: f)).must_be_nil
-      _(evaluate("f(x:1,y:2,z:3)", f: f)).must_be_nil
-    end
-
-    it "should return null if no function exists with the name" do
-      _(evaluate("f()")).must_be_nil
-      _(evaluate("f()", x: "a variable")).must_be_nil
-    end
-
-    it "should replace not set parameters with null" do
-      f = function(<<~FEEL)
-        function(x,y)
-          if x = null
-          then "x"
-          else if y = null
-          then "y"
-          else "ok"
-      FEEL
-      _(evaluate("f(x:1)", f: f)).must_equal "y"
-      _(evaluate("f(y:1)", f: f)).must_equal "x"
-      _(evaluate("f(x:1,y:1)", f: f)).must_equal "ok"
-    end
-
-    it "should invoke a function with a named parameter containing whitespaces" do
-      f = function("function(test name) `test name` + 1")
-      _(evaluate("f(test name:1)", f: f)).must_equal 2
-      _(evaluate("f(test name:2)", f: f)).must_equal 3
-    end
-
-    it "should invoke a function with a named parameter containing more than one whitespace" do
-      f = function("function(test   name yada) `test name yada` + 1")
-      _(evaluate("f(test   name yada:1)", f: f)).must_equal 2
     end
 
     it "should invoke built-in functions with named parameters" do
@@ -131,6 +49,10 @@ module FEEL
       fn = function("function(a, b) a * b")
       _(fn.call(6, 7)).must_equal 42
       _(fn.call_named("b" => 2, "a" => 5)).must_equal 10
+    end
+
+    it "should return null if a ruby function raises an error" do
+      _(evaluate("f(1)", f: ->(_x) { raise ArgumentError, "boom" })).must_be_nil
     end
 
     it "should not report parameters as variables" do

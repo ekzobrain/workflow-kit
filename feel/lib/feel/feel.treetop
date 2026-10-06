@@ -231,8 +231,10 @@ grammar FEEL
   #
   # 25. exponentiation = expression, "**", expression ;
   #
+  # Note: left-associative like feel-scala, i.e. `2**2**3` = `(2**2)**3` = 64.
+  #
   rule exponentiation
-    head:negation __ "**" __ tail:exponentiation <Exponentiation> /
+    head:negation tail:(__ "**" __ operand:negation)+ <Exponentiation> /
     negation
   end
 
@@ -287,7 +289,7 @@ grammar FEEL
   end
 
   rule function_name
-    ("date and time" / "years and months duration" / "get or else") !name_part_char /
+    ("date and time" / "years and months duration" / "get or else" / "and" / "or") !name_part_char /
     multi_word_name /
     qualified_name
   end
@@ -410,11 +412,11 @@ grammar FEEL
     "\\" escape_sequence
   end
 
+  # Any character can follow a backslash: known escape sequences are
+  # translated, any other one (e.g. regex characters like \d) is kept as is.
   rule escape_sequence
     "u" [0-9a-fA-F] 4..4 /
-    "U" [0-9a-fA-F] 6..6 /
-    "'" / '"' / "\\" / "n" / "r" / "t" /
-    line_terminator
+    .
   end
 
   rule line_terminator

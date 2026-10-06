@@ -54,7 +54,7 @@ module FEEL
     def invoke_with_positional_parameters(fn, args)
       return nil unless arity_matches?(fn, args.length)
 
-      fn.call(*args)
+      call_function(fn, *args)
     end
 
     def invoke_with_named_parameters(fn, named_args)
@@ -72,7 +72,7 @@ module FEEL
       args.pop while args.any? && args.last.nil? && optional_parameter?(parameters[args.length - 1])
       return nil unless arity_matches?(fn, args.length)
 
-      fn.call(*args)
+      call_function(fn, *args)
     end
 
     def optional_parameter?(parameter)
@@ -88,6 +88,33 @@ module FEEL
       optional = parameters.count { |type, _| type == :opt }
       rest = parameters.any? { |type, _| type == :rest }
       count >= required && (rest || count <= required + optional)
+    end
+
+    # Three-valued equality: null if the values are not comparable (different
+    # types, or functions).
+    def equal_values(left, right)
+      return nil if type_kind(left) == :function && type_kind(right) == :function
+
+      feel_equal_or_nil(left, right)
+    end
+
+    # Ordering comparison: null if the values have different types.
+    def compare_values(operator, left, right)
+      return nil unless type_kind(left) == type_kind(right)
+
+      feel_compare(operator, left, right)
+    end
+
+    # Invokes a built-in or user function (Ruby proc). A failure of the
+    # function results in null.
+    def call_function(fn, *args)
+      fn.call(*args)
+    rescue EvaluationError
+      raise
+    rescue StandardError
+      raise if fn.is_a?(Function)
+
+      nil
     end
 
     def function_not_found(name, args_count, context)
@@ -181,7 +208,7 @@ module FEEL
     def eval(context = {})
       operator_text = operator.text_value
       endpoint_value = endpoint.eval(context)
-      ->(input) { feel_compare(operator_text, input, endpoint_value) }
+      ->(input) { compare_values(operator_text, input, endpoint_value) }
     end
   end
 
@@ -196,8 +223,8 @@ module FEEL
       high_operator = end_token.text_value == "]" ? "<=" : "<"
 
       ->(input) {
-        lower = feel_compare(low_operator, input, low_value)
-        upper = feel_compare(high_operator, input, high_value)
+        lower = compare_values(low_operator, input, low_value)
+        upper = compare_values(high_operator, input, high_value)
         return nil if lower.nil? || upper.nil?
 
         lower && upper
@@ -382,9 +409,9 @@ module FEEL
       left_val = left.eval(context)
       right_val = right.eval(context)
       case operator.text_value
-      when "<", "<=", ">=", ">" then feel_compare(operator.text_value, left_val, right_val)
-      when "!=" then !feel_equal(left_val, right_val)
-      when "=" then feel_equal(left_val, right_val)
+      when "<", "<=", ">=", ">" then compare_values(operator.text_value, left_val, right_val)
+      when "!=" then (equal = equal_values(left_val, right_val)).nil? ? nil : !equal
+      when "=" then equal_values(left_val, right_val)
       end
     end
   end
@@ -395,8 +422,8 @@ module FEEL
   class Between < Node
     def eval(context = {})
       input = value.eval(context)
-      lower = feel_compare(">=", input, low.eval(context))
-      upper = feel_compare("<=", input, high.eval(context))
+      lower = compare_values(">=", input, low.eval(context))
+      upper = compare_values("<=", input, high.eval(context))
       return nil if lower.nil? || upper.nil?
 
       lower && upper
@@ -457,11 +484,12 @@ module FEEL
   #
   class Exponentiation < Node
     def eval(context = {})
-      head_val = head.eval(context)
-      tail_val = tail.eval(context)
-      return nil unless head_val.is_a?(Numeric) && tail_val.is_a?(Numeric)
+      tail.elements.inject(head.eval(context)) do |base, element|
+        exponent = element.operand.eval(context)
+        next nil unless base.is_a?(Numeric) && exponent.is_a?(Numeric)
 
-      head_val ** tail_val
+        base**exponent
+      end
     end
   end
 
@@ -485,6 +513,14 @@ module FEEL
       tail.elements.inject(head.eval(context)) do |value, operation|
         operation.apply(value, context)
       end
+    end
+
+    # The names that a filter can access as variables if the filtered
+    # expression is a list of context literals.
+    def filter_local_names
+      return [] unless head.is_a?(List)
+
+      head.expressions.select { |exp| exp.is_a?(ContextLiteral) }.flat_map(&:local_names)
     end
   end
 
@@ -521,7 +557,7 @@ module FEEL
 
     def evaluate_for(item, context)
       locals = item.is_a?(Hash) ? item.to_h.transform_keys(&:to_s) : {}
-      filter_expression.eval(context.merge(locals.merge("item" => item)))
+      filter_expression.eval(context.merge({ "item" => item }.merge(locals)))
     end
 
     def item_at(list, index)
@@ -686,7 +722,7 @@ module FEEL
 
   class BacktickName < Node
     def eval(_context = {})
-      content.text_value
+      content.text_value.gsub(/[[:space:]\u0085\u180E\u200B\uFEFF]+/, " ").strip
     end
   end
 
@@ -708,11 +744,13 @@ module FEEL
       when "\\n" then "\n"
       when "\\r" then "\r"
       when "\\t" then "\t"
+      when "\\b" then "\b"
+      when "\\f" then "\f"
       when '\\"' then '"'
       when "\\'" then "'"
       when "\\\\" then "\\"
-      when /\A\\[uU]([0-9a-fA-F]+)\z/ then [Regexp.last_match(1).hex].pack("U")
-      else escape_seq[1..]
+      when /\A\\u([0-9a-fA-F]{4})\z/ then [Regexp.last_match(1).hex].pack("U")
+      else escape_seq
       end
     end
   end
@@ -748,6 +786,8 @@ module FEEL
   class AtLiteral < Node
     def eval(_context = {})
       Temporal.parse_literal(string_literal.eval)
+    rescue ArgumentError, Date::Error
+      nil
     end
   end
 
@@ -787,7 +827,14 @@ module FEEL
     end
 
     def entries
+      return [] unless respond_to?(:head)
+
       [head] + tail.elements.map(&:context_entry)
+    end
+
+    # The entries of a context can be referenced by the following entries.
+    def local_names
+      entries.map(&:key_value).compact
     end
   end
 

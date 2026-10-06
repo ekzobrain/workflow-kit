@@ -312,9 +312,10 @@ module FEEL
           _(LiteralExpression.new(text: "6 * 4 / 8").evaluate).must_equal 3
         end
 
-        it "should evaluate exponentiation right-to-left (right-associative)" do
-          # 2 ** 3 ** 2 = 2 ** (3 ** 2) = 2 ** 9 = 512
-          _(LiteralExpression.new(text: "2 ** 3 ** 2").evaluate).must_equal 512
+        it "should evaluate exponentiation left-to-right (left-associative, like feel-scala)" do
+          # 2 ** 3 ** 2 = (2 ** 3) ** 2 = 8 ** 2 = 64
+          _(LiteralExpression.new(text: "2 ** 3 ** 2").evaluate).must_equal 64
+          _(LiteralExpression.new(text: "2 ** 2 ** 3").evaluate).must_equal 64
         end
       end
     end
