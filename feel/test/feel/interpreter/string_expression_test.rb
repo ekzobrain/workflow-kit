@@ -77,7 +77,6 @@ module FEEL
       ].freeze
 
       it "contains unicode characters" do
-        skip "Needs string literal escapes (any character after a backslash) in feel.treetop / StringLiteral (nodes.rb)"
         unicode_characters.each do |character, _|
           _(evaluate(" \"a #{character} b\" ")).must_equal "a #{character} b"
         end
@@ -96,7 +95,6 @@ module FEEL
       ].freeze
 
       it "contains a regex character" do
-        skip "Needs string literal escapes (any character after a backslash) in feel.treetop / StringLiteral (nodes.rb)"
         regex_characters.each do |character, _|
           expected_string = "a #{character} b"
 

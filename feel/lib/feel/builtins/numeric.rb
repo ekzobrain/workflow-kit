@@ -84,7 +84,7 @@ module FEEL
         return unless number.nil? ^ n.nil?
         value = number.nil? ? n : number
         case value
-        when ActiveSupport::Duration then value.negative? ? -value : value
+        when ActiveSupport::Duration then Temporal.abs(value)
         when Numeric then NumericHelpers.number(value)&.abs
         end
       },

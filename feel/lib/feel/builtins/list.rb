@@ -72,11 +72,16 @@ module FEEL
         return false unless list.is_a?(Array) && !list.empty?
 
         kind = type_kind(list.first)
-        return false unless %i[number string duration temporal].include?(kind)
-        return list.all? { |item| item.is_a?(Numeric) } if kind == :number
-        return list.all? { |item| item.is_a?(ActiveSupport::Duration) } if kind == :duration
+        return false unless COMPARABLE_KINDS.include?(kind)
 
-        list.all? { |item| item.class == list.first.class }
+        list.all? { |item| type_kind(item) == kind }
+      end
+
+      COMPARABLE_KINDS = %i[number string date time date_time years_months_duration days_time_duration duration].freeze
+
+      # Sorts comparable values with FEEL comparison (works for temporal values too).
+      def feel_sort(list)
+        list.sort { |a, b| feel_compare("<", a, b) ? -1 : (feel_compare(">", a, b) ? 1 : 0) }
       end
 
       # The position of a 1-based (or negative, counted from the end) list
@@ -174,11 +179,11 @@ module FEEL
       },
       "min": ->(*list) {
         list = ListSupport.varargs(list)
-        ListSupport.comparable?(list) ? list.min : nil
+        ListSupport.comparable?(list) ? ListSupport.feel_sort(list).first : nil
       },
       "max": ->(*list) {
         list = ListSupport.varargs(list)
-        ListSupport.comparable?(list) ? list.max : nil
+        ListSupport.comparable?(list) ? ListSupport.feel_sort(list).last : nil
       },
       "sum": ->(*list) {
         ListSupport.with_numbers(ListSupport.varargs(list)) { |numbers| ListSupport.sum(numbers) }
@@ -293,7 +298,7 @@ module FEEL
         if precedes.nil?
           return list.dup if list.empty?
           return unless ListSupport.comparable?(list)
-          return list.sort
+          return ListSupport.feel_sort(list)
         end
         return unless precedes.respond_to?(:call)
         return if precedes.is_a?(Function) && precedes.arity != 2

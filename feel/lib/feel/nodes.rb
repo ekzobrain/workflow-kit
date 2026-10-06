@@ -716,7 +716,7 @@ module FEEL
       tail.elements.each do |element|
         return nil if value.nil?
 
-        key = element.name.eval(context)
+        key = element.name.respond_to?(:eval) ? element.name.eval(context) : element.name.text_value
         value = if value.respond_to?(:key?)
           context_get(value, key, strict: strict, root: context)
         else

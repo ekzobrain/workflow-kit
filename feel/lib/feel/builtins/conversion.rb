@@ -37,11 +37,8 @@ module FEEL
         when Numeric then format_number(value)
         when Array then "[#{value.map { |item| to_feel_string(item, nested: true) }.join(", ")}]"
         when Hash, Scope then "{#{context_entries(value).map { |k, v| "#{k}:#{to_feel_string(v, nested: true)}" }.join(", ")}}"
-        when ActiveSupport::Duration then format_duration(value)
-        when ActiveSupport::TimeWithZone then format_date_time(value, zone_style: :at)
-        when DateTime then format_date_time(value)
-        when Date then format_date(value)
-        when Time then format_time(value)
+        when FEEL::Range then value.to_feel_string { |endpoint| to_feel_string(endpoint, nested: true) }
+        when ->(v) { Temporal.temporal?(v) } then Temporal.format_value(value)
         when Function, Proc, Method then format_function(value)
         else value.to_s
         end
@@ -56,11 +53,9 @@ module FEEL
         when Rational then value.to_f
         when Array then value.map { |item| to_json_value(item) }
         when Hash, Scope then context_entries(value).to_h { |k, v| [k, to_json_value(v)] }
+        when FEEL::Range then value.to_feel_string { |endpoint| to_feel_string(endpoint, nested: true) }
         when ActiveSupport::Duration then format_java_duration(value)
-        when ActiveSupport::TimeWithZone then format_date_time(value, zone_style: :brackets)
-        when DateTime then format_date_time(value)
-        when Date then format_date(value)
-        when Time then format_time(value)
+        when ->(v) { Temporal.temporal?(v) } then Temporal.format_iso(value)
         when Function, Proc, Method then format_function(value)
         else to_feel_string(value)
         end
@@ -82,56 +77,6 @@ module FEEL
         when Rational then format_number(BigDecimal(number, 34))
         else number.to_s
         end
-      end
-
-      def format_date(date)
-        date.strftime("%Y-%m-%d")
-      end
-
-      # Time of day as HH:mm:ss with an optional fraction of a second (only
-      # the significant digits).
-      def format_local_time(value)
-        text = value.strftime("%H:%M:%S")
-        nanos = value.strftime("%N").sub(/0+\z/, "")
-        nanos.empty? ? text : "#{text}.#{nanos}"
-      end
-
-      # NOTE: date-times and times without an offset are currently represented
-      # with a UTC offset (+00:00). Until the temporal area distinguishes local
-      # values from UTC values, a zero offset is formatted as a local value.
-      def format_offset(seconds)
-        return "" if seconds.nil? || seconds.zero?
-
-        sign = seconds.negative? ? "-" : "+"
-        hours, rest = seconds.abs.divmod(3600)
-        minutes, secs = rest.divmod(60)
-        text = format("%s%02d:%02d", sign, hours, minutes)
-        secs.zero? ? text : format("%s:%02d", text, secs)
-      end
-
-      def utc_offset_seconds(value)
-        value.is_a?(DateTime) ? (value.offset * 86_400).to_i : value.utc_offset
-      end
-
-      # zone_style: :at => "2023-06-14T14:55:00@Europe/Berlin" (FEEL string)
-      #             :brackets => "2023-06-14T14:55:00+02:00[Europe/Berlin]" (ISO zoned)
-      def format_date_time(value, zone_style: nil)
-        local = "#{format_date(value)}T#{format_local_time(value)}"
-        zone = value.respond_to?(:time_zone) ? value.time_zone&.tzinfo&.name : nil
-        offset = utc_offset_seconds(value)
-
-        if zone && zone_style == :at
-          "#{local}@#{zone}"
-        elsif zone && zone_style == :brackets
-          offset_text = offset.zero? ? "Z" : format_offset(offset)
-          "#{local}#{offset_text}[#{zone}]"
-        else
-          "#{local}#{format_offset(offset)}"
-        end
-      end
-
-      def format_time(value)
-        "#{format_local_time(value)}#{format_offset(utc_offset_seconds(value))}"
       end
 
       def format_function(function)
@@ -164,30 +109,6 @@ module FEEL
           (parts[:minutes] || 0) * 60 +
           BigDecimal((parts[:seconds] || 0).to_s)
         seconds.frac.zero? ? seconds.to_i : seconds
-      end
-
-      # FEEL format: "P1Y2M", "-P1Y", "P0Y", "P1DT2H3M4S", "-PT1H", "P0D".
-      def format_duration(duration)
-        if year_month_duration?(duration)
-          months = total_months(duration)
-          return "P0Y" if months.zero?
-
-          sign = months.negative? ? "-" : ""
-          years, months = months.abs.divmod(12)
-          "#{sign}P#{amount(years, "Y")}#{amount(months, "M")}"
-        elsif duration.parts.any? { |part, _| YEAR_MONTH_PARTS.include?(part) }
-          duration.iso8601
-        else
-          seconds = total_seconds(duration)
-          return "P0D" if seconds.zero?
-
-          sign = seconds.negative? ? "-" : ""
-          days, rest = seconds.abs.divmod(86_400)
-          hours, rest = rest.divmod(3600)
-          minutes, seconds = rest.divmod(60)
-          time = "#{amount(hours, "H")}#{amount(minutes, "M")}#{amount(seconds, "S")}"
-          "#{sign}P#{amount(days, "D")}#{time.empty? ? "" : "T#{time}"}"
-        end
       end
 
       # ISO-8601 format of java.time Period/Duration: "P1Y6M", "PT2H30M", "PT26H".

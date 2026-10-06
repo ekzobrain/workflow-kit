@@ -11,7 +11,6 @@ module FEEL
 
     describe "A built-in function" do
       it "return null if arguments doesn't match" do
-        skip "Needs number() (conversion built-ins) to return null for non-string arguments"
         _(evaluate("date(true)")).must_be_nil
 
         _(evaluate("number(false)")).must_be_nil

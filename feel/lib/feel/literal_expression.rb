@@ -56,7 +56,7 @@ module FEEL
           next unless fn_name.is_a?(FEEL::QualifiedName) && !fn_name.tail.empty?
           next if bound_names.include?(fn_name.head.eval)
 
-          qualified_names << ([fn_name.head] + fn_name.tail.elements.map(&:name)[0...-1]).map(&:eval).join(".")
+          qualified_names << ([fn_name.head] + fn_name.tail.elements.map(&:name)[0...-1]).map { |n| n.respond_to?(:eval) ? n.eval : n.text_value }.join(".")
           next
         end
         next unless node.is_a?(FEEL::QualifiedName)

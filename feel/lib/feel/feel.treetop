@@ -350,7 +350,7 @@ grammar FEEL
   # 20. qualified name = name , { "." , name } ;
   #
   rule qualified_name
-    head:name tail:(__ "." __ name)* <QualifiedName>
+    head:name tail:(__ "." __ name:property_name)* <QualifiedName>
   end
 
   #

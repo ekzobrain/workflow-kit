@@ -24,13 +24,11 @@ module FEEL
       end
 
       it "should return null if the date is not valid (not a leap year)" do
-        skip 'depends on temporal area: date() raises Date::Error for an invalid date instead of returning null'
         _(evaluate(" date(x) ", x: "2023-02-29")).must_be_nil
         _(evaluate(" date(2023, 2, 29) ")).must_be_nil
       end
 
       it "should return null if the date is not valid (month without 31 days)" do
-        skip 'depends on temporal area: date() raises Date::Error for an invalid date instead of returning null'
         _(evaluate(" date(x) ", x: "2023-06-31")).must_be_nil
         _(evaluate(" date(2023, 6, 31) ")).must_be_nil
       end
@@ -38,7 +36,6 @@ module FEEL
 
     describe "A date and time() function" do
       it "should convert String" do
-        skip 'depends on temporal area: date and time() ignores the zone id in "2012-12-24T23:59:00@Europe/Berlin"'
         _(evaluate(" date and time(x) ", x: "2012-12-24T23:59:00")).must_equal DateTime.new(2012, 12, 24, 23, 59, 0)
         _(evaluate(" date and time(x) ", x: "2012-12-24T23:59:00+01:00")).must_equal DateTime.new(2012, 12, 24, 23, 59, 0, "+01:00")
         result = evaluate(" date and time(x) ", x: "2012-12-24T23:59:00@Europe/Berlin")
@@ -47,7 +44,6 @@ module FEEL
       end
 
       it "should convert (DateTime, Timezone)" do
-        skip 'depends on temporal area: date and time(from, timezone) and @"...@zone" literals are not supported'
         result = evaluate('date and time(@"2020-07-31T14:27:30@Europe/Berlin", "Z")')
         _(result).must_equal DateTime.new(2020, 7, 31, 12, 27, 30)
         _(result.utc_offset).must_equal 0
@@ -74,19 +70,16 @@ module FEEL
       end
 
       it "should return null if the date is not valid (not a leap year)" do
-        skip 'depends on temporal area: date and time() raises Date::Error for an invalid date instead of returning null'
         _(evaluate(" date and time(x) ", x: "2023-02-29T10:00:00")).must_be_nil
         _(evaluate(" date and time(x) ", x: "2023-02-29T10:00:00+02:00")).must_be_nil
       end
 
       it "should return null if the date is not valid (month without 31 days)" do
-        skip 'depends on temporal area: date and time() raises Date::Error for an invalid date instead of returning null'
         _(evaluate(" date and time(x) ", x: "2023-06-31T10:00:00")).must_be_nil
         _(evaluate(" date and time(x) ", x: "2023-06-31T10:00:00+02:00")).must_be_nil
       end
 
       it "should convert a string in ISO format with timezone ID" do
-        skip 'depends on temporal area: date and time() ignores the zone id in "+02:00[Europe/Berlin]"'
         result = evaluate(" date and time(x) ", x: "2023-06-14T14:55:00+02:00[Europe/Berlin]")
         _(result).must_equal Time.find_zone!("Europe/Berlin").local(2023, 6, 14, 14, 55, 0)
         _(result.time_zone.name).must_equal "Europe/Berlin"
@@ -101,7 +94,6 @@ module FEEL
       end
 
       it "should convert String" do
-        skip 'depends on temporal area: time() ignores the zone id in "23:59:00@Europe/Paris"'
         _(time_parts(evaluate(" time(x) ", x: "23:59:00"))).must_equal [23, 59, 0]
         _(time_parts(evaluate(" time(x) ", x: "23:59:00+01:00"), with_offset: true)).must_equal [23, 59, 0, 3600]
         _(time_parts(evaluate(" time(x) ", x: "23:59:00@Europe/Paris"), with_offset: true)).must_equal [23, 59, 0, 3600]
@@ -113,12 +105,10 @@ module FEEL
       end
 
       it "should convert (hour,minute,second)" do
-        skip 'depends on temporal area: time(hour, minute, second) is not supported'
         _(time_parts(evaluate(" time(23, 59, 0) "))).must_equal [23, 59, 0]
       end
 
       it "should convert (hour,minute,second, offset)" do
-        skip 'depends on temporal area: time(hour, minute, second, offset) is not supported'
         _(time_parts(evaluate(' time(14, 30, 0, duration("PT1H")) '), with_offset: true)).must_equal [14, 30, 0, 3600]
       end
     end
@@ -380,7 +370,8 @@ module FEEL
       end
 
       it "should convert a time with timezone" do
-        skip "depends on temporal area: no Ruby representation of a time of day with a zone id (ZonedTime)"
+        zoned = FEEL::ZonedTime.new(FEEL::LocalTime.from_seconds((14 * 3600) + (55 * 60)), 2 * 3600, "Europe/Berlin")
+        _(evaluate(" to json(x) ", x: zoned)).must_equal '"14:55:00+02:00"'
       end
 
       it "should convert a date and time with offset" do
@@ -388,7 +379,6 @@ module FEEL
       end
 
       it "should convert a date and time with timezone" do
-        skip 'depends on temporal area: the literal @"2023-06-14T14:55:00@Europe/Berlin" ignores the zone id'
         _(evaluate(' to json(@"2023-06-14T14:55:00@Europe/Berlin") ')).must_equal '"2023-06-14T14:55:00+02:00[Europe/Berlin]"'
       end
 
@@ -397,7 +387,6 @@ module FEEL
       end
 
       it "should convert a range" do
-        skip 'depends on range area: ranges as values (e.g. (1..10]) are not supported'
         _(evaluate(" to json((1..10]) ")).must_equal '"(1..10]"'
       end
     end

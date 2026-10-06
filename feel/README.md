@@ -199,13 +199,36 @@ UnaryTests.new(text: '> speed - speed_limit').variable_names
 
 ### Built-in Functions
 
-- [x] Conversion: `string`, `number`
-- [x] Boolean: `not`, `is defined`, `get or else`
-- [x] String: `substring`, `substring before`, `substring after`, `string length`, `upper case`, `lower case`, `contains`, `starts with`, `ends with`, `matches`, `replace`, `split`, `strip`, `extract`
-- [x] Numeric: `decimal`, `floor`, `ceiling`, `round`, `abs`, `modulo`, `sqrt`, `log`, `exp`, `odd`, `even`, `random number`
-- [x] List: `list contains`, `count`, `min`, `max`, `sum`, `product`, `mean`, `median`, `stddev`, `mode`, `all`, `any`, `sublist`, `append`, `concatenate`, `insert before`, `remove`, `reverse`, `index of`, `union`, `distinct values`, `duplicate values`, `flatten`, `sort`, `string join`
-- [x] Context: `get entries`, `get value`, `get keys`
-- [x] Temporal: `date`, `time`, `date and time`, `duration`, `years and months duration`, `now`, `today`, `day of week`, `day of year`, `month of year`, `week of year`
+- [x] Conversion: `string`, `number`, `from json`, `to json`
+- [x] Boolean: `not`, `is defined`, `get or else`, `assert`
+- [x] String: `substring`, `substring before`, `substring after`, `string length`, `upper case`, `lower case`, `contains`, `starts with`, `ends with`, `matches`, `replace`, `split`, `extract`, `trim`, `strip`, `uuid`, `to base64`, `from base64`, `is blank`
+- [x] Numeric: `decimal`, `floor`, `ceiling`, `round up`, `round down`, `round half up`, `round half down`, `abs`, `modulo`, `sqrt`, `log`, `exp`, `odd`, `even`, `random number`
+- [x] List: `list contains`, `count`, `min`, `max`, `sum`, `product`, `mean`, `median`, `stddev`, `mode`, `and`, `all`, `or`, `any`, `sublist`, `append`, `concatenate`, `insert before`, `remove`, `reverse`, `index of`, `union`, `distinct values`, `duplicate values`, `flatten`, `sort`, `string join`, `is empty`, `partition`
+- [x] Context: `get value`, `get entries`, `context put`, `put`, `context merge`, `put all`, `context`
+- [x] Temporal: `date`, `time`, `date and time`, `duration`, `years and months duration`, `now`, `today`, `day of week`, `day of year`, `week of year`, `month of year`, `last day of month`
+- [x] Range: `before`, `after`, `meets`, `met by`, `overlaps`, `overlaps before`, `overlaps after`, `finishes`, `finished by`, `includes`, `during`, `starts`, `started by`, `coincides`
+
+### Values
+
+FEEL values are represented by Ruby values:
+
+| FEEL | Ruby |
+|---|---|
+| number | `Integer`, `Float` (decimal literals are computed exactly with `BigDecimal` and returned as `Float`) |
+| string, boolean, null | `String`, `true`/`false`, `nil` |
+| list, context | `Array`, `Hash` (String keys) |
+| date | `Date` |
+| time | `FEEL::LocalTime`, `FEEL::ZonedTime` (with offset or zone id) |
+| date and time | `FEEL::LocalDateTime`, `Time` (with offset), `ActiveSupport::TimeWithZone` (with zone id) |
+| durations | `ActiveSupport::Duration` |
+| range | `FEEL::Range` |
+| function | `FEEL::Function`, `Proc` |
+
+Ruby `Date`, `Time`, `DateTime`, `ActiveSupport::TimeWithZone` and `ActiveSupport::Duration` values can be passed in as variables.
+
+### Compatibility
+
+The behavior is verified against the test suite of [feel-scala](https://github.com/camunda/feel-scala) (Camunda), which is ported to `test/feel/interpreter` and `test/feel/builtin`. Only the cases specific to the JVM API (value mappers, Java beans, script engine) are not applicable.
 
 ### Comments
 

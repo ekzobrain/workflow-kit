@@ -124,7 +124,6 @@ module FEEL
       end
 
       it "should invoke a function with parameters contain whitespaces" do
-        skip "needs `number(from, decimal separator, grouping separator)` in builtins/conversion.rb"
         _(evaluate('number(from: "1.000.000,01", decimal separator:",", grouping separator:".")')).must_equal 1_000_000.01
       end
 

@@ -66,7 +66,6 @@ module FEEL
       end
 
       it "return null if compare to not a context" do
-        skip "needs Comparison#eval in nodes.rb to use feel_equal_or_nil for '=' and '!='"
         _(evaluate("{} = 1")).must_be_nil
       end
 
@@ -119,7 +118,6 @@ module FEEL
       end
 
       it "return the value of a key with whitespaces" do
-        skip "needs BacktickName#eval in nodes.rb to normalize whitespace like ContextKey"
         _(evaluate("{foo bar:1}.`foo bar`")).must_equal 1
         _(evaluate("{foo   bar:2}.`foo   bar`")).must_equal 2
         _(evaluate("{foo bar:3, fizz buzz: 4}.`fizz buzz`")).must_equal 4
@@ -157,7 +155,6 @@ module FEEL
       end
 
       it "access a context entry by the key 'item'" do
-        skip "needs FilterOperation#evaluate_for in nodes.rb to let context entries override 'item'"
         _(evaluate("[ {item:1}, {item:2}, {item:3} ][item >= 2]")).must_equal [{ "item" => 2 }, { "item" => 3 }]
       end
 

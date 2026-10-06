@@ -238,7 +238,6 @@ module FEEL
       end
 
       it "should be equal to another time" do
-        skip "needs offset-time equality (same local time and offset, not same instant) in values.rb/temporal.rb"
         _(test('time("10:00:00")', local_time("08:31:14"))).must_equal false
         _(test('time("08:31:14")', local_time("08:31:14"))).must_equal true
 
@@ -381,7 +380,6 @@ module FEEL
       end
 
       it "should be invoked as endpoint" do
-        skip "needs varargs max/min (`max(1,2,3)`) in builtins/list.rb"
         _(test("< max(1,2,3)", 2)).must_equal true
         _(test("< min(1,2,3)", 2)).must_equal false
       end

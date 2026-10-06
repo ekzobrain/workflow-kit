@@ -89,7 +89,6 @@ module FEEL
       end
 
       it "should be defined with timezone" do
-        skip "needs time zone ids (`@Europe/Berlin`) in builtins/temporal.rb (time)"
         result = evaluate(' time("10:30:00@Europe/Berlin") ')
         _([result.hour, result.min, result.utc_offset]).must_equal [10, 30, 3600]
       end
@@ -105,7 +104,6 @@ module FEEL
       end
 
       it "should be defined with '@' and timezone" do
-        skip "needs time zone ids (`@Europe/Berlin`) in temporal.rb (parse_literal)"
         result = evaluate(' @"10:30:00@Europe/Berlin" ')
         _([result.hour, result.min, result.utc_offset]).must_equal [10, 30, 3600]
       end
@@ -121,13 +119,11 @@ module FEEL
       end
 
       it "should be defined with timezone" do
-        skip "needs time zone ids (`@Europe/Berlin`) in builtins/temporal.rb (date and time)"
         result = evaluate(' date and time("2021-09-08T10:30:00@Europe/Berlin") ')
         _(result).must_equal DateTime.new(2021, 9, 8, 10, 30, 0, "+02:00")
       end
 
       it "should be defined in ISO format with timezone" do
-        skip "needs time zone ids (`[Europe/Berlin]`) in builtins/temporal.rb (date and time)"
         result = evaluate(' date and time("2021-09-08T10:30:00+02:00[Europe/Berlin]") ')
         _(evaluate("x.timezone", x: result)).must_equal "Europe/Berlin"
       end
@@ -141,13 +137,11 @@ module FEEL
       end
 
       it "should be defined with '@' and timezone" do
-        skip "needs time zone ids (`@Europe/Berlin`) in temporal.rb (parse_literal)"
         result = evaluate(' @"2021-09-08T10:30:00@Europe/Berlin" ')
         _(result).must_equal DateTime.new(2021, 9, 8, 10, 30, 0, "+02:00")
       end
 
       it "should be defined with '@' in ISO format with timezone" do
-        skip "needs time zone ids (`[Europe/Berlin]`) in temporal.rb (parse_literal)"
         result = evaluate(' @"2021-09-08T10:30:00+02:00[Europe/Berlin]" ')
         _(evaluate("x.timezone", x: result)).must_equal "Europe/Berlin"
       end

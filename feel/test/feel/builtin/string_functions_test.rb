@@ -76,7 +76,6 @@ module FEEL
       end
 
       it "replace a String with regex pattern" do
-        skip "Needs string literal escapes (any character after a backslash) in feel.treetop / StringLiteral (nodes.rb)"
         _(evaluate(' replace("0123456789", "(\d{3})(\d{3})(\d{4})", "($1) $2-$3") ')).must_equal "(012) 345-6789"
       end
 
@@ -123,7 +122,6 @@ module FEEL
 
     describe "A split() function" do
       it "return a list of substrings" do
-        skip "Needs string literal escapes (any character after a backslash) in feel.treetop / StringLiteral (nodes.rb)"
         _(evaluate(' split("John Doe", "\s") ')).must_equal ["John", "Doe"]
 
         _(evaluate(' split("a;b;c;;", ";") ')).must_equal ["a", "b", "c", "", ""]
@@ -190,7 +188,6 @@ module FEEL
 
     describe "A is blank() function" do
       it "return true if the string contains only whitespace" do
-        skip "Needs string literal escapes (any character after a backslash) in feel.treetop / StringLiteral (nodes.rb)"
         _(evaluate(' is blank("") ')).must_equal true
 
         _(evaluate(' is blank(" ") ')).must_equal true

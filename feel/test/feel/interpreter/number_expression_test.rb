@@ -67,7 +67,6 @@ module FEEL
       end
 
       it "should exponentiate twice" do
-        skip "exponentiation associativity is fixed in the grammar"
         # all operators are left associative
         _(evaluate("2**2**3")).must_equal 64
       end
