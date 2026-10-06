@@ -210,6 +210,72 @@ Benchmarks of small expressions are in `benchmarks/evaluate.rb`:
 bundle exec ruby benchmarks/evaluate.rb
 ```
 
+### Abstract syntax tree
+
+`FEEL.parse` returns the abstract syntax tree of an expression, e.g. to translate it into another language. The tree is made of plain Hashes (symbol keys) with a `type`; whitespace, comments and parentheses are dropped, and literal values are ready to use:
+
+```ruby
+FEEL.parse('age >= 18 and status in ("A", "B")')
+# => { type: "conjunction", operands: [
+#      { type: "comparison", operator: ">=", left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } },
+#      { type: "in", value: { type: "name", path: ["status"] }, tests: [{ type: "string", value: "A" }, { type: "string", value: "B" }] }
+#    ] }
+
+FEEL.parse_test('< 10, [20..30)')
+# => { type: "unary tests", tests: [
+#      { type: "unary comparison", operator: "<", value: { type: "number", value: 10 } },
+#      { type: "range", start: { type: "number", value: 20 }, end: { type: "number", value: 30 }, start_included: true, end_included: false }
+#    ] }
+```
+
+Both raise `FEEL::SyntaxError` for invalid input and return a new tree on each call. Node types:
+
+| Type | Keys | Example |
+| --- | --- | --- |
+| `number` | `value` (Integer or Float) | `1.5` |
+| `string` | `value` | `"abc"` |
+| `boolean` | `value` | `true` |
+| `null` | | `null` |
+| `temporal` | `text`, `value` (Date, Time, FEEL::Duration…, nil if invalid) | `@"2020-01-01"` |
+| `name` | `path` (names of a qualified name) | `person.address.city` |
+| `input` | | `?` |
+| `path` | `value`, `property` | `a[1].b` |
+| `filter` | `value`, `filter` | `items[price > 10]` |
+| `arithmetic` | `operator` (`+ - * / **`), `left`, `right` | `a + b * 2` |
+| `negation` | `value` | `-x` |
+| `comparison` | `operator` (`= != < <= > >=`), `left`, `right` | `a != 1` |
+| `between` | `value`, `low`, `high` | `x between 1 and 10` |
+| `in` | `value`, `tests` (unary tests) | `x in (1, 2)` |
+| `instance of` | `value`, `of` (type name) | `x instance of number` |
+| `conjunction`, `disjunction` | `operands` | `a and b and c` |
+| `if` | `condition`, `then`, `else` | `if a then 1 else 2` |
+| `for` | `iterations` (`[{ name:, in: }]`), `return` | `for i in 1..3 return i * 2` |
+| `some`, `every` | `iterations`, `satisfies` | `some x in l satisfies x > 1` |
+| `function call` | `name`, `arguments` or `named_arguments` (`[{ name:, value: }]`) | `substring(string: s, start position: 2)` |
+| `invocation` | `function` (an expression), `arguments` or `named_arguments` | `(function(x) x)(1)` |
+| `function definition` | `parameters` (`[{ name:, type: }]`), `body` | `function(a: number, b) a + b` |
+| `list` | `items` | `[1, 2]` |
+| `context` | `entries` (`[{ key:, value: }]`) | `{a: 1, "b c": 2}` |
+| `range` | `start`, `end` (nil if unbounded), `start_included`, `end_included` | `[1..10)`, `1..3` in a for expression, `< 5` as a function argument |
+| `unary tests` | `tests` | `< 10, "A"` (unary tests only) |
+| `not` | `tests` | `not(1, 2)` (unary tests only) |
+| `any` | | `-` (unary tests only) |
+| `unary comparison` | `operator` (`< <= > >=`), `value` | `< 10` |
+
+A unary test that is an expression (e.g. `"A"` or `? > 1` in `x in ("A", ? > 1)`) is represented by the expression itself: the input matches it if it is equal to its value, contained in its value (list or range), or, for an expression with `?`, if it is true.
+
+`FEEL::AST.walk` yields each node of a tree (parents first), and `FEEL::AST.transform` rebuilds a tree bottom-up with the result of the block for each node:
+
+```ruby
+FEEL::AST.walk(FEEL.parse("a.b > c")).select { |node| node[:type] == "name" }.map { |node| node[:path] }
+# => [["a", "b"], ["c"]]
+
+FEEL::AST.transform(FEEL.parse("a + 1")) do |node|
+  node[:type] == "name" ? node.merge(path: ["input", *node[:path]]) : node
+end
+# => the tree of "input.a + 1"
+```
+
 ## Supported Features
 
 ### Data Types
