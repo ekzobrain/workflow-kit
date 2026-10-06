@@ -18,7 +18,7 @@
     <bpmn:userTask id="UserTask" name="User Task">
       <bpmn:extensionElements>
         <zeebe:assignmentDefinition assignee="bill@somewhere.com" candidateGroups="maintenance" candidateUsers="bill@somewhere.com jill@somewhere.com" />
-        <zeebe:taskSchedule dueDate="=now() + duration(&#34;PT8H&#34;)" followUpDate="=now() + duration(&#34;PT2D&#34;)" />
+        <zeebe:taskSchedule dueDate="=now() + duration(&#34;PT8H&#34;)" followUpDate="=now() + duration(&#34;P2D&#34;)" />
         <zeebe:formDefinition formKey="some_form" />
         <zeebe:properties>
           <zeebe:property name="camundaModeler:exampleOutputJson" value="{ &#34;first_name&#34;: &#34;John&#34;, &#34;last_name&#34;: &#34;Doe&#34; }" />

@@ -119,7 +119,12 @@ module BPMN
 
         it "should parse the form definition" do
           _(task_schedule.due_date).must_equal "=now() + duration(\"PT8H\")"
-          _(task_schedule.follow_up_date).must_equal "=now() + duration(\"PT2D\")"
+          _(task_schedule.follow_up_date).must_equal "=now() + duration(\"P2D\")"
+        end
+
+        it "should have valid FEEL expressions" do
+          _(FEEL.evaluate(task_schedule.due_date.delete_prefix("="))).wont_be_nil
+          _(FEEL.evaluate(task_schedule.follow_up_date.delete_prefix("="))).wont_be_nil
         end
       end
     end
