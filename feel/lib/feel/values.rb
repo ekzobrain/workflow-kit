@@ -66,7 +66,7 @@ module FEEL
     DAY_TIME_PARTS = %i[weeks days hours minutes seconds].freeze
 
     # Checks whether a value is an instance of a FEEL type (`instance of`).
-    def instance_of?(input, type_text)
+    def feel_instance_of?(input, type_text)
       case type_text
       when "Any" then !input.nil?
       when "Null" then input.nil?

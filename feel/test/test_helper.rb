@@ -23,6 +23,8 @@ class Minitest::Spec
   include ActiveSupport::Testing::TimeHelpers
 
   before :each do
+    FEEL.config.functions = HashWithIndifferentAccess.new
+    FEEL.config.strict = false
   end
 
   after :each do

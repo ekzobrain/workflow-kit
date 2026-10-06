@@ -418,7 +418,7 @@ module FEEL
   #
   class InstanceOf < Node
     def eval(context = {})
-      instance_of?(value.eval(context), type.text_value.gsub(/\s+/, " "))
+      feel_instance_of?(value.eval(context), type.text_value.gsub(/\s+/, " "))
     end
   end
 
