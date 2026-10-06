@@ -104,18 +104,18 @@ module FEEL
 
         it "should eval times" do
           value = LiteralExpression.new(text: 'time("04:25:12")').evaluate
-          _(value.class).must_equal Time
+          _(value).must_equal FEEL::LocalTime.new(4, 25, 12)
 
           value = LiteralExpression.new(text: 'time("14:10:00+02:00")').evaluate
-          _(value.class).must_equal Time
+          _(value).must_equal FEEL::ZonedTime.new(FEEL::LocalTime.new(14, 10, 0), 7200)
 
           value = LiteralExpression.new(text: 'time("09:30:00@Europe/Rome")').evaluate
-          _(value.class).must_equal Time
+          _(value).must_equal FEEL::ZonedTime.new(FEEL::LocalTime.new(9, 30, 0), 3600, "Europe/Rome")
         end
 
         it "should eval date and times" do
           value = LiteralExpression.new(text: 'date and time("2017-06-23T04:25:12")').evaluate
-          _(value.class).must_equal DateTime
+          _(value.class).must_equal FEEL::LocalDateTime
           _(value.year).must_equal 2017
           _(value.month).must_equal 6
           _(value.day).must_equal 23
@@ -162,11 +162,13 @@ module FEEL
         end
 
         it "should eval @ literal times" do
-          _(LiteralExpression.new(text: '@"08:00:00"').evaluate).must_be_kind_of Time
+          _(LiteralExpression.new(text: '@"08:00:00"').evaluate).must_equal FEEL::LocalTime.new(8, 0, 0)
         end
 
         it "should eval @ literal date-times" do
-          _(LiteralExpression.new(text: '@"2020-04-06T08:00:00"').evaluate).must_be_kind_of DateTime
+          _(LiteralExpression.new(text: '@"2020-04-06T08:00:00"').evaluate).must_equal FEEL::LocalDateTime.new(2020, 4, 6, 8, 0, 0)
+          _(LiteralExpression.new(text: '@"2020-04-06T08:00:00+02:00"').evaluate).must_equal Time.new(2020, 4, 6, 8, 0, 0, "+02:00")
+          _(LiteralExpression.new(text: '@"2020-04-06T08:00:00@Europe/Paris"').evaluate).must_equal Time.find_zone!("Europe/Paris").local(2020, 4, 6, 8, 0, 0)
         end
 
         it "should eval @ literal durations" do
@@ -945,22 +947,23 @@ module FEEL
         end
 
         it "should eval day of week" do
-          _(LiteralExpression.new(text: 'day of week(date("1963-1-1"))').evaluate).must_equal 2
+          # feel-scala returns the English day name and requires 2-digit months/days
+          _(LiteralExpression.new(text: 'day of week(date("1963-01-01"))').evaluate).must_equal "Tuesday"
           _(LiteralExpression.new(text: "day of week(null)").evaluate).must_be_nil
         end
 
         it "should eval day of year" do
-          _(LiteralExpression.new(text: 'day of year(date("1963-1-1"))').evaluate).must_equal 1
+          _(LiteralExpression.new(text: 'day of year(date("1963-01-01"))').evaluate).must_equal 1
           _(LiteralExpression.new(text: "day of year(null)").evaluate).must_be_nil
         end
 
         it "should eval week of year" do
-          _(LiteralExpression.new(text: 'week of year(date("1963-1-1"))').evaluate).must_equal 1
+          _(LiteralExpression.new(text: 'week of year(date("1963-01-01"))').evaluate).must_equal 1
           _(LiteralExpression.new(text: "week of year(null)").evaluate).must_be_nil
         end
 
         it "should eval month of year" do
-          _(LiteralExpression.new(text: 'month of year(date("1963-1-1"))').evaluate).must_equal 1
+          _(LiteralExpression.new(text: 'month of year(date("1963-01-01"))').evaluate).must_equal "January"
           _(LiteralExpression.new(text: "month of year(null)").evaluate).must_be_nil
         end
       end
