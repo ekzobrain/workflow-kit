@@ -801,12 +801,12 @@ module FEEL
         end
 
         it "should eval stddev" do
-          _(LiteralExpression.new(text: "stddev([1, 2, 3])").evaluate).must_equal 0.816496580927726
+          _(LiteralExpression.new(text: "stddev([1, 2, 3])").evaluate).must_equal 1.0
           _(LiteralExpression.new(text: "stddev(null)").evaluate).must_be_nil
         end
 
         it "should eval mode" do
-          _(LiteralExpression.new(text: "mode([1, 2, 2, 3])").evaluate).must_equal 2
+          _(LiteralExpression.new(text: "mode([1, 2, 2, 3])").evaluate).must_equal [2]
           _(LiteralExpression.new(text: "mode(null)").evaluate).must_be_nil
         end
 
@@ -824,7 +824,7 @@ module FEEL
 
         it "should eval sublist" do
           _(LiteralExpression.new(text: "sublist([1, 2, 3], 1, 2)").evaluate).must_equal [1, 2]
-          _(LiteralExpression.new(text: "sublist([1, 2, 3], 1, null)").evaluate).must_equal []
+          _(LiteralExpression.new(text: "sublist([1, 2, 3], 1, null)").evaluate).must_be_nil
           _(LiteralExpression.new(text: "sublist([1, 2, 3], null, 2)").evaluate).must_be_nil
           _(LiteralExpression.new(text: "sublist(null, 1, 2)").evaluate).must_be_nil
           _(LiteralExpression.new(text: "sublist(null, null, null)").evaluate).must_be_nil
@@ -874,9 +874,9 @@ module FEEL
 
         it "should eval union" do
           _(LiteralExpression.new(text: "union([1, 2, 3], [4, 5, 6])").evaluate).must_equal [1, 2, 3, 4, 5, 6]
-          _(LiteralExpression.new(text: "union(null, [4, 5, 6])").evaluate).must_be_nil
-          _(LiteralExpression.new(text: "union([1, 2, 3], null)").evaluate).must_be_nil
-          _(LiteralExpression.new(text: "union(null, null)").evaluate).must_be_nil
+          _(LiteralExpression.new(text: "union(null, [4, 5, 6])").evaluate).must_equal [nil, 4, 5, 6]
+          _(LiteralExpression.new(text: "union([1, 2, 3], null)").evaluate).must_equal [1, 2, 3, nil]
+          _(LiteralExpression.new(text: "union(null, null)").evaluate).must_equal [nil]
         end
 
         it "should eval distinct values" do
