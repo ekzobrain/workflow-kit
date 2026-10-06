@@ -162,10 +162,64 @@ module FEEL
   end
 
   #
+  # FEEL numbers. Decimal literals are parsed as BigDecimal so arithmetic is
+  # exact; values coming from Ruby may also be Integer or Float. Results
+  # handed back to Ruby are normalized with `Numbers.normalize`.
+  #
+  module Numbers
+    # Precision used for non-terminating divisions (like IEEE 754 decimal128).
+    DIVISION_PRECISION = 34
+
+    module_function
+
+    # True for FEEL numbers (ActiveSupport::Duration pretends to be Numeric).
+    def number?(value)
+      value.is_a?(Numeric) && !value.is_a?(ActiveSupport::Duration)
+    end
+
+    # Converts a Ruby number into an exact FEEL number (Integer or BigDecimal).
+    # Returns nil for non-numbers and for NaN / infinite values.
+    def decimal(value)
+      case value
+      when Integer then value
+      when BigDecimal then value.finite? ? value : nil
+      when Float then value.finite? ? BigDecimal(value.to_s) : nil
+      when Rational then BigDecimal(value, DIVISION_PRECISION)
+      end
+    end
+
+    # Converts a FEEL result for Ruby callers: BigDecimal (and Rational) become
+    # an Integer when integral, otherwise a Float. NaN and infinite values
+    # become nil. Arrays and Hashes are normalized recursively.
+    def normalize(value)
+      case value
+      when BigDecimal, Rational, Float
+        return nil if value.respond_to?(:finite?) && !value.finite?
+        return value if value.is_a?(Float)
+
+        value == value.truncate ? value.to_i : value.to_f
+      when Array then value.map { |item| normalize(item) }
+      when Hash then value.transform_values { |item| normalize(item) }
+      else value
+      end
+    end
+
+    # String representation of a FEEL number, e.g. "1.5", "3" or "0.1".
+    def format(value)
+      value = decimal(value)
+      return if value.nil?
+      return value.to_s if value.is_a?(Integer)
+
+      value == value.truncate ? value.to_i.to_s : value.to_s("F")
+    end
+  end
+
+  #
   # 4. arithmetic expression
   #
   module Arithmetic
     def add(left, right)
+      return numeric_operation(left, right) { |l, r| l + r } if Numbers.number?(left) && Numbers.number?(right)
       return nil if left.nil? || right.nil?
       return nil if left.is_a?(Array) || right.is_a?(Array) || left.is_a?(Hash) || right.is_a?(Hash)
       return nil if left.is_a?(String) ^ right.is_a?(String)
@@ -176,6 +230,7 @@ module FEEL
     end
 
     def subtract(left, right)
+      return numeric_operation(left, right) { |l, r| l - r } if Numbers.number?(left) && Numbers.number?(right)
       return nil if left.nil? || right.nil?
       return nil if left.is_a?(String) || right.is_a?(String) || left.is_a?(Array) || right.is_a?(Array)
       return (left - right).to_i.days if left.instance_of?(Date) && right.instance_of?(Date)
@@ -186,30 +241,48 @@ module FEEL
     end
 
     def multiply(left, right)
+      return numeric_operation(left, right) { |l, r| l * r } if Numbers.number?(left) && Numbers.number?(right)
       return nil unless numeric_or_duration?(left) && numeric_or_duration?(right)
       return nil if left.is_a?(ActiveSupport::Duration) && right.is_a?(ActiveSupport::Duration)
 
-      left * right
+      Numbers.normalize(left) * Numbers.normalize(right)
     rescue ArgumentError, NoMethodError, TypeError
       nil
     end
 
     def divide(left, right)
+      return numeric_operation(left, right) { |l, r| decimal_divide(l, r) } if Numbers.number?(left) && Numbers.number?(right)
       return nil unless numeric_or_duration?(left) && numeric_or_duration?(right)
       return nil if right.is_a?(Numeric) && right.zero?
       return nil if left.is_a?(Numeric) && right.is_a?(ActiveSupport::Duration)
 
-      if left.is_a?(Integer) && right.is_a?(Integer)
-        (left % right).zero? ? left / right : left.fdiv(right)
-      else
-        left / right
-      end
+      left / Numbers.normalize(right)
     rescue ArgumentError, NoMethodError, TypeError, ZeroDivisionError
       nil
     end
 
     def numeric_or_duration?(value)
       value.is_a?(Numeric) || value.is_a?(ActiveSupport::Duration)
+    end
+
+    private
+
+    # Applies an operation on exact numbers (Integer / BigDecimal).
+    def numeric_operation(left, right)
+      left = Numbers.decimal(left)
+      right = Numbers.decimal(right)
+      return nil if left.nil? || right.nil?
+
+      yield(left, right)
+    rescue ArgumentError, TypeError, ZeroDivisionError, FloatDomainError
+      nil
+    end
+
+    def decimal_divide(left, right)
+      return nil if right.zero?
+      return left / right if left.is_a?(Integer) && right.is_a?(Integer) && (left % right).zero?
+
+      BigDecimal(left).div(right, Numbers::DIVISION_PRECISION)
     end
   end
 end

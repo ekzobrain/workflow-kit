@@ -706,13 +706,15 @@ module FEEL
         end
 
         it "should eval round up" do
-          _(LiteralExpression.new(text: "round up(1.234)").evaluate).must_equal 2
-          _(LiteralExpression.new(text: "round up(null)").evaluate).must_be_nil
+          _(LiteralExpression.new(text: "round up(1.234, 0)").evaluate).must_equal 2
+          _(LiteralExpression.new(text: "round up(null, 0)").evaluate).must_be_nil
+          _(LiteralExpression.new(text: "round up(1.234)").evaluate).must_be_nil
         end
 
         it "should eval round down" do
-          _(LiteralExpression.new(text: "round down(1.234)").evaluate).must_equal 1
-          _(LiteralExpression.new(text: "round down(null)").evaluate).must_be_nil
+          _(LiteralExpression.new(text: "round down(1.234, 0)").evaluate).must_equal 1
+          _(LiteralExpression.new(text: "round down(null, 0)").evaluate).must_be_nil
+          _(LiteralExpression.new(text: "round down(1.234)").evaluate).must_be_nil
         end
 
         it "should eval abs" do
@@ -754,8 +756,23 @@ module FEEL
         end
 
         it "should eval random number" do
-          _(LiteralExpression.new(text: "random number(10)").evaluate).must_be :<, 10
-          _(LiteralExpression.new(text: "random number(null)").evaluate).must_be_nil
+          _(LiteralExpression.new(text: "random number()").evaluate).must_be :<, 1
+          _(LiteralExpression.new(text: "random number(10)").evaluate).must_be_nil
+        end
+
+        it "should compute decimals exactly and return Integer or Float" do
+          _(LiteralExpression.new(text: "0.1 + 0.2").evaluate).must_equal 0.3
+          _(LiteralExpression.new(text: "0.1 + 0.2 = 0.3").evaluate).must_equal true
+          _(LiteralExpression.new(text: "1.5 * 2").evaluate).must_be_kind_of Integer
+          _(LiteralExpression.new(text: "1.25").evaluate).must_be_kind_of Float
+          _(LiteralExpression.new(text: "{a: 1.0, b: [2.5, 3.0]}").evaluate).must_equal({ "a" => 1, "b" => [2.5, 3] })
+        end
+
+        it "should accept Integer, Float and BigDecimal variables" do
+          _(LiteralExpression.new(text: "x + 0.2").evaluate(x: 0.1)).must_equal 0.3
+          _(LiteralExpression.new(text: "x * 2").evaluate(x: BigDecimal("1.25"))).must_equal 2.5
+          _(LiteralExpression.new(text: "modulo(x, 4.5)").evaluate(x: -10.1)).must_equal 3.4
+          _(LiteralExpression.new(text: "floor(x)").evaluate(x: 3)).must_equal 3
         end
       end
 
