@@ -16,7 +16,7 @@ module FEEL
   class SerializationError < Error; end
 
   module AST
-    # An AST can't be turned into text (FEEL.unparse).
+    # An AST can't be turned into text (FEEL::AST.to_feel).
     class Error < FEEL::Error; end
   end
 end

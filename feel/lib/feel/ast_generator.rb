@@ -3,9 +3,9 @@
 module FEEL
   module AST
     # Builds the text of an expression or unary tests from an AST (see
-    # FEEL.unparse). Parentheses are added where the precedence of the
+    # FEEL::AST.to_feel). Parentheses are added where the precedence of the
     # operators requires them, names are escaped with backticks if need be.
-    class Unparser
+    class Generator
       # Precedence levels, from the lowest. A node is put in parentheses
       # if its level is lower than the one required by its position.
       EXPRESSION = 0 # if, for, some/every, function definition
@@ -25,7 +25,7 @@ module FEEL
       PROPERTY_NAMES = ["time offset", "start included", "end included"].freeze
       STRING_ESCAPES = { '"' => '\\"', "\\" => "\\\\", "\n" => "\\n", "\r" => "\\r", "\t" => "\\t", "\b" => "\\b", "\f" => "\\f" }.freeze
 
-      def unparse(node)
+      def generate(node)
         case type(node)
         when "unary tests" then tests_text(list(node, :tests), negated: false)
         when "not" then "not(#{tests_text(list(node, :tests), negated: true)})"

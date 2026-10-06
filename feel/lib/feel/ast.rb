@@ -34,6 +34,18 @@ module FEEL
       end
     end
 
+    # Builds the text of an expression or unary tests from an AST as returned
+    # by FEEL.parse / FEEL.parse_test (symbol or string keys):
+    #
+    #   FEEL::AST.to_feel({ type: "comparison", operator: ">=",
+    #                       left: { type: "name", path: ["age"] }, right: { type: "number", value: 18 } })
+    #   # => "age >= 18"
+    #
+    # Raises FEEL::AST::Error if the AST is not valid.
+    def to_feel(ast)
+      Generator.new.generate(ast)
+    end
+
     def range(start, finish, start_included, end_included)
       { type: "range", start: start, end: finish, start_included: start_included, end_included: end_included }
     end
