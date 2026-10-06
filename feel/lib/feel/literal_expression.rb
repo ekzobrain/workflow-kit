@@ -102,7 +102,8 @@ module FEEL
           .merge(Builtins::NUMERIC)
           .merge(Builtins::LIST)
           .merge(Builtins::CONTEXT)
-          .merge(Builtins::TEMPORAL),
+          .merge(Builtins::TEMPORAL)
+          .merge(Builtins::RANGE),
       )
     end
 

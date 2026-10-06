@@ -310,7 +310,7 @@ grammar FEEL
   end
 
   rule named_parameter
-    parameter_name __ ":" __ value:expression <NamedParameter>
+    parameter_name __ ":" __ value:argument <NamedParameter>
   end
 
   #
@@ -325,7 +325,25 @@ grammar FEEL
   # 44. positional parameters = [ expression , { "," , expression } ] ;
   #
   rule positional_parameters
-    head:expression tail:(__ "," __ expression)* <PositionalParameters>
+    head:argument tail:(__ "," __ argument)* <PositionalParameters>
+  end
+
+  #
+  # A function argument: an expression, or a range value (e.g. `[1..10]`,
+  # `(1..10]`, `]1..10[`, `< 10`) as in `before(1, [2..5])`.
+  #
+  rule argument
+    range_literal /
+    expression
+  end
+
+  #
+  # Range literal (DMN 1.4 "range"), only allowed as a function argument.
+  # Elsewhere, an interval is a simple positive unary test.
+  #
+  rule range_literal
+    start_token:("(" / "]" / "[") __ low:endpoint __ ".." __ high:endpoint __ end_token:(")" / "[" / "]") <RangeLiteral> /
+    operator:unary_operator __ endpoint <OpenRangeLiteral>
   end
 
   #
