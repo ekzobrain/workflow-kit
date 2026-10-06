@@ -25,7 +25,7 @@ module FEEL
     end
 
     def evaluate(variables = {})
-      tree.eval(functions.merge(variables))
+      Numbers.normalize(tree.eval(functions.merge(variables)))
     end
 
     def functions

@@ -730,9 +730,10 @@ module FEEL
   # 37. numeric literal = [ "-" ] , ( digits , [ ".", digits ] | "." , digits ) ;
   #
   class NumericLiteral < Node
+    # Decimal literals are exact (BigDecimal), integer literals are Integers.
     def eval(_context = {})
       if text_value.include?(".")
-        text_value.to_f
+        BigDecimal(text_value)
       else
         text_value.to_i
       end
