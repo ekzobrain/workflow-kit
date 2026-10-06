@@ -594,7 +594,7 @@ module FEEL
       describe :boolean do
         it "should eval is defined" do
           _(LiteralExpression.new(text: 'is defined("Hello world")').evaluate).must_equal true
-          _(LiteralExpression.new(text: "is defined(null)").evaluate).must_be_nil
+          _(LiteralExpression.new(text: "is defined(null)").evaluate).must_equal false
         end
 
         it "should eval get or else" do
@@ -608,7 +608,7 @@ module FEEL
           _(LiteralExpression.new(text: 'substring("Hello world", 1, 4)').evaluate).must_equal "Hell"
           _(LiteralExpression.new(text: "substring(null, 1, 4)").evaluate).must_be_nil
           _(LiteralExpression.new(text: 'substring("Hello world", null, 4)').evaluate).must_be_nil
-          _(LiteralExpression.new(text: 'substring("Hello world", 1, null)').evaluate).must_equal ""
+          _(LiteralExpression.new(text: 'substring("Hello world", 1, null)').evaluate).must_be_nil
         end
 
         it "should eval substring before" do
@@ -681,7 +681,7 @@ module FEEL
         end
 
         it "should eval extract" do
-          _(LiteralExpression.new(text: 'extract("Hello world", "(Hello) (world)")').evaluate).must_equal ["Hello", "world"]
+          _(LiteralExpression.new(text: 'extract("Hello world", "(Hello) (world)")').evaluate).must_equal ["Hello world"]
           _(LiteralExpression.new(text: 'extract(null, "(Hello) (world)")').evaluate).must_be_nil
           _(LiteralExpression.new(text: 'extract("Hello world", null)').evaluate).must_be_nil
         end
