@@ -58,5 +58,14 @@ module FEEL
     it "should not report parameters as variables" do
       _(LiteralExpression.new(text: "function(x) x + y").named_variables).must_equal ["y"]
     end
+
+    it "should be converted to JSON as its string representation" do
+      fn = function("function(x, y) x + y")
+      _(fn.to_s).must_equal "function(x, y)"
+      _(fn.as_json).must_equal "function(x, y)"
+      _(fn.to_json).must_equal '"function(x, y)"'
+      _(JSON.generate({ "f" => fn, "g" => [function("function() 1")] })).must_equal '{"f":"function(x, y)","g":["function()"]}'
+      _(FEEL.to_json(FEEL.evaluate("{f: function(x) x}"))).must_equal '{"f":"function(x)"}'
+    end
   end
 end

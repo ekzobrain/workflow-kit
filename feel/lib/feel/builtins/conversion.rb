@@ -78,12 +78,9 @@ module FEEL
       end
 
       def format_function(function)
-        params = if function.is_a?(Function)
-          function.params
-        else
-          function.parameters.map { |_type, name| name.to_s.tr("_", " ") }
-        end
-        "function(#{params.join(", ")})"
+        return function.to_s if function.is_a?(Function)
+
+        "function(#{function.parameters.map { |_type, name| name.to_s.tr("_", " ") }.join(", ")})"
       end
     end
 

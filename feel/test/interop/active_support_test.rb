@@ -81,6 +81,13 @@ module FEEL
         _(value.to_json).must_equal '{"t":"10:30:00","d":"P1Y2M","l":"2020-01-01T10:30:00"}'
       end
 
+      it "should convert FEEL functions with ActiveSupport JSON" do
+        fn = evaluate("function(x, y) x + y")
+        _(fn.as_json).must_equal "function(x, y)"
+        _({ "f" => fn }.to_json).must_equal '{"f":"function(x, y)"}'
+        _(evaluate("{a: 1, f: function(x) x * a}").to_json).must_equal '{"a":1,"f":"function(x)"}'
+      end
+
       it "should serialize ActiveSupport values with their FEEL types" do
         time = Time.find_zone!("Europe/Berlin").local(2020, 7, 1, 10, 30, 0)
         restored = FEEL.deserialize(FEEL.serialize({ "at" => time, "wait" => 3.days }).to_json)

@@ -44,6 +44,17 @@ module FEEL
       method(:call).to_proc
     end
 
+    # The FEEL representation, as given by `string()` and `to json()`, e.g.
+    # "function(x, y)".
+    def to_s
+      "function(#{params.join(", ")})"
+    end
+
+    # The JSON representation is the string representation: the closure and
+    # the body (syntax tree) are not serializable.
+    def as_json(*) = to_s
+    def to_json(*args) = to_s.to_json(*args)
+
     def inspect
       "#<FEEL::Function(#{params.join(", ")})>"
     end
