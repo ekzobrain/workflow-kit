@@ -10,11 +10,11 @@ module FEEL
     end
 
     it "A time should subtract from another time" do
-      _(evaluate(' time("10:30:00") - time("09:00:00") ')).must_equal(1.hour + 30.minutes)
+      _(evaluate(' time("10:30:00") - time("09:00:00") ')).must_equal(FEEL::Duration.hours(1) + FEEL::Duration.minutes(30))
 
-      _(evaluate(' time("09:00:00") - time("10:00:00") ')).must_equal(-1.hour)
+      _(evaluate(' time("09:00:00") - time("10:00:00") ')).must_equal(-FEEL::Duration.hours(1))
 
-      _(evaluate(' time("12:00:00+01:00") - time("10:00:00+01:00") ')).must_equal 2.hours
+      _(evaluate(' time("12:00:00+01:00") - time("10:00:00+01:00") ')).must_equal FEEL::Duration.hours(2)
     end
 
     it "A time should compare with '='" do
@@ -75,11 +75,11 @@ module FEEL
     end
 
     it "A date should subtract from another date" do
-      _(evaluate(' date("2012-12-25") - date("2012-12-24") ')).must_equal 1.day
+      _(evaluate(' date("2012-12-25") - date("2012-12-24") ')).must_equal FEEL::Duration.days(1)
 
-      _(evaluate(' date("2012-12-24") - date("2012-12-25") ')).must_equal(-1.day)
+      _(evaluate(' date("2012-12-24") - date("2012-12-25") ')).must_equal(-FEEL::Duration.days(1))
 
-      _(evaluate(' date("2013-02-25") - date("2012-12-24") ')).must_equal 63.days
+      _(evaluate(' date("2013-02-25") - date("2012-12-24") ')).must_equal FEEL::Duration.days(63)
     end
 
     it "A date should subtract date from date as string" do
@@ -122,11 +122,11 @@ module FEEL
     end
 
     it "A date-time should subtract from another date-time" do
-      _(evaluate(' date and time("2017-01-10T10:30:00") - date and time("2017-01-01T10:00:00") ')).must_equal(9.days + 30.minutes)
-      _(evaluate(' date and time("2017-01-10T10:00:00") - date and time("2017-01-10T10:30:00") ')).must_equal(-30.minutes)
+      _(evaluate(' date and time("2017-01-10T10:30:00") - date and time("2017-01-01T10:00:00") ')).must_equal(FEEL::Duration.days(9) + FEEL::Duration.minutes(30))
+      _(evaluate(' date and time("2017-01-10T10:00:00") - date and time("2017-01-10T10:30:00") ')).must_equal(-FEEL::Duration.minutes(30))
 
-      _(evaluate(' date and time("2017-01-10T10:30:00+01:00") - date and time("2017-01-01T10:00:00+01:00") ')).must_equal(9.days + 30.minutes)
-      _(evaluate(' date and time("2017-01-10T10:00:00+01:00") - date and time("2017-01-10T10:30:00+01:00") ')).must_equal(-30.minutes)
+      _(evaluate(' date and time("2017-01-10T10:30:00+01:00") - date and time("2017-01-01T10:00:00+01:00") ')).must_equal(FEEL::Duration.days(9) + FEEL::Duration.minutes(30))
+      _(evaluate(' date and time("2017-01-10T10:00:00+01:00") - date and time("2017-01-10T10:30:00+01:00") ')).must_equal(-FEEL::Duration.minutes(30))
     end
 
     it "A date-time should compare with '='" do
@@ -186,8 +186,8 @@ module FEEL
     end
 
     it "A year-month-duration should add to year-month-duration" do
-      _(evaluate(' duration("P2M") + duration("P3M") ')).must_equal 5.months
-      _(evaluate(' duration("P1Y") + duration("P6M") ')).must_equal(1.year + 6.months)
+      _(evaluate(' duration("P2M") + duration("P3M") ')).must_equal FEEL::Duration.months(5)
+      _(evaluate(' duration("P1Y") + duration("P6M") ')).must_equal(FEEL::Duration.years(1) + FEEL::Duration.months(6))
     end
 
     it "A year-month-duration should add to date-time" do
@@ -204,8 +204,8 @@ module FEEL
     end
 
     it "A year-month-duration should subtract from year-month-duration" do
-      _(evaluate(' duration("P1Y") - duration("P3M") ')).must_equal 9.months
-      _(evaluate(' duration("P5M") - duration("P6M") ')).must_equal(-1.month)
+      _(evaluate(' duration("P1Y") - duration("P3M") ')).must_equal FEEL::Duration.months(9)
+      _(evaluate(' duration("P5M") - duration("P6M") ')).must_equal(-FEEL::Duration.months(1))
     end
 
     it "A year-month-duration should subtract from date-time" do
@@ -223,12 +223,12 @@ module FEEL
     end
 
     it "A year-month-duration should multiply by '3'" do
-      _(evaluate(' duration("P1M") * 3 ')).must_equal 3.months
-      _(evaluate(' 3 * duration("P2Y") ')).must_equal 6.years
+      _(evaluate(' duration("P1M") * 3 ')).must_equal FEEL::Duration.months(3)
+      _(evaluate(' 3 * duration("P2Y") ')).must_equal FEEL::Duration.years(6)
     end
 
     it "A year-month-duration should divide by '4'" do
-      _(evaluate(' duration("P1Y") / 2 ')).must_equal 6.months
+      _(evaluate(' duration("P1Y") / 2 ')).must_equal FEEL::Duration.months(6)
     end
 
     it "A year-month-duration should divide by duration" do
@@ -275,8 +275,8 @@ module FEEL
     end
 
     it "A day-time-duration should add to day-time-duration" do
-      _(evaluate(' duration("PT4H") + duration("PT2H") ')).must_equal 6.hours
-      _(evaluate(' duration("P1D") + duration("PT6H") ')).must_equal(1.day + 6.hours)
+      _(evaluate(' duration("PT4H") + duration("PT2H") ')).must_equal FEEL::Duration.hours(6)
+      _(evaluate(' duration("P1D") + duration("PT6H") ')).must_equal(FEEL::Duration.days(1) + FEEL::Duration.hours(6))
     end
 
     it "A day-time-duration should add to date-time" do
@@ -303,8 +303,8 @@ module FEEL
     end
 
     it "A day-time-duration should subtract from day-time-duration" do
-      _(evaluate(' duration("PT6H") - duration("PT2H") ')).must_equal 4.hours
-      _(evaluate(' duration("PT22H") - duration("P1D") ')).must_equal(-2.hours)
+      _(evaluate(' duration("PT6H") - duration("PT2H") ')).must_equal FEEL::Duration.hours(4)
+      _(evaluate(' duration("PT22H") - duration("P1D") ')).must_equal(-FEEL::Duration.hours(2))
     end
 
     it "A day-time-duration should subtract from date-time" do
@@ -326,12 +326,12 @@ module FEEL
     end
 
     it "A day-time-duration should multiply by '3'" do
-      _(evaluate(' duration("PT2H") * 3 ')).must_equal 6.hours
-      _(evaluate(' 3 * duration("P1D") ')).must_equal 3.days
+      _(evaluate(' duration("PT2H") * 3 ')).must_equal FEEL::Duration.hours(6)
+      _(evaluate(' 3 * duration("P1D") ')).must_equal FEEL::Duration.days(3)
     end
 
     it "A day-time-duration should divide by '4'" do
-      _(evaluate(' duration("P1D") / 4 ')).must_equal 6.hours
+      _(evaluate(' duration("P1D") / 4 ')).must_equal FEEL::Duration.hours(6)
     end
 
     it "A day-time-duration should divide by duration" do
@@ -388,7 +388,7 @@ module FEEL
         _(evaluate(' string(@"-PT1S" / 3) ')).must_equal "-PT0.333333333S"
         _(evaluate(' string(@"PT10S" / 4) ')).must_equal "PT2.5S"
         _(evaluate(' string(@"P1D" / 7) ')).must_equal "PT3H25M42.857142857S"
-        _(evaluate(' @"PT1S" / 0.5 ')).must_equal 2.seconds
+        _(evaluate(' @"PT1S" / 0.5 ')).must_equal FEEL::Duration.seconds(2)
         _(evaluate(' @"PT1S" / 0 ')).must_be_nil
       end
 

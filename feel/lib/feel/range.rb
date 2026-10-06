@@ -50,18 +50,10 @@ module FEEL
       when nil, true, false then nil
       when Numeric then :number
       when String then :string
-      when ActiveSupport::Duration then duration_kind(value)
-      when DateTime, ActiveSupport::TimeWithZone then :date_time
-      when Date then :date
-      when Time then :time
+      when ->(v) { Temporal.temporal?(v) } then Temporal.kind(value)
       when Array, Hash, Range, ::Range then nil
       when Comparable then value.class
       end
-    end
-
-    def self.duration_kind(duration)
-      parts = duration.parts.keys
-      !parts.empty? && (parts - %i[years months]).empty? ? :years_months_duration : :days_time_duration
     end
 
     # A point value that can be used with the range built-in functions

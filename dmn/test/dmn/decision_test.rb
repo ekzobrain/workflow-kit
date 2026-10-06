@@ -28,8 +28,9 @@ module DMN
       result = decision.evaluate(variables)
       _(result[:period_begin]).must_be_kind_of(Date)
       _(result[:period_begin]).must_equal(Date.new(2018, 01, 04))
-      _(result[:period_duration]).must_be_kind_of(ActiveSupport::Duration)
-      _(result[:period_duration] / 1.month).must_equal(3)
+      _(result[:period_duration]).must_be_kind_of(FEEL::Duration)
+      _(result[:period_duration]).must_equal(FEEL::Duration.months(3))
+      _(result[:period_duration].to_active_support).must_equal(3.months)
     end
   end
 end

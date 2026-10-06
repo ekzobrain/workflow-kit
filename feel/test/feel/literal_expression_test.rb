@@ -126,8 +126,8 @@ module FEEL
 
         it "should eval durations" do
           value = LiteralExpression.new(text: 'duration("PT6H")').evaluate
-          _(value.class).must_equal ActiveSupport::Duration
-          _(value / 1.hour).must_equal 6
+          _(value.class).must_equal FEEL::Duration
+          _(value).must_equal FEEL::Duration.hours(6)
         end
 
         it "should support date math" do
@@ -168,11 +168,11 @@ module FEEL
         it "should eval @ literal date-times" do
           _(LiteralExpression.new(text: '@"2020-04-06T08:00:00"').evaluate).must_equal FEEL::LocalDateTime.new(2020, 4, 6, 8, 0, 0)
           _(LiteralExpression.new(text: '@"2020-04-06T08:00:00+02:00"').evaluate).must_equal Time.new(2020, 4, 6, 8, 0, 0, "+02:00")
-          _(LiteralExpression.new(text: '@"2020-04-06T08:00:00@Europe/Paris"').evaluate).must_equal Time.find_zone!("Europe/Paris").local(2020, 4, 6, 8, 0, 0)
+          _(LiteralExpression.new(text: '@"2020-04-06T08:00:00@Europe/Paris"').evaluate).must_equal Time.new(2020, 4, 6, 8, 0, 0, in: TZInfo::Timezone.get("Europe/Paris"))
         end
 
         it "should eval @ literal durations" do
-          _(LiteralExpression.new(text: '@"P5D"').evaluate).must_equal 5.days
+          _(LiteralExpression.new(text: '@"P5D"').evaluate).must_equal FEEL::Duration.days(5)
         end
       end
 

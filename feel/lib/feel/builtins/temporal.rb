@@ -36,9 +36,7 @@ module FEEL
         when String then Temporal.parse_time(from)
         when LocalTime, ZonedTime then from
         when LocalDateTime then from.local_time
-        when ActiveSupport::TimeWithZone
-          ZonedTime.new(local_time_of(from), from.utc_offset, Temporal.zone_id(from))
-        when Time then ZonedTime.new(local_time_of(from), from.utc_offset)
+        when Time then ZonedTime.new(local_time_of(from), from.utc_offset, Temporal.zone_id(from))
         when Date then ZonedTime.new(LocalTime.new(0, 0, 0), 0)
         end
       end
@@ -66,7 +64,7 @@ module FEEL
         from = Temporal.normalize(from)
         case from
         when String then Temporal.parse_date_time(from)
-        when LocalDateTime, Time, ActiveSupport::TimeWithZone then from
+        when LocalDateTime, Time then from
         when Date then LocalDateTime.new(from.year, from.month, from.day)
         end
       end
@@ -85,7 +83,8 @@ module FEEL
         when LocalTime then LocalDateTime.new(*fields)
         when ZonedTime
           if time.zone
-            Temporal.time_zone(time.zone)&.local(*fields)
+            tz = Temporal.zone(time.zone)
+            tz && Temporal.local_in_zone(*fields, tz)
           else
             Temporal.offset_time(*fields, time.offset)
           end
@@ -105,10 +104,10 @@ module FEEL
             from.to_time.getlocal(Temporal.format_offset(offset, utc: "+00:00"))
           end
         else
-          zone = Temporal.time_zone(zone_id)
+          zone = Temporal.zone(zone_id)
           return if zone.nil?
 
-          from.is_a?(LocalDateTime) ? from.to_time(zone) : from.in_time_zone(zone)
+          from.is_a?(LocalDateTime) ? from.to_time(zone) : from.getlocal(zone)
         end
       end
 
@@ -120,7 +119,7 @@ module FEEL
 
         case from
         when String then Temporal.parse_duration(from)
-        when ActiveSupport::Duration then from
+        else Temporal.normalize(from) if Temporal.duration?(from)
         end
       end
 
@@ -144,11 +143,11 @@ module FEEL
       end
 
       def now
-        Time.zone ? Time.zone.now : Time.now
+        Temporal.now
       end
 
       def today
-        Time.zone ? Time.zone.today : Date.today
+        Temporal.today
       end
 
       # Applies the block to the date of a date or date-time argument.

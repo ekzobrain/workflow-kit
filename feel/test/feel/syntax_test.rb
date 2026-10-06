@@ -55,11 +55,11 @@ module FEEL
       it "should negate variables and durations" do
         _(evaluate("-x", x: 5)).must_equal(-5)
         _(evaluate("- x + 10", x: 5)).must_equal 5
-        _(evaluate('-duration("P1D")')).must_equal(-1.day)
+        _(evaluate('-duration("P1D")')).must_equal(-FEEL::Duration.days(1))
       end
 
       it "should subtract dates" do
-        _(evaluate('date("2020-01-10") - date("2020-01-01")')).must_equal 9.days
+        _(evaluate('date("2020-01-10") - date("2020-01-01")')).must_equal FEEL::Duration.days(9)
       end
     end
 

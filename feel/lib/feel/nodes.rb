@@ -601,9 +601,9 @@ module FEEL
   class ArithmeticNegation < Node
     def eval(context = {})
       value = operand.eval(context)
-      return nil unless value.is_a?(Numeric) || value.is_a?(ActiveSupport::Duration)
+      return -value if Numbers.number?(value)
 
-      -value
+      Temporal.duration?(value) ? -Temporal.normalize(value) : nil
     end
   end
 

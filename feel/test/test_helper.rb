@@ -8,9 +8,10 @@ require "minitest/spec"
 require "minitest/focus"
 require "pry"
 require_relative "../lib/feel"
-require "active_support/testing/time_helpers"
 
-Time.zone_default = Time.find_zone!("UTC")
+# The gem must not depend on ActiveSupport (it is only accepted as input, see
+# test/interop, which runs in a separate process).
+raise "ActiveSupport must not be loaded by the FEEL tests" if defined?(ActiveSupport) && !ENV["FEEL_INTEROP"]
 
 Minitest::Reporters.use!(
   Minitest::Reporters::ProgressReporter.new(color: true),
@@ -20,11 +21,19 @@ Minitest::Reporters.use!(
 
 
 class Minitest::Spec
-  include ActiveSupport::Testing::TimeHelpers
-
   before :each do
-    FEEL.config.functions = HashWithIndifferentAccess.new
+    FEEL.config.functions = {}
     FEEL.config.strict = false
+    FEEL.config.time_zone = nil
+  end
+
+  # Pins the current time (Time.now) during the block.
+  def travel_to(time)
+    original = Time.method(:now)
+    Time.define_singleton_method(:now) { time }
+    yield
+  ensure
+    Time.define_singleton_method(:now, original)
   end
 
   after :each do

@@ -9,7 +9,7 @@ module FEEL
       FEEL.evaluate(expression, variables: variables)
     end
 
-    let(:now) { Time.find_zone!("Europe/Berlin").local(2020, 7, 31, 14, 27, 30) }
+    let(:now) { Time.new(2020, 7, 31, 14, 27, 30, in: TZInfo::Timezone.get("Europe/Berlin")) }
 
     let(:date) { "date(2019,9,17)" }
     let(:local_date_time) { 'date and time("2019-09-17T14:30:00")' }
@@ -61,14 +61,14 @@ module FEEL
     end
 
     it "A abs() function should return the absolute value of a days-time-duration" do
-      _(evaluate(' abs(duration("PT5H")) ')).must_equal 5.hours
-      _(evaluate(' abs(duration("-PT5H")) ')).must_equal 5.hours
+      _(evaluate(' abs(duration("PT5H")) ')).must_equal FEEL::Duration.hours(5)
+      _(evaluate(' abs(duration("-PT5H")) ')).must_equal FEEL::Duration.hours(5)
       _(evaluate(' abs(duration("-PT5H")) instance of days and time duration ')).must_equal true
     end
 
     it "A abs() function should return the absolute value of a years-months-duration" do
-      _(evaluate(' abs(duration("P2M")) ')).must_equal 2.months
-      _(evaluate(' abs(duration("-P2M")) ')).must_equal 2.months
+      _(evaluate(' abs(duration("P2M")) ')).must_equal FEEL::Duration.months(2)
+      _(evaluate(' abs(duration("-P2M")) ')).must_equal FEEL::Duration.months(2)
       _(evaluate(' abs(duration("-P2M")) instance of years and months duration ')).must_equal true
     end
 

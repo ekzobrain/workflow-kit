@@ -21,7 +21,7 @@ module FEEL
       return @valid if defined?(@valid)
 
       @valid = begin
-        text.present? && !tree.nil?
+        !text.nil? && !text.empty? && !tree.nil?
       rescue SyntaxError
         false
       end
@@ -33,12 +33,12 @@ module FEEL
 
     def functions
       builtins = LiteralExpression.builtin_functions
-      custom = (FEEL.config.functions || {})
-      ActiveSupport::HashWithIndifferentAccess.new(builtins.merge(custom))
+      custom = (FEEL.config.functions || {}).to_h.transform_keys(&:to_s)
+      builtins.merge(custom)
     end
 
     def named_functions
-      return [] if text.blank?
+      return [] if text.nil? || text.empty?
 
       function_names = Set.new
       walk_tree(tree) do |node, _bound_names|
@@ -48,7 +48,7 @@ module FEEL
     end
 
     def named_variables
-      return [] if text.blank?
+      return [] if text.nil? || text.empty?
 
       qualified_names = Set.new
       walk_tree(tree) do |node, bound_names|
@@ -98,7 +98,7 @@ module FEEL
     public
 
     def self.builtin_functions
-      @builtin_functions ||= HashWithIndifferentAccess.new(
+      @builtin_functions ||= (
         Builtins::CONVERSION
           .merge(Builtins::BOOLEAN)
           .merge(Builtins::STRING)
@@ -106,8 +106,8 @@ module FEEL
           .merge(Builtins::LIST)
           .merge(Builtins::CONTEXT)
           .merge(Builtins::TEMPORAL)
-          .merge(Builtins::RANGE),
-      )
+          .merge(Builtins::RANGE)
+      ).transform_keys(&:to_s).freeze
     end
 
     def as_json

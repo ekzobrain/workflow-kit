@@ -152,9 +152,9 @@ module FEEL
       period_begin = Date.new(2018, 01, 01)
       variables = {
         period_begin: period_begin,
-        period_duration: ActiveSupport::Duration.build(2716146),
+        period_duration: FEEL::Duration.seconds(2716146),
       }
-      input = period_begin + 20.days
+      input = period_begin + 20
       _(FEEL.test(input, "[period_begin .. period_begin + period_duration]", variables: variables)).must_equal true
     end
 
@@ -172,15 +172,15 @@ module FEEL
     end
 
     it "should match input entry 'duration(d)' to the duration specified by d, an ISO 8601 duration string like P3D for three days (duration is built-in either)" do
-      _(FEEL.test(3.days, 'duration("P3D")')).must_equal true
+      _(FEEL.test(FEEL::Duration.days(3), 'duration("P3D")')).must_equal true
     end
 
     it "should match input entry 'duration(d) * 2' to twice the duration" do
-      _(FEEL.test(6.days, 'duration("P3D") * 2')).must_equal true
+      _(FEEL.test(FEEL::Duration.days(6), 'duration("P3D") * 2')).must_equal true
     end
 
     it "should match input entry 'duration(begin, end)' to the duration between the specified begin and end date" do
-      _(FEEL.test(3.days, 'duration("1963-12-23", "1963-12-26")')).must_equal true
+      _(FEEL.test(FEEL::Duration.days(3), 'duration("1963-12-23", "1963-12-26")')).must_equal true
     end
 
     it "should match input entry 'date(begin) + duration(d)' to the date that results by adding the given duration to the given date" do

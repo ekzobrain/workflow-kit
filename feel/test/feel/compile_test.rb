@@ -18,7 +18,7 @@ module FEEL
         _(expression.evaluate(a: 1, b: 2)).must_equal 3
         _(expression.evaluate("a" => 10, "b" => 20)).must_equal 30
         _(expression.evaluate(a: "x", b: "y")).must_equal "xy"
-        _(expression.evaluate(a: date = Date.new(2020, 1, 1), b: 1.day)).must_equal date + 1
+        _(expression.evaluate(a: date = Date.new(2020, 1, 1), b: FEEL::Duration.days(1))).must_equal date + 1
         _(expression.evaluate(a: 1)).must_be_nil
       end
 

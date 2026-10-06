@@ -81,10 +81,9 @@ module FEEL
       end
 
       # Adapted: the Scala CustomContext is replaced by a Ruby Hash with
-      # Symbol keys / a HashWithIndifferentAccess
+      # Symbol keys (HashWithIndifferentAccess: see test/interop)
       it "return a value from a custom context" do
         _(evaluate('get value(context, ["x", "y"])', context: { x: { y: 1 } })).must_equal 1
-        _(evaluate('get value(context, ["x", "y"])', context: { x: { y: 1 } }.with_indifferent_access)).must_equal 1
       end
     end
 
@@ -145,15 +144,15 @@ module FEEL
       end
 
       # Adapted: the Scala CustomContext is replaced by a Ruby Hash with
-      # Symbol keys / a HashWithIndifferentAccess
+      # Symbol keys (HashWithIndifferentAccess: see test/interop)
       it "override nested context entry from a custom context" do
         vars = { a: { b: 1, c: 2 } }
         _(evaluate(' context put(vars, ["a", "c"], 3) ', vars: vars)).must_equal({ "a" => { "b" => 1, "c" => 3 } })
         _(vars).must_equal({ a: { b: 1, c: 2 } })
 
-        indifferent = { a: { b: 1, c: 2 } }.with_indifferent_access
-        _(evaluate(' context put(vars, ["a", "c"], 3) ', vars: indifferent)).must_equal({ "a" => { "b" => 1, "c" => 3 } })
-        _(indifferent[:a][:c]).must_equal 2
+        mixed = { "a" => { b: 1, "c" => 2 } }
+        _(evaluate(' context put(vars, ["a", "c"], 3) ', vars: mixed)).must_equal({ "a" => { "b" => 1, "c" => 3 } })
+        _(mixed["a"]["c"]).must_equal 2
       end
 
       it "add nested context entry if key doesn't exist" do
@@ -333,10 +332,10 @@ module FEEL
       end
 
       # Adapted: the Scala CustomContext is replaced by Ruby Hashes with
-      # Symbol keys / a HashWithIndifferentAccess
+      # Symbol keys (HashWithIndifferentAccess: see test/interop)
       it "return a context with entries from a custom context" do
         _(evaluate("context(list)", list: [{ key: "a", value: 1 }])).must_equal({ "a" => 1 })
-        _(evaluate("context(list)", list: [{ key: "a", value: 1 }.with_indifferent_access])).must_equal({ "a" => 1 })
+        _(evaluate("context(list)", list: [{ "key" => "a", value: 1 }])).must_equal({ "a" => 1 })
       end
     end
   end

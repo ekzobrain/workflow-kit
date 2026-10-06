@@ -2,10 +2,12 @@
 
 require_relative "feel/version"
 
-require "logger" # Required for Rails 7.0 and below compatibility, see https://github.com/rails/rails/commit/0f5e7a66143
-require "active_support"
-require "active_support/time"
-require "active_support/core_ext/hash"
+require "bigdecimal"
+require "date"
+require "json"
+require "set"
+require "time"
+require "tzinfo"
 
 # Special handling because this gem causes lots of Ruby warnings about
 # formatting.
@@ -17,6 +19,7 @@ require "feel/configuration"
 require "feel/expression_cache"
 require "feel/scope"
 require "feel/function"
+require "feel/duration"
 require "feel/values"
 require "feel/range"
 require "feel/temporal"
@@ -27,6 +30,7 @@ require "feel/parser"
 Dir[File.join(__dir__, "feel/builtins/*.rb")].sort.each { |file| require file }
 require "feel/literal_expression"
 require "feel/unary_tests"
+require "feel/serialization"
 
 module FEEL
   class SyntaxError < StandardError; end

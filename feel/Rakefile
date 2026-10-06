@@ -5,7 +5,17 @@ require "rake/testtask"
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
   t.libs << "lib"
-  t.test_files = FileList["test/**/*_test.rb"]
+  t.test_files = FileList["test/**/*_test.rb"].exclude("test/interop/**/*")
 end
 
-task default: :test
+# ActiveSupport interoperability, in its own process: the gem itself must not
+# depend on ActiveSupport.
+namespace :test do
+  Rake::TestTask.new(:interop) do |t|
+    t.libs << "test"
+    t.libs << "lib"
+    t.test_files = FileList["test/interop/**/*_test.rb"]
+  end
+end
+
+task default: %i[test test:interop]

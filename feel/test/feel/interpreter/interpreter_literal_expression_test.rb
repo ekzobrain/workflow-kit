@@ -111,16 +111,16 @@ module FEEL
 
     describe "A date-time literal" do
       it "should be defined without offset" do
-        _(evaluate(' date and time("2021-09-08T10:30:00") ')).must_equal DateTime.new(2021, 9, 8, 10, 30, 0)
+        _(evaluate(' date and time("2021-09-08T10:30:00") ')).must_equal FEEL::LocalDateTime.new(2021, 9, 8, 10, 30, 0)
       end
 
       it "should be defined with offset" do
-        _(evaluate(' date and time("2021-09-08T10:30:00+02:00") ')).must_equal DateTime.new(2021, 9, 8, 10, 30, 0, "+02:00")
+        _(evaluate(' date and time("2021-09-08T10:30:00+02:00") ')).must_equal Time.new(2021, 9, 8, 10, 30, 0, "+02:00")
       end
 
       it "should be defined with timezone" do
         result = evaluate(' date and time("2021-09-08T10:30:00@Europe/Berlin") ')
-        _(result).must_equal DateTime.new(2021, 9, 8, 10, 30, 0, "+02:00")
+        _(result).must_equal Time.new(2021, 9, 8, 10, 30, 0, "+02:00")
       end
 
       it "should be defined in ISO format with timezone" do
@@ -129,16 +129,16 @@ module FEEL
       end
 
       it "should be defined with '@' and no offset" do
-        _(evaluate(' @"2021-09-08T10:30:00" ')).must_equal DateTime.new(2021, 9, 8, 10, 30, 0)
+        _(evaluate(' @"2021-09-08T10:30:00" ')).must_equal FEEL::LocalDateTime.new(2021, 9, 8, 10, 30, 0)
       end
 
       it "should be defined with '@' and offset" do
-        _(evaluate(' @"2021-09-08T10:30:00+02:00" ')).must_equal DateTime.new(2021, 9, 8, 10, 30, 0, "+02:00")
+        _(evaluate(' @"2021-09-08T10:30:00+02:00" ')).must_equal Time.new(2021, 9, 8, 10, 30, 0, "+02:00")
       end
 
       it "should be defined with '@' and timezone" do
         result = evaluate(' @"2021-09-08T10:30:00@Europe/Berlin" ')
-        _(result).must_equal DateTime.new(2021, 9, 8, 10, 30, 0, "+02:00")
+        _(result).must_equal Time.new(2021, 9, 8, 10, 30, 0, "+02:00")
       end
 
       it "should be defined with '@' in ISO format with timezone" do
@@ -165,21 +165,21 @@ module FEEL
 
     describe "A years-months duration" do
       it "should be defined" do
-        _(evaluate(' duration("P1Y6M") ')).must_equal ActiveSupport::Duration.parse("P1Y6M")
+        _(evaluate(' duration("P1Y6M") ')).must_equal FEEL::Duration.parse("P1Y6M")
       end
 
       it "should be defined with '@'" do
-        _(evaluate(' @"P1Y6M" ')).must_equal ActiveSupport::Duration.parse("P1Y6M")
+        _(evaluate(' @"P1Y6M" ')).must_equal FEEL::Duration.parse("P1Y6M")
       end
     end
 
     describe "A days-time duration" do
       it "should be defined" do
-        _(evaluate(' duration("P1DT12H30M") ')).must_equal ActiveSupport::Duration.parse("P1DT12H30M")
+        _(evaluate(' duration("P1DT12H30M") ')).must_equal FEEL::Duration.parse("P1DT12H30M")
       end
 
       it "should be defined with '@'" do
-        _(evaluate(' @"P1DT12H30M" ')).must_equal ActiveSupport::Duration.parse("P1DT12H30M")
+        _(evaluate(' @"P1DT12H30M" ')).must_equal FEEL::Duration.parse("P1DT12H30M")
       end
     end
   end

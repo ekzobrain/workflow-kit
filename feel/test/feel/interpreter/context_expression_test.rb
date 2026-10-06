@@ -30,9 +30,10 @@ module FEEL
         _(evaluate("{a:1, b:a+1}", a: 0)).must_equal({ "a" => 1, "b" => 2 })
       end
 
-      # Adapted: the Scala CustomContext is replaced by a HashWithIndifferentAccess
+      # Adapted: the Scala CustomContext is replaced by a Hash with String keys
+      # (HashWithIndifferentAccess: see test/interop)
       it "access a previous entry if there is a variable with the same name (custom context)" do
-        _(evaluate("{a:1, b:a+1}", { "a" => 0 }.with_indifferent_access)).must_equal({ "a" => 1, "b" => 2 })
+        _(evaluate("{a:1, b:a+1}", { "a" => 0 })).must_equal({ "a" => 1, "b" => 2 })
       end
 
       it "be compared with '='" do

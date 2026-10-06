@@ -299,7 +299,9 @@ module FEEL
       value = operand.compiled
       lambda do |context|
         number = value.call(context)
-        number.is_a?(Numeric) || number.is_a?(ActiveSupport::Duration) ? -number : nil
+        if Numbers.number?(number) then -number
+        elsif Temporal.duration?(number) then -Temporal.normalize(number)
+        end
       end
     end
   end

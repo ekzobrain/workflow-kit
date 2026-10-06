@@ -18,10 +18,13 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 3.0"
 
-  spec.add_dependency "activemodel", ENV.fetch("RAILS_VERSION", ">= 6.0")
-  spec.add_dependency "activesupport", ENV.fetch("RAILS_VERSION", ">= 6.0")
-  spec.add_dependency "ostruct"
+  spec.add_dependency "bigdecimal"
   spec.add_dependency "treetop", ">= 1.6.14"
+  spec.add_dependency "tzinfo", ">= 2.0"
+
+  # ActiveSupport is optional: its temporal values are accepted as input when
+  # the application uses it (tested in test/interop).
+  spec.add_development_dependency "activesupport", ENV.fetch("RAILS_VERSION", ">= 6.0")
 
   spec.add_development_dependency "rake"
   spec.add_development_dependency "guard"

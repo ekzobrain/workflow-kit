@@ -242,7 +242,7 @@ bundle exec ruby benchmarks/evaluate.rb
 
 ### Values
 
-FEEL values are represented by Ruby values:
+FEEL values are represented by these Ruby values (the results of `FEEL.evaluate`):
 
 | FEEL | Ruby |
 |---|---|
@@ -250,13 +250,51 @@ FEEL values are represented by Ruby values:
 | string, boolean, null | `String`, `true`/`false`, `nil` |
 | list, context | `Array`, `Hash` (String keys) |
 | date | `Date` |
-| time | `FEEL::LocalTime`, `FEEL::ZonedTime` (with offset or zone id) |
-| date and time | `FEEL::LocalDateTime`, `Time` (with offset), `ActiveSupport::TimeWithZone` (with zone id) |
-| durations | `ActiveSupport::Duration` |
+| time | `FEEL::LocalTime` (no offset), `FEEL::ZonedTime` (with offset or zone id) |
+| date and time | `FEEL::LocalDateTime` (no offset), `Time` (with offset), `Time` with a `TZInfo::Timezone` as zone (with zone id, e.g. `@Europe/Berlin`) |
+| years and months duration, days and time duration | `FEEL::Duration` |
 | range | `FEEL::Range` |
 | function | `FEEL::Function`, `Proc` |
 
-Ruby `Date`, `Time`, `DateTime`, `ActiveSupport::TimeWithZone` and `ActiveSupport::Duration` values can be passed in as variables.
+Variables can be given as these values or as other Ruby values: `DateTime`, and, if the application uses ActiveSupport, `ActiveSupport::TimeWithZone`, `ActiveSupport::Duration` and `HashWithIndifferentAccess`. Hash keys can be Strings or Symbols. The results of an evaluation can be passed as variables to the next one.
+
+`FEEL::Duration` can be created and converted in Ruby:
+
+```ruby
+FEEL::Duration.parse("P1Y2M")         # => #<FEEL::Duration P1Y2M>
+FEEL::Duration.hours(26).to_s          # => "P1DT2H"
+FEEL::Duration.days(1).to_active_support # => 1 day (requires ActiveSupport)
+```
+
+`now()` and `today()` use the zone `config.time_zone` (e.g. `"Europe/Berlin"`). If it is not set, `Time.zone` of ActiveSupport is used if available, else the system zone.
+
+### JSON and serialization
+
+`FEEL.to_json` (and `FEEL.as_json`) converts a value to plain JSON, with temporal values as ISO 8601 strings, like the FEEL function `to json()`. The FEEL value classes also implement `to_json`. The types are lost:
+
+```ruby
+result = FEEL.evaluate('{due: date("2020-01-01"), wait: duration("P2D")}')
+FEEL.to_json(result) # => '{"due":"2020-01-01","wait":"P2D"}'
+```
+
+`FEEL.serialize` and `FEEL.deserialize` keep the types. Values that JSON can't represent are tagged with the key `"$feel"`, so they can be stored (e.g. as the state of a process) and restored to be used in the next evaluation:
+
+```ruby
+data = FEEL.serialize(result)
+# => {"due"=>{"$feel"=>"date", "value"=>"2020-01-01"}, "wait"=>{"$feel"=>"duration", "value"=>"P2D"}}
+variables = FEEL.deserialize(data.to_json)
+FEEL.evaluate("due + wait", variables: variables) # => #<Date: 2020-01-03>
+```
+
+| FEEL type | Serialized |
+|---|---|
+| date | `{"$feel": "date", "value": "2020-01-01"}` |
+| time | `{"$feel": "time", "value": "10:30:00+01:00", "zone": "Europe/Paris"}` (`zone` only for a zone id) |
+| date and time | `{"$feel": "date and time", "value": "2020-07-01T10:30:00@Europe/Berlin", "offset": "+02:00"}` (`offset` only for a zone id) |
+| durations | `{"$feel": "duration", "value": "P1Y2M"}` |
+| range | `{"$feel": "range", "start": ..., "end": ..., "start included": true, "end included": false}` |
+
+A context that contains the key `"$feel"` itself is escaped as `{"$feel": "context", "value": {...}}`. Functions can't be serialized (`FEEL::SerializationError`).
 
 ### Compatibility
 
@@ -280,6 +318,8 @@ Or install it directly:
 ```bash
 $ gem install feel
 ```
+
+The gem doesn't depend on Rails or ActiveSupport. Time zones use the [tzinfo](https://github.com/tzinfo/tzinfo) gem and the zone database of the system; on systems without one (e.g. Windows), also add the `tzinfo-data` gem.
 
 ### Setup
 

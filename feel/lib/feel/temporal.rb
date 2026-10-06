@@ -14,15 +14,17 @@ module FEEL
   # | time (local, no offset)          | `FEEL::LocalTime`                                    |
   # | time with offset / zone          | `FEEL::ZonedTime` (local time + offset + zone id)    |
   # | date and time (local, no offset) | `FEEL::LocalDateTime`                                |
-  # | date and time with offset        | `Time` (fixed UTC offset)                            |
-  # | date and time with zone id       | `ActiveSupport::TimeWithZone` (`@Europe/Paris`)      |
-  # | years and months duration        | `ActiveSupport::Duration` with only years/months     |
-  # | days and time duration           | `ActiveSupport::Duration` with days..seconds parts   |
+  # | date and time with offset        | `Time` (fixed UTC offset, or the system zone)        |
+  # | date and time with zone id       | `Time` with a `TZInfo::Timezone` (`@Europe/Paris`)   |
+  # | years and months duration        | `FEEL::Duration` (whole months)                      |
+  # | days and time duration           | `FEEL::Duration` (exact seconds)                     |
   #
-  # Values passed in as variables: `DateTime` is treated like `Time` (a
-  # date-time with offset), `Time.now`/`Time.zone.now` work as is.
-  # `ActiveSupport::Duration`s that mix years/months with days/time parts (e.g.
-  # `1.month + 2.days`) are accepted and use ActiveSupport arithmetic.
+  # Values passed in as variables are converted on input (`Temporal.normalize`):
+  # `DateTime` becomes a `Time` with the same offset. If ActiveSupport is used
+  # by the application, `ActiveSupport::TimeWithZone` becomes a `Time` with its
+  # zone and `ActiveSupport::Duration` a `FEEL::Duration` (a duration that
+  # mixes years/months with days/time parts, e.g. `1.month + 2.days`, becomes
+  # a days and time duration of the same number of seconds).
   #
   # Local values never carry an offset: `FEEL::LocalTime`/`FEEL::LocalDateTime`
   # mean "no offset", while UTC is a `ZonedTime`/`Time` with offset 0 ("Z").
@@ -85,6 +87,9 @@ module FEEL
     end
     alias_method :iso8601, :to_s
 
+    def as_json(*) = iso8601
+    def to_json(*args) = iso8601.to_json(*args)
+
     def inspect = "#<FEEL::LocalTime #{self}>"
   end
 
@@ -138,6 +143,9 @@ module FEEL
       "#{local_time}#{Temporal.format_offset(offset)}"
     end
 
+    def as_json(*) = iso8601
+    def to_json(*args) = iso8601.to_json(*args)
+
     def inspect = "#<FEEL::ZonedTime #{self}>"
   end
 
@@ -160,7 +168,15 @@ module FEEL
       @time = Time.utc(year, month, day, hour, minute, second)
     end
 
-    delegate :year, :month, :day, :hour, :min, :sec, :wday, :yday, :to_date, to: :time
+    def year = time.year
+    def month = time.month
+    def day = time.day
+    def hour = time.hour
+    def min = time.min
+    def sec = time.sec
+    def wday = time.wday
+    def yday = time.yday
+    def to_date = Date.new(year, month, day)
     alias_method :minute, :min
     alias_method :second, :sec
 
@@ -170,11 +186,13 @@ module FEEL
 
     def local_time = LocalTime.from_seconds((hour * 3600) + (min * 60) + sec + fraction)
 
-    # Interprets the local date-time in the given zone (default: `Time.zone`, or
-    # the system zone).
-    def to_time(zone = Time.zone)
+    # Interprets the local date-time in the given zone (a zone id or a
+    # `TZInfo::Timezone`; default: the zone of `FEEL.config.time_zone`, or the
+    # system zone).
+    def to_time(zone = Temporal.default_zone)
       args = [year, month, day, hour, min, sec + fraction]
-      zone ? zone.local(*args) : Time.local(*args)
+      zone = Temporal.zone(zone) if zone.is_a?(String)
+      zone ? Temporal.local_in_zone(*args, zone) : Time.local(*args)
     end
 
     def to_datetime = to_time.to_datetime
@@ -189,8 +207,8 @@ module FEEL
       LocalDateTime.from_time(time - other)
     end
 
-    def advance(options)
-      LocalDateTime.from_time(time.advance(options))
+    def add_months(months)
+      LocalDateTime.from_time(Temporal.add_months(time, months))
     end
 
     def <=>(other)
@@ -208,6 +226,9 @@ module FEEL
       "#{to_date.iso8601}T#{local_time}"
     end
     alias_method :iso8601, :to_s
+
+    def as_json(*) = iso8601
+    def to_json(*args) = iso8601.to_json(*args)
 
     def inspect = "#<FEEL::LocalDateTime #{self}>"
   end
@@ -264,7 +285,7 @@ module FEEL
         return nil unless local
         return ZonedTime.new(local, parse_offset(offset)) if offset
 
-        tz = tzinfo(zone_id)
+        tz = zone(zone_id)
         tz && ZonedTime.new(local, tz.current_period.base_utc_offset, tz.identifier)
       elsif (match = LOCAL_TIME_PATTERN.match(value))
         hour, minute, second, fraction = match.captures
@@ -286,8 +307,12 @@ module FEEL
 
         zone_id = bracket_zone || at_zone
         if zone_id
-          zone = time_zone(zone_id)
-          zone&.local(*fields)
+          tz = zone(zone_id)
+          return nil if tz.nil?
+
+          # "...+02:00[Europe/Berlin]": the offset selects the instant (e.g. in
+          # the overlap at the end of the daylight saving time)
+          offset ? offset_time(*fields, parse_offset(offset)).getlocal(tz) : local_in_zone(*fields, tz)
         else
           offset_time(*fields, parse_offset(offset))
         end
@@ -328,16 +353,64 @@ module FEEL
       sign * ((hours * 3600) + (minutes * 60))
     end
 
-    def tzinfo(zone_id)
+    # The TZInfo::Timezone of a zone id (e.g. "Europe/Berlin"), or nil.
+    def zone(zone_id)
+      return zone_id if zone_id.is_a?(TZInfo::Timezone)
+
       TZInfo::Timezone.get(zone_id)
     rescue TZInfo::InvalidTimezoneIdentifier, ArgumentError
       nil
     end
 
-    def time_zone(zone_id)
-      ActiveSupport::TimeZone[zone_id] if tzinfo(zone_id) || ActiveSupport::TimeZone::MAPPING.key?(zone_id)
-    rescue ArgumentError
+    # The zone of `now()` / `today()`: `FEEL.config.time_zone`, else the
+    # ActiveSupport `Time.zone` if the application uses it, else nil (the
+    # system zone).
+    def default_zone
+      configured = FEEL.config.time_zone
+      return zone(configured) if configured
+      return Time.zone.tzinfo if Time.respond_to?(:zone) && Time.zone.respond_to?(:tzinfo)
+
       nil
+    end
+
+    def now
+      tz = default_zone
+      tz ? Time.now.getlocal(tz) : Time.now
+    end
+
+    def today
+      date_of(now)
+    end
+
+    # A date-time in a zone (a `Time` with the TZInfo::Timezone as zone). Like
+    # java.time.ZonedDateTime: a local time in a gap (e.g. at the start of the
+    # daylight saving time) is moved forward by the length of the gap, an
+    # ambiguous local time uses the earlier offset.
+    def local_in_zone(year, month, day, hour, minute, second, tz)
+      wall = Time.utc(year, month, day, hour, minute, second)
+      periods = tz.periods_for_local(wall)
+      offset = if periods.empty?
+        tz.period_for_utc(wall - 86_400).utc_total_offset
+      else
+        periods.first.utc_total_offset
+      end
+      (wall - offset).getlocal(tz)
+    end
+
+    def zoned?(value)
+      Time === value && value.zone.is_a?(TZInfo::Timezone)
+    end
+
+    # Adds months to a date-time (a UTC `Time` holding a wall-clock time, a
+    # `Time` with offset or a `Time` with zone), keeping the time of day; the
+    # day is clamped to the end of the month.
+    def add_months(time, months)
+      date = Date.new(time.year, time.month, time.day) >> months
+      fields = [date.year, date.month, date.day, time.hour, time.min, time.sec + time.subsec]
+      if zoned?(time) then local_in_zone(*fields, time.zone)
+      elsif time.utc? then Time.utc(*fields)
+      else Time.new(*fields, format_offset(time.utc_offset, utc: "+00:00"))
+      end
     end
 
     #
@@ -363,28 +436,11 @@ module FEEL
     end
 
     def years_months_duration(total_months)
-      total_months = total_months.to_i
-      sign = total_months.negative? ? -1 : 1
-      years = total_months.abs / 12 * sign
-      months = total_months.abs % 12 * sign
-      parts = { years: years, months: months }.reject { |_, v| v.zero? }
-      parts = { months: 0 } if parts.empty?
-      value = (years * ActiveSupport::Duration::SECONDS_PER_YEAR) + (months * ActiveSupport::Duration::SECONDS_PER_MONTH)
-      ActiveSupport::Duration.new(value, parts)
+      Duration.years_months(total_months.to_i)
     end
 
     def days_time_duration(total_seconds)
-      total_seconds = normalize_number(total_seconds.to_r)
-      sign = total_seconds.negative? ? -1 : 1
-      rest = total_seconds.abs
-      days = rest.to_i / 86_400
-      hours = (rest.to_i % 86_400) / 3600
-      minutes = (rest.to_i % 3600) / 60
-      seconds = normalize_number(rest - (days * 86_400) - (hours * 3600) - (minutes * 60))
-      parts = { days: days * sign, hours: hours * sign, minutes: minutes * sign, seconds: seconds * sign }
-      parts = parts.reject { |_, v| v.zero? }
-      parts = { seconds: 0 } if parts.empty?
-      ActiveSupport::Duration.new(total_seconds, parts)
+      Duration.days_time(total_seconds)
     end
 
     def normalize_number(value)
@@ -406,15 +462,17 @@ module FEEL
     #
 
     def duration?(value)
-      value.is_a?(ActiveSupport::Duration)
+      Duration === value || active_support_duration?(value)
     end
 
     def years_months_duration?(value)
-      duration?(value) && !value.parts.empty? && (value.parts.keys - YEAR_MONTH_PARTS).empty?
+      value = normalize(value)
+      Duration === value && value.years_months?
     end
 
     def days_time_duration?(value)
-      duration?(value) && (value.parts.empty? || (value.parts.keys - DAY_TIME_PARTS).empty?)
+      value = normalize(value)
+      Duration === value && value.days_time?
     end
 
     def date?(value)
@@ -427,7 +485,7 @@ module FEEL
 
     # A date-time with an offset or a zone (absolute point in time).
     def absolute_date_time?(value)
-      value.is_a?(ActiveSupport::TimeWithZone) || value.is_a?(Time) || value.is_a?(DateTime)
+      Time === value || DateTime === value || time_with_zone?(value)
     end
 
     def date_time?(value)
@@ -442,11 +500,8 @@ module FEEL
 
     # The FEEL type kind of a temporal value, or nil.
     def kind(value)
-      if duration?(value)
-        if years_months_duration?(value) then :years_months_duration
-        elsif days_time_duration?(value) then :days_time_duration
-        else :duration
-        end
+      value = normalize(value)
+      if Duration === value then value.kind
       elsif date?(value) then :date
       elsif time?(value) then :time
       elsif date_time?(value) then :date_time
@@ -459,15 +514,43 @@ module FEEL
       when "time" then time?(value)
       when "date and time" then date_time?(value)
       when "duration" then duration?(value)
-      when "years and months duration" then years_months_duration?(value) || (duration?(value) && value.parts.empty?)
+      when "years and months duration" then years_months_duration?(value)
       when "days and time duration" then days_time_duration?(value)
       else false
       end
     end
 
-    # Converts `DateTime` (and TimeWithZone/Time stay) to a Ruby `Time`-like value.
+    # Converts temporal values of other Ruby types to the FEEL representation:
+    # `DateTime` to `Time`, and (if ActiveSupport is used) TimeWithZone to a
+    # zoned `Time` and ActiveSupport::Duration to a FEEL::Duration. Other
+    # values are returned as is.
     def normalize(value)
-      value.is_a?(DateTime) ? value.to_time : value
+      if DateTime === value then value.to_time
+      elsif time_with_zone?(value) then Time.at(value.to_r).getlocal(value.time_zone.tzinfo)
+      elsif active_support_duration?(value) then from_active_support_duration(value)
+      else value
+      end
+    end
+
+    def active_support_duration?(value)
+      defined?(ActiveSupport::Duration) ? ActiveSupport::Duration === value : false
+    end
+
+    def time_with_zone?(value)
+      defined?(ActiveSupport::TimeWithZone) ? ActiveSupport::TimeWithZone === value : false
+    end
+
+    def from_active_support_duration(duration)
+      parts = duration.parts
+      if !parts.empty? && (parts.keys - YEAR_MONTH_PARTS).empty?
+        years_months_duration(((parts[:years] || 0) * 12) + (parts[:months] || 0))
+      elsif (parts.keys - DAY_TIME_PARTS).empty?
+        seconds = ((parts[:weeks] || 0) * 604_800) + ((parts[:days] || 0) * 86_400) +
+          ((parts[:hours] || 0) * 3600) + ((parts[:minutes] || 0) * 60) + (parts[:seconds] || 0).to_r
+        days_time_duration(seconds)
+      else
+        days_time_duration(duration.value.to_r)
+      end
     end
 
     def date_of(value)
@@ -478,11 +561,11 @@ module FEEL
     end
 
     def total_months(duration)
-      ((duration.parts[:years] || 0) * 12) + (duration.parts[:months] || 0)
+      normalize(duration).total_months
     end
 
     def total_seconds(duration)
-      normalize_number(duration.value.to_r)
+      normalize(duration).total_seconds
     end
 
     def wall_clock(value)
@@ -493,7 +576,8 @@ module FEEL
     end
 
     def zone_id(value)
-      value.time_zone.tzinfo.identifier if value.is_a?(ActiveSupport::TimeWithZone)
+      value = normalize(value)
+      value.zone.identifier if zoned?(value)
     end
 
     #
@@ -525,10 +609,6 @@ module FEEL
         when "hours" then seconds / 3600 % 24 * sign
         when "minutes" then seconds / 60 % 60 * sign
         when "seconds" then seconds % 60 * sign
-        end
-      when :duration
-        case name
-        when "years", "months", "days", "hours", "minutes", "seconds" then value.parts[name.to_sym] || 0
         end
       end
     end
@@ -570,11 +650,6 @@ module FEEL
       right_kind = kind(right)
       return nil if left_kind.nil? || right_kind.nil?
 
-      if left_kind == :duration || right_kind == :duration
-        return nil unless duration?(left) && duration?(right)
-
-        return left.value <=> right.value
-      end
       return nil unless left_kind == right_kind
 
       case left_kind
@@ -653,8 +728,6 @@ module FEEL
         years_months_duration(total_months(left) + (sign * total_months(right)))
       elsif left_kind == :days_time_duration && right_kind == :days_time_duration
         days_time_duration(total_seconds(left) + (sign * total_seconds(right)))
-      elsif left_kind == :duration || right_kind == :duration
-        sign.positive? ? left + right : left - right
       end
     end
 
@@ -665,7 +738,7 @@ module FEEL
         months = sign * total_months(duration)
         case kind(value)
         when :date then value >> months
-        when :date_time then value.advance(months: months)
+        when :date_time then value.is_a?(LocalDateTime) ? value.add_months(months) : add_months(value, months)
         end
       when :days_time_duration
         seconds = sign * total_seconds(duration)
@@ -673,21 +746,14 @@ module FEEL
         when :date then value + (seconds / 86_400r).floor
         when :date_time, :time then value + seconds
         end
-      when :duration
-        case kind(value)
-        when :date, :date_time
-          if value.is_a?(LocalDateTime)
-            LocalDateTime.from_time(sign.positive? ? duration.since(value.time) : duration.ago(value.time))
-          else
-            sign.positive? ? value + duration : value - duration
-          end
-        end
       end
     end
 
     def multiply(left, right)
+      left = normalize(left)
+      right = normalize(right)
       duration, number = duration?(left) ? [left, right] : [right, left]
-      return nil unless duration?(duration) && number.is_a?(Numeric) && !duration?(number)
+      return nil unless duration?(duration) && Numbers.number?(number)
 
       factor = exact_number(number)
       return nil if factor.nil?
@@ -695,15 +761,16 @@ module FEEL
       case kind(duration)
       when :years_months_duration then years_months_duration(round_months(total_months(duration) * factor))
       when :days_time_duration then days_time_duration(truncate_nanos(total_seconds(duration).to_r * factor))
-      else duration * number
       end
     end
 
     def divide(left, right)
+      left = normalize(left)
+      right = normalize(right)
       return nil unless duration?(left)
 
       if duration?(right)
-        return nil if right.value.zero?
+        return nil if right.zero?
 
         case [kind(left), kind(right)]
         when %i[years_months_duration years_months_duration]
@@ -711,14 +778,13 @@ module FEEL
         when %i[days_time_duration days_time_duration]
           to_number(total_seconds(left).to_r / total_seconds(right))
         end
-      elsif right.is_a?(Numeric)
+      elsif Numbers.number?(right)
         divisor = exact_number(right)
         return nil if divisor.nil? || divisor.zero?
 
         case kind(left)
         when :years_months_duration then years_months_duration(round_months(total_months(left) / divisor))
         when :days_time_duration then days_time_duration(truncate_nanos(total_seconds(left).to_r / divisor))
-        else left / right
         end
       end
     end
@@ -742,13 +808,8 @@ module FEEL
     end
 
     def abs(duration)
-      return duration unless duration?(duration)
-
-      case kind(duration)
-      when :years_months_duration then years_months_duration(total_months(duration).abs)
-      when :days_time_duration then days_time_duration(total_seconds(duration).abs)
-      else duration.negative? ? -duration : duration
-      end
+      duration = normalize(duration)
+      duration?(duration) ? duration.abs : duration
     end
 
     #
@@ -786,12 +847,10 @@ module FEEL
       when :time then value.to_s
       when :date_time
         if value.is_a?(LocalDateTime) then value.to_s
-        elsif value.is_a?(ActiveSupport::TimeWithZone) then "#{format_local_date_time(value)}@#{zone_id(value)}"
+        elsif zoned?(value) then "#{format_local_date_time(value)}@#{zone_id(value)}"
         else "#{format_local_date_time(value)}#{format_offset(value.utc_offset)}"
         end
-      when :years_months_duration then format_years_months_duration(total_months(value))
-      when :days_time_duration then format_days_time_duration(total_seconds(value))
-      when :duration then value.iso8601
+      when :years_months_duration, :days_time_duration then value.to_s
       end
     end
 
@@ -799,10 +858,8 @@ module FEEL
     # times always with offset, zoned date-times as `...+02:00[Europe/Berlin]`.
     def format_iso(value)
       value = normalize(value)
-      case value
-      when ZonedTime then value.iso8601
-      when ActiveSupport::TimeWithZone
-        "#{format_local_date_time(value)}#{format_offset(value.utc_offset)}[#{zone_id(value)}]"
+      if ZonedTime === value then value.iso8601
+      elsif zoned?(value) then "#{format_local_date_time(value)}#{format_offset(value.utc_offset)}[#{zone_id(value)}]"
       else format_value(value)
       end
     end

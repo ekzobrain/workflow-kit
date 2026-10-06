@@ -4,12 +4,24 @@ module FEEL
   class Configuration
     DEFAULT_EXPRESSION_CACHE_SIZE = 1_000
 
-    attr_accessor :functions, :strict
+    # Custom functions by name (String or Symbol keys), e.g.
+    # `{ "reverse" => ->(s) { s.reverse } }`.
+    attr_accessor :functions
+
+    # Raise FEEL::EvaluationError for unknown names instead of returning null.
+    attr_accessor :strict
+
+    # The zone id (e.g. "Europe/Berlin") of `now()` and `today()`. Default:
+    # nil, i.e. `Time.zone` of ActiveSupport if the application uses it, else
+    # the system zone.
+    attr_accessor :time_zone
+
     attr_reader :expression_cache_size
 
     def initialize
-      @functions = HashWithIndifferentAccess.new
+      @functions = {}
       @strict = false
+      @time_zone = nil
       @expression_cache_size = DEFAULT_EXPRESSION_CACHE_SIZE
     end
 

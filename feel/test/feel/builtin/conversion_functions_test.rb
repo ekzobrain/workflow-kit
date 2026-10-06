@@ -36,37 +36,37 @@ module FEEL
 
     describe "A date and time() function" do
       it "should convert String" do
-        _(evaluate(" date and time(x) ", x: "2012-12-24T23:59:00")).must_equal DateTime.new(2012, 12, 24, 23, 59, 0)
-        _(evaluate(" date and time(x) ", x: "2012-12-24T23:59:00+01:00")).must_equal DateTime.new(2012, 12, 24, 23, 59, 0, "+01:00")
+        _(evaluate(" date and time(x) ", x: "2012-12-24T23:59:00")).must_equal FEEL::LocalDateTime.new(2012, 12, 24, 23, 59, 0)
+        _(evaluate(" date and time(x) ", x: "2012-12-24T23:59:00+01:00")).must_equal Time.new(2012, 12, 24, 23, 59, 0, "+01:00")
         result = evaluate(" date and time(x) ", x: "2012-12-24T23:59:00@Europe/Berlin")
-        _(result).must_equal Time.find_zone!("Europe/Berlin").local(2012, 12, 24, 23, 59, 0)
-        _(result.time_zone.name).must_equal "Europe/Berlin"
+        _(result).must_equal Time.new(2012, 12, 24, 23, 59, 0, in: TZInfo::Timezone.get("Europe/Berlin"))
+        _(result.zone.identifier).must_equal "Europe/Berlin"
       end
 
       it "should convert (DateTime, Timezone)" do
         result = evaluate('date and time(@"2020-07-31T14:27:30@Europe/Berlin", "Z")')
-        _(result).must_equal DateTime.new(2020, 7, 31, 12, 27, 30)
+        _(result).must_equal Time.utc(2020, 7, 31, 12, 27, 30)
         _(result.utc_offset).must_equal 0
 
         result = evaluate('date and time(@"2020-07-31T14:27:30@Europe/Berlin", "America/Los_Angeles")')
-        _(result).must_equal Time.find_zone!("America/Los_Angeles").local(2020, 7, 31, 5, 27, 30)
-        _(result.time_zone.name).must_equal "America/Los_Angeles"
+        _(result).must_equal Time.new(2020, 7, 31, 5, 27, 30, in: TZInfo::Timezone.get("America/Los_Angeles"))
+        _(result.zone.identifier).must_equal "America/Los_Angeles"
 
         result = evaluate('date and time(@"2020-07-31T14:27:30", "Z")')
-        _(result).must_equal DateTime.new(2020, 7, 31, 14, 27, 30)
+        _(result).must_equal Time.utc(2020, 7, 31, 14, 27, 30)
         _(result.utc_offset).must_equal 0
       end
 
       it "should convert (Date,Time)" do
-        _(evaluate(' date and time(date("2012-12-24"),time("T23:59:00")) ')).must_equal DateTime.new(2012, 12, 24, 23, 59, 0)
-        _(evaluate(' date and time(date("2012-12-24"),time("T23:59:00+01:00")) ')).must_equal DateTime.new(2012, 12, 24, 23, 59, 0, "+01:00")
+        _(evaluate(' date and time(date("2012-12-24"),time("T23:59:00")) ')).must_equal FEEL::LocalDateTime.new(2012, 12, 24, 23, 59, 0)
+        _(evaluate(' date and time(date("2012-12-24"),time("T23:59:00+01:00")) ')).must_equal Time.new(2012, 12, 24, 23, 59, 0, "+01:00")
       end
 
       it "should convert (DateTime,Time)" do
-        _(evaluate(' date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00")) ')).must_equal DateTime.new(2012, 12, 24, 23, 59, 0)
-        _(evaluate(' date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00+01:00")) ')).must_equal DateTime.new(2012, 12, 24, 23, 59, 0, "+01:00")
-        _(evaluate(' date and time(date and time("2012-12-24T10:24:00+01:00"),time("T23:59:00")) ')).must_equal DateTime.new(2012, 12, 24, 23, 59, 0)
-        _(evaluate(' date and time(date and time("2012-12-24T10:24:00+01:00"),time("T23:59:00+01:00")) ')).must_equal DateTime.new(2012, 12, 24, 23, 59, 0, "+01:00")
+        _(evaluate(' date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00")) ')).must_equal FEEL::LocalDateTime.new(2012, 12, 24, 23, 59, 0)
+        _(evaluate(' date and time(date and time("2012-12-24T10:24:00"),time("T23:59:00+01:00")) ')).must_equal Time.new(2012, 12, 24, 23, 59, 0, "+01:00")
+        _(evaluate(' date and time(date and time("2012-12-24T10:24:00+01:00"),time("T23:59:00")) ')).must_equal FEEL::LocalDateTime.new(2012, 12, 24, 23, 59, 0)
+        _(evaluate(' date and time(date and time("2012-12-24T10:24:00+01:00"),time("T23:59:00+01:00")) ')).must_equal Time.new(2012, 12, 24, 23, 59, 0, "+01:00")
       end
 
       it "should return null if the date is not valid (not a leap year)" do
@@ -81,8 +81,8 @@ module FEEL
 
       it "should convert a string in ISO format with timezone ID" do
         result = evaluate(" date and time(x) ", x: "2023-06-14T14:55:00+02:00[Europe/Berlin]")
-        _(result).must_equal Time.find_zone!("Europe/Berlin").local(2023, 6, 14, 14, 55, 0)
-        _(result.time_zone.name).must_equal "Europe/Berlin"
+        _(result).must_equal Time.new(2023, 6, 14, 14, 55, 0, in: TZInfo::Timezone.get("Europe/Berlin"))
+        _(result.zone.identifier).must_equal "Europe/Berlin"
       end
     end
 
@@ -258,34 +258,34 @@ module FEEL
 
     describe "A duration() function" do
       it "should convert day-time-String" do
-        _(evaluate(" duration(x) ", x: "P2DT20H14M")).must_equal 2.days + 20.hours + 14.minutes
+        _(evaluate(" duration(x) ", x: "P2DT20H14M")).must_equal FEEL::Duration.days(2) + FEEL::Duration.hours(20) + FEEL::Duration.minutes(14)
       end
 
       it "should convert day-time-String with negative duration" do
-        _(evaluate(" duration(x) ", x: "-PT5M")).must_equal(-5.minutes)
-        _(evaluate(" duration(x) ", x: "PT-5M")).must_equal(-5.minutes)
-        _(evaluate(" duration(x) ", x: "P-1D")).must_equal(-1.day)
-        _(evaluate(" duration(x) ", x: "PT-2H")).must_equal(-2.hours)
-        _(evaluate(" duration(x) ", x: "PT-3M-4S")).must_equal(-3.minutes - 4.seconds)
+        _(evaluate(" duration(x) ", x: "-PT5M")).must_equal(-FEEL::Duration.minutes(5))
+        _(evaluate(" duration(x) ", x: "PT-5M")).must_equal(-FEEL::Duration.minutes(5))
+        _(evaluate(" duration(x) ", x: "P-1D")).must_equal(-FEEL::Duration.days(1))
+        _(evaluate(" duration(x) ", x: "PT-2H")).must_equal(-FEEL::Duration.hours(2))
+        _(evaluate(" duration(x) ", x: "PT-3M-4S")).must_equal(-FEEL::Duration.minutes(3) - FEEL::Duration.seconds(4))
       end
 
       it "should convert year-month-String" do
-        _(evaluate(" duration(x) ", x: "P2Y4M")).must_equal 2.years + 4.months
+        _(evaluate(" duration(x) ", x: "P2Y4M")).must_equal FEEL::Duration.years(2) + FEEL::Duration.months(4)
       end
 
       it "should convert year-month-String with negative duration" do
-        _(evaluate(" duration(x) ", x: "-P1Y2M")).must_equal(-1.year - 2.months)
-        _(evaluate(" duration(x) ", x: "P-1Y")).must_equal(-1.year)
-        _(evaluate(" duration(x) ", x: "P-2M")).must_equal(-2.months)
-        _(evaluate(" duration(x) ", x: "P-1Y-2M")).must_equal(-1.year - 2.months)
+        _(evaluate(" duration(x) ", x: "-P1Y2M")).must_equal(-FEEL::Duration.years(1) - FEEL::Duration.months(2))
+        _(evaluate(" duration(x) ", x: "P-1Y")).must_equal(-FEEL::Duration.years(1))
+        _(evaluate(" duration(x) ", x: "P-2M")).must_equal(-FEEL::Duration.months(2))
+        _(evaluate(" duration(x) ", x: "P-1Y-2M")).must_equal(-FEEL::Duration.years(1) - FEEL::Duration.months(2))
       end
     end
 
     describe "A years and months duration(from,to) function" do
       it "should convert (Date,Date)" do
-        _(evaluate(' years and months duration( date("2011-12-22"), date("2013-08-24") ) ')).must_equal 1.year + 8.months
-        _(evaluate(' years and months duration( date and time("2011-12-22T10:00:00"), date and time("2013-08-24T10:00:00") ) ')).must_equal 1.year + 8.months
-        _(evaluate(' years and months duration( date and time("2011-12-22T10:00:00+01:00"), date and time("2013-08-24T10:00:00+01:00") ) ')).must_equal 1.year + 8.months
+        _(evaluate(' years and months duration( date("2011-12-22"), date("2013-08-24") ) ')).must_equal FEEL::Duration.years(1) + FEEL::Duration.months(8)
+        _(evaluate(' years and months duration( date and time("2011-12-22T10:00:00"), date and time("2013-08-24T10:00:00") ) ')).must_equal FEEL::Duration.years(1) + FEEL::Duration.months(8)
+        _(evaluate(' years and months duration( date and time("2011-12-22T10:00:00+01:00"), date and time("2013-08-24T10:00:00+01:00") ) ')).must_equal FEEL::Duration.years(1) + FEEL::Duration.months(8)
       end
     end
 

@@ -52,7 +52,7 @@ module FEEL
     end
 
     it "A time should has a time offset property" do
-      _(evaluate(' time("11:45:30+02:00").time offset ')).must_equal 2.hours
+      _(evaluate(' time("11:45:30+02:00").time offset ')).must_equal FEEL::Duration.hours(2)
     end
 
     it "A time should has a timezone property" do
@@ -128,16 +128,16 @@ module FEEL
     end
 
     it "A date-time should has a time offset property" do
-      _(evaluate(' date and time("2017-03-10T11:45:30+02:00").time offset ')).must_equal 2.hours
+      _(evaluate(' date and time("2017-03-10T11:45:30+02:00").time offset ')).must_equal FEEL::Duration.hours(2)
     end
 
     it "A date-time should has a variable with a time offset property" do
       # Ruby specific: Time, DateTime and TimeWithZone values (parenthesized, see the skip below)
-      _(evaluate(" (dateTime).time offset ", dateTime: Time.new(2017, 3, 10, 11, 45, 30, "+02:00"))).must_equal 2.hours
-      _(evaluate(" (dateTime).time offset ", dateTime: DateTime.new(2017, 3, 10, 11, 45, 30, "+02:00"))).must_equal 2.hours
-      _(evaluate(" (dateTime).time offset ", dateTime: Time.find_zone!("Europe/Paris").local(2017, 3, 10, 11, 45, 30))).must_equal 1.hour
+      _(evaluate(" (dateTime).time offset ", dateTime: Time.new(2017, 3, 10, 11, 45, 30, "+02:00"))).must_equal FEEL::Duration.hours(2)
+      _(evaluate(" (dateTime).time offset ", dateTime: DateTime.new(2017, 3, 10, 11, 45, 30, "+02:00"))).must_equal FEEL::Duration.hours(2)
+      _(evaluate(" (dateTime).time offset ", dateTime: Time.new(2017, 3, 10, 11, 45, 30, in: TZInfo::Timezone.get("Europe/Paris")))).must_equal FEEL::Duration.hours(1)
 
-      _(evaluate(" dateTime.time offset ", dateTime: Time.new(2017, 3, 10, 11, 45, 30, "+02:00"))).must_equal 2.hours
+      _(evaluate(" dateTime.time offset ", dateTime: Time.new(2017, 3, 10, 11, 45, 30, "+02:00"))).must_equal FEEL::Duration.hours(2)
     end
 
     it "A date-time should has a timezone property" do
