@@ -16,9 +16,12 @@ $VERBOSE = verbose
 require "feel/configuration"
 require "feel/scope"
 require "feel/function"
+require "feel/values"
+require "feel/temporal"
 require "feel/nodes"
 require "feel/parser"
 
+Dir[File.join(__dir__, "feel/builtins/*.rb")].sort.each { |file| require file }
 require "feel/literal_expression"
 require "feel/unary_tests"
 
