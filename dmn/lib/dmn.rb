@@ -24,8 +24,9 @@ require "dmn/definitions"
 
 
 module DMN
-  class SyntaxError < StandardError; end
-  class EvaluationError < StandardError; end
+  # Subclasses of the FEEL errors, so `rescue FEEL::Error` also catches them.
+  class SyntaxError < FEEL::SyntaxError; end
+  class EvaluationError < FEEL::EvaluationError; end
 
   def self.decide(decision_id, definitions: nil, definitions_json: nil, definitions_xml: nil, variables: {})
     if definitions_xml.present?

@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module FEEL
-  class SerializationError < ArgumentError; end
-
   #
   # Conversion of FEEL values (results of FEEL.evaluate, variables) to JSON.
   #

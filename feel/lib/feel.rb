@@ -15,6 +15,7 @@ verbose, $VERBOSE = $VERBOSE, nil
 require "treetop"
 $VERBOSE = verbose
 
+require "feel/errors"
 require "feel/configuration"
 require "feel/expression_cache"
 require "feel/scope"
@@ -33,9 +34,6 @@ require "feel/unary_tests"
 require "feel/serialization"
 
 module FEEL
-  class SyntaxError < StandardError; end
-  class EvaluationError < StandardError; end
-
   # Evaluates an expression with the given variables. The parsed expression is
   # cached (see FEEL.compile), so evaluating the same text again is cheap.
   def self.evaluate(expression_text, variables: {})

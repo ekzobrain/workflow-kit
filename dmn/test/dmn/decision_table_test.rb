@@ -42,6 +42,8 @@ module DMN
         decision_table.evaluate({})
       end
       _(error.message).must_match(/missing an input expression but it is required/)
+      _(error).must_be_kind_of FEEL::SyntaxError
+      _(error).must_be_kind_of FEEL::Error
     end
 
     it "should evaluate a decision table with no inputs" do

@@ -158,6 +158,26 @@ UnaryTests.new(text: '> speed - speed_limit').variable_names
 # => ["speed, speed_limit"]
 ```
 
+### Errors
+
+All errors raised by the gem are subclasses of `FEEL::Error`:
+
+| Error | Raised when |
+|---|---|
+| `FEEL::SyntaxError` | an expression or unary tests text is not valid |
+| `FEEL::EvaluationError` | in strict mode: an unknown variable or function, wrong arguments, a failed `assert()` (otherwise the result is null) |
+| `FEEL::SerializationError` | a value can't be serialized or deserialized (`FEEL.serialize` / `FEEL.deserialize`) |
+
+```ruby
+begin
+  FEEL.evaluate(text, variables: variables)
+rescue FEEL::Error => e
+  # ...
+end
+```
+
+Failures of built-in or custom functions (Ruby procs) result in null, as in FEEL.
+
 ### Compiling and caching expressions
 
 Parsing an expression is much more expensive than evaluating it. `FEEL.compile` parses an expression once and returns an object that can be evaluated many times with different variables:
