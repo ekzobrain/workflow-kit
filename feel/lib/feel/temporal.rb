@@ -795,16 +795,28 @@ module FEEL
       "#{sign}P#{"#{years}Y" unless years.zero?}#{"#{months}M" unless months.zero?}"
     end
 
+    # Fractions of seconds are kept up to nanoseconds, e.g. "PT1.5S", "-PT0.25S".
     def format_days_time_duration(total)
-      seconds = total.to_r.abs.floor
-      return "P0D" if seconds.zero?
+      total = total.to_r.round(9)
+      return "P0D" if total.zero?
 
       sign = total.negative? ? "-" : ""
-      days, rest = seconds.divmod(86_400)
+      whole = total.abs.floor
+      fraction = total.abs - whole
+      days, rest = whole.divmod(86_400)
       hours, rest = rest.divmod(3600)
       minutes, seconds = rest.divmod(60)
-      time = "#{"#{hours}H" unless hours.zero?}#{"#{minutes}M" unless minutes.zero?}#{"#{seconds}S" unless seconds.zero?}"
+      seconds_text = format_seconds(seconds + fraction)
+      time = "#{"#{hours}H" unless hours.zero?}#{"#{minutes}M" unless minutes.zero?}#{"#{seconds_text}S" if seconds_text}"
       "#{sign}P#{"#{days}D" unless days.zero?}#{"T#{time}" unless time.empty?}"
+    end
+
+    # "4", "1.5", "0.000000001", or nil for zero seconds.
+    def format_seconds(seconds)
+      return nil if seconds.zero?
+      return seconds.to_i.to_s if seconds.denominator == 1
+
+      BigDecimal(seconds, 20).round(9).to_s("F").sub(/0+\z/, "")
     end
   end
 end

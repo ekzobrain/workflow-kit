@@ -206,6 +206,19 @@ module FEEL
         _(evaluate(' string(@"P1DT2H3M4S") ')).must_equal "P1DT2H3M4S"
       end
 
+      # Not in feel-scala, which drops fractions of seconds ("PT1S"). The DMN
+      # spec uses the lexical form of xs:dayTimeDuration, which keeps them.
+      it "should convert days-time-duration with fractional seconds" do
+        _(evaluate(' string(@"PT1.5S") ')).must_equal "PT1.5S"
+        _(evaluate(' string(@"PT0.25S") ')).must_equal "PT0.25S"
+        _(evaluate(' string(@"-PT1.5S") ')).must_equal "-PT1.5S"
+        _(evaluate(' string(@"P1DT2H3M4.125S") ')).must_equal "P1DT2H3M4.125S"
+        _(evaluate(' string(@"PT0.000000001S") ')).must_equal "PT0.000000001S"
+        _(evaluate(' string(duration("PT2.50S")) ')).must_equal "PT2.5S"
+        _(evaluate(' string(@"PT1.5S" * 2) ')).must_equal "PT3S"
+        _(evaluate(' duration(string(@"PT1.5S")) = @"PT1.5S" ')).must_equal true
+      end
+
       it "should convert zero-length years-months-duration" do
         _(evaluate(' string(@"P0Y") ')).must_equal "P0Y"
         _(evaluate(' string(@"-P0M") ')).must_equal "P0Y"
@@ -374,8 +387,9 @@ module FEEL
         _(evaluate(' to json(@"-P1DT2H3M4S") ')).must_equal '"-P1DT2H3M4S"'
         _(evaluate(' to json(duration("P14M")) ')).must_equal '"P1Y2M"'
         _(evaluate(' to json({d: @"PT26H"}) ')).must_equal '{"d":"P1DT2H"}'
+        _(evaluate(' to json(@"PT1.5S") ')).must_equal '"PT1.5S"'
 
-        %w[PT26H PT0S P0Y -P1DT2H3M4S P2D P1Y6M].each do |duration|
+        %w[PT26H PT0S P0Y -P1DT2H3M4S P2D P1Y6M PT1.5S].each do |duration|
           _(evaluate(%( to json(@"#{duration}") ))).must_equal "\"#{evaluate(%( string(@"#{duration}") ))}\""
         end
       end
