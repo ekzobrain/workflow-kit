@@ -270,7 +270,7 @@ FEEL::Duration.days(1).to_active_support # => 1 day (requires ActiveSupport)
 
 ### JSON and serialization
 
-`FEEL.to_json` (and `FEEL.as_json`) converts a value to plain JSON, with temporal values as ISO 8601 strings, like the FEEL function `to json()`. The FEEL value classes also implement `to_json`. The types are lost:
+`FEEL.to_json` (and `FEEL.as_json`) converts a value to plain JSON, with temporal values as ISO 8601 strings, like the FEEL function `to json()`. The FEEL value classes also implement `to_json`. The types are lost, and a date and time with a zone id is given with its offset (e.g. `2020-07-01T10:30:00+02:00`), since ISO 8601 has no notation for zone ids:
 
 ```ruby
 result = FEEL.evaluate('{due: date("2020-01-01"), wait: duration("P2D")}')

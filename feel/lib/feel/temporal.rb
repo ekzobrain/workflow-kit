@@ -855,11 +855,12 @@ module FEEL
     end
 
     # The ISO 8601 representation of a temporal value (as used by `to json()`):
-    # times always with offset, zoned date-times as `...+02:00[Europe/Berlin]`.
+    # times and date-times with a zone id are given with their offset (the
+    # zone id is dropped: ISO 8601 has no notation for it).
     def format_iso(value)
       value = normalize(value)
       if ZonedTime === value then value.iso8601
-      elsif zoned?(value) then "#{format_local_date_time(value)}#{format_offset(value.utc_offset)}[#{zone_id(value)}]"
+      elsif zoned?(value) then "#{format_local_date_time(value)}#{format_offset(value.utc_offset)}"
       else format_value(value)
       end
     end

@@ -117,7 +117,7 @@ module FEEL
                               'z: date and time("2020-07-01T10:30:00@Europe/Berlin"), p: duration("P1Y2M"), s: duration("PT90M"), n: 1.5}')
         _(FEEL.as_json(value)).must_equal({
           "d" => "2020-01-01", "t" => "10:30:00", "o" => "2020-01-01T10:30:00+02:00",
-          "z" => "2020-07-01T10:30:00+02:00[Europe/Berlin]", "p" => "P1Y2M", "s" => "PT1H30M", "n" => 1.5,
+          "z" => "2020-07-01T10:30:00+02:00", "p" => "P1Y2M", "s" => "PT1H30M", "n" => 1.5,
         })
         _(FEEL.to_json(value)).must_equal JSON.generate(FEEL.as_json(value))
       end

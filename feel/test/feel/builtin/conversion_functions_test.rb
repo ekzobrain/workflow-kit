@@ -408,7 +408,9 @@ module FEEL
       end
 
       it "should convert a date and time with timezone" do
-        _(evaluate(' to json(@"2023-06-14T14:55:00@Europe/Berlin") ')).must_equal '"2023-06-14T14:55:00+02:00[Europe/Berlin]"'
+        # Adapted: ISO 8601 with the offset instead of the java.time format of
+        # feel-scala ("2023-06-14T14:55:00+02:00[Europe/Berlin]")
+        _(evaluate(' to json(@"2023-06-14T14:55:00@Europe/Berlin") ')).must_equal '"2023-06-14T14:55:00+02:00"'
       end
 
       it "should convert a function" do
