@@ -931,8 +931,26 @@ module FEEL
         end
 
         it "should eval get entries" do
-          _(LiteralExpression.new(text: 'get entries({"foo": "bar"})').evaluate).must_equal({ "foo" => "bar" }.entries)
+          _(LiteralExpression.new(text: 'get entries({"foo": "bar"})').evaluate).must_equal([{ "key" => "foo", "value" => "bar" }])
           _(LiteralExpression.new(text: "get entries(null)").evaluate).must_be_nil
+        end
+
+        it "should not mutate the input contexts" do
+          ctx = { "foo" => "baz", "nested" => { "a" => 1 } }
+          context_put = LiteralExpression.builtin_functions["context put"]
+          context_merge = LiteralExpression.builtin_functions["context merge"]
+          _(context_put.call(ctx, "foo", "bar")).must_equal({ "foo" => "bar", "nested" => { "a" => 1 } })
+          _(context_put.call(ctx, ["nested", "b"], 2)).must_equal({ "foo" => "baz", "nested" => { "a" => 1, "b" => 2 } })
+          _(context_merge.call(ctx, { "foo" => "bar" })).must_equal({ "foo" => "bar", "nested" => { "a" => 1 } })
+          _(ctx).must_equal({ "foo" => "baz", "nested" => { "a" => 1 } })
+        end
+
+        it "should handle contexts with symbol keys" do
+          get_value = LiteralExpression.builtin_functions["get value"]
+          _(get_value.call({ foo: { bar: 1 } }, ["foo", "bar"])).must_equal 1
+          _(LiteralExpression.new(text: 'get value(ctx, "foo")').evaluate(ctx: { foo: "bar" })).must_equal "bar"
+          _(LiteralExpression.new(text: "get entries(ctx)").evaluate(ctx: { foo: "bar" })).must_equal([{ "key" => "foo", "value" => "bar" }])
+          _(LiteralExpression.new(text: 'context put(ctx, "x", 1)').evaluate(ctx: { foo: "bar" })).must_equal({ "foo" => "bar", "x" => 1 })
         end
       end
 
