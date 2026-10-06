@@ -376,5 +376,38 @@ module FEEL
       _(evaluate(' duration("PT8H") between duration("PT6H") and duration("PT12H") ')).must_equal true
       _(evaluate(' duration("PT2H") between duration("PT6H") and duration("PT12H") ')).must_equal false
     end
+
+    # Not in feel-scala, which truncates the number to an integer (intValue)
+    # and divides day-time durations with millisecond precision. Following
+    # XPath (op:multiply/divide-dayTimeDuration and -yearMonthDuration), as
+    # referenced by the DMN spec: day-time durations are exact (truncated to
+    # nanoseconds), year-month durations are rounded to the nearest month.
+    describe "duration multiplication and division by a number (spec)" do
+      it "should divide a day-time-duration exactly" do
+        _(evaluate(' string(@"PT1S" / 3) ')).must_equal "PT0.333333333S"
+        _(evaluate(' string(@"-PT1S" / 3) ')).must_equal "-PT0.333333333S"
+        _(evaluate(' string(@"PT10S" / 4) ')).must_equal "PT2.5S"
+        _(evaluate(' string(@"P1D" / 7) ')).must_equal "PT3H25M42.857142857S"
+        _(evaluate(' @"PT1S" / 0.5 ')).must_equal 2.seconds
+        _(evaluate(' @"PT1S" / 0 ')).must_be_nil
+      end
+
+      it "should multiply a day-time-duration by a decimal" do
+        _(evaluate(' string(@"PT1S" * 1.5) ')).must_equal "PT1.5S"
+        _(evaluate(' string(1.5 * @"PT1S") ')).must_equal "PT1.5S"
+        _(evaluate(' string(@"PT1S" * 0.1) ')).must_equal "PT0.1S"
+        _(evaluate(' @"PT1H" * 2.5 = @"PT2H30M" ')).must_equal true
+      end
+
+      it "should round a year-month-duration to the nearest month" do
+        _(evaluate(' string(@"P1Y" * 1.5) ')).must_equal "P1Y6M"
+        _(evaluate(' string(@"P1Y" / 5) ')).must_equal "P2M"
+        _(evaluate(' string(@"P1Y" / 8) ')).must_equal "P2M"
+        _(evaluate(' string(@"P1M" * 0.5) ')).must_equal "P1M"
+        _(evaluate(' string(@"P1M" * 0.4) ')).must_equal "P0Y"
+        _(evaluate(' string(@"-P1M" * 0.5) ')).must_equal "P0Y"
+        _(evaluate(' @"P1Y" / 0 ')).must_be_nil
+      end
+    end
   end
 end

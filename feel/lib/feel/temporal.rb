@@ -689,9 +689,12 @@ module FEEL
       duration, number = duration?(left) ? [left, right] : [right, left]
       return nil unless duration?(duration) && number.is_a?(Numeric) && !duration?(number)
 
+      factor = exact_number(number)
+      return nil if factor.nil?
+
       case kind(duration)
-      when :years_months_duration then years_months_duration(total_months(duration) * number.to_i)
-      when :days_time_duration then days_time_duration(total_seconds(duration) * number.to_i)
+      when :years_months_duration then years_months_duration(round_months(total_months(duration) * factor))
+      when :days_time_duration then days_time_duration(truncate_nanos(total_seconds(duration).to_r * factor))
       else duration * number
       end
     end
@@ -709,16 +712,33 @@ module FEEL
           to_number(total_seconds(left).to_r / total_seconds(right))
         end
       elsif right.is_a?(Numeric)
-        return nil if right.zero?
+        divisor = exact_number(right)
+        return nil if divisor.nil? || divisor.zero?
 
         case kind(left)
-        when :years_months_duration then years_months_duration((total_months(left).to_r / right.to_r).to_i)
-        when :days_time_duration
-          millis = (total_seconds(left) * 1000).to_i
-          days_time_duration(Rational((millis.to_r / right.to_r).to_i, 1000))
+        when :years_months_duration then years_months_duration(round_months(total_months(left) / divisor))
+        when :days_time_duration then days_time_duration(truncate_nanos(total_seconds(left).to_r / divisor))
         else left / right
         end
       end
+    end
+
+    # A number as exact Rational (Floats via their decimal representation).
+    def exact_number(number)
+      decimal = Numbers.decimal(number)
+      decimal&.to_r
+    end
+
+    # Months of a multiplied/divided years-months duration: rounded to the
+    # nearest month, halves up (XPath op:multiply-yearMonthDuration).
+    def round_months(months)
+      (months.to_r + Rational(1, 2)).floor
+    end
+
+    # Seconds of a multiplied/divided days-time duration, truncated to
+    # nanoseconds (the precision of formatted durations).
+    def truncate_nanos(seconds)
+      Rational((seconds * 1_000_000_000).truncate, 1_000_000_000)
     end
 
     def abs(duration)
