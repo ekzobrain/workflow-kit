@@ -28,7 +28,7 @@ module FEEL
     end
 
     def evaluate(variables = {})
-      Numbers.normalize(tree.eval(RootScope.build(variables)))
+      Numbers.normalize(tree.compiled.call(RootScope.build(variables)))
     end
 
     def functions

@@ -663,7 +663,7 @@ module FEEL
 
     def evaluate_for(item, context)
       locals = item.is_a?(Hash) ? item.to_h.transform_keys(&:to_s) : {}
-      filter_expression.eval(context.merge({ "item" => item }.merge(locals)))
+      filter_expression.compiled.call(context.merge({ "item" => item }.merge(locals)))
     end
 
     def item_at(list, index)

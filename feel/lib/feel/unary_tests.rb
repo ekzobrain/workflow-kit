@@ -25,7 +25,7 @@ module FEEL
 
     def test(input, variables = {})
       return true if text.nil? || text == "-"
-      tree.matches(input, RootScope.build(variables)) == true
+      tree.compiled_test.call(input, RootScope.build(variables)) == true
     end
   end
 end

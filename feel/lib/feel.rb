@@ -21,6 +21,7 @@ require "feel/values"
 require "feel/range"
 require "feel/temporal"
 require "feel/nodes"
+require "feel/compiler"
 require "feel/parser"
 
 Dir[File.join(__dir__, "feel/builtins/*.rb")].sort.each { |file| require file }

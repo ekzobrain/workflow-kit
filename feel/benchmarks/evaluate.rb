@@ -45,7 +45,8 @@ EXPRESSIONS.each do |text, variables|
   measure("  parse only (uncached)") { FEEL::Parser.parse(text) }
   measure("  build root scope only") { |i| FEEL::RootScope.build(variables.call(i)) }
   context = FEEL::RootScope.build(variables.call(1))
-  measure("  tree.eval only") { expression.tree.eval(context) }
+  measure("  tree.eval only (interpreted)") { expression.tree.eval(context) }
+  measure("  tree.compiled only (closures)") { expression.tree.compiled.call(context) }
 end
 
 UNARY_TESTS.each do |text, input|

@@ -90,6 +90,68 @@ module FEEL
       end
     end
 
+    describe :closures do
+      EXPRESSIONS = [
+        "a + b", "a - b - 1", "a * b / 2", "a ** 2", "-a", "a + 1.5", '"x" + s', "a + null", "s + 1",
+        "a = b", "a != b", "a < b", "a >= b", "s = \"text\"", "a < s", "a between 1 and 10",
+        "a in [1..10]", "a in (1, 2, 3)", "a in < 5", "a instance of number",
+        "a > 1 and b > 1", "a > 1 or b > 100", "a > 1 and x", "not(a > 1)",
+        'if a > b then "a" else "b"', "if x then 1 else 2",
+        "person.age", "person.address.city", "person.missing.city", "people.age", "x.y",
+        "string(a)", "sum([a, b, 1])", "count(people)", "string length(s)", "f(a)", "f()", "missing(a)",
+        "[a, b, s]", "{x: a, y: x + 1}", "people[age > 30].name", "people[1].name", "[1, 2, 3][-1]",
+        "for i in 1..a return i * b", "some p in people satisfies p.age > 40", "every i in [a, b] satisfies i > 0",
+        "(function(x) x * a)(b)", "date(\"2020-01-01\") + duration(\"P1D\")", "`first name`", "?",
+        "max(a, b)", "decimal(1 / 3, 2)", "{a: 1}.a", "person.address", "1 / 0"
+      ].freeze
+
+      VARIABLES = {
+        a: 5, b: 7, s: "text", x: nil, f: ->(v) { v * 2 }, "first name": "Ada", "?": 3,
+        person: { age: 42, address: { "city" => "Paris" } },
+        people: [{ "name" => "Ann", "age" => 35 }, { "name" => "Bob", "age" => 25 }],
+      }.freeze
+
+      it "should give the same results as the interpreter" do
+        EXPRESSIONS.each do |text|
+          tree = FEEL.compile(text).tree
+          context = RootScope.build(VARIABLES)
+          interpreted = Numbers.normalize(tree.eval(context))
+          compiled = Numbers.normalize(tree.compiled.call(context))
+          if interpreted.nil?
+            _(compiled).must_be_nil "compiled #{text}"
+          else
+            _(compiled).must_equal interpreted, "compiled #{text}"
+          end
+        end
+      end
+
+      it "should raise the same errors in strict mode" do
+        FEEL.config.strict = true
+        ["missing", "person.missing", "person.address.zip", "missing(1)"].each do |text|
+          tree = FEEL.compile(text).tree
+          context = RootScope.build(VARIABLES)
+          interpreted = assert_raises(EvaluationError) { tree.eval(context) }
+          compiled = assert_raises(EvaluationError) { tree.compiled.call(context) }
+          _(compiled.message).must_equal interpreted.message
+        end
+      end
+
+      it "should give the same results for unary tests" do
+        ["< 10", "[1..5]", "(1..5]", '"A", "B"', "not(1, 2)", "-", "odd(?)", "? > a", "[1, 2, 3]", "true", "a", "null",
+         "not(< 3)", "< a + 1, > 100"].each do |text|
+          tree = FEEL.compile_test(text).tree
+          next if tree.nil?
+
+          [nil, 1, 3, 5, 7, 200, "A", "C", true].each do |input|
+            context = RootScope.build(VARIABLES)
+            expected = tree.matches(input, context)
+            actual = tree.compiled_test.call(input, context)
+            expected.nil? ? _(actual).must_be_nil("#{text} with #{input.inspect}") : _(actual).must_equal(expected, "#{text} with #{input.inspect}")
+          end
+        end
+      end
+    end
+
     describe :threads do
       it "should evaluate expressions concurrently" do
         expressions = (1..20).map { |i| "a * #{i} + b" }
