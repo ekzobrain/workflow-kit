@@ -15,7 +15,6 @@ module FEEL
       NUMBER_PATTERN = /\A[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\z/
       GROUPING_SEPARATORS = [" ", ",", "."].freeze
       DECIMAL_SEPARATORS = [",", "."].freeze
-      YEAR_MONTH_PARTS = %i[years months].freeze
 
       # Parses a number string. Returns an Integer if integral, otherwise a Float.
       def parse_number(text)
@@ -54,7 +53,6 @@ module FEEL
         when Array then value.map { |item| to_json_value(item) }
         when Hash, Scope then context_entries(value).to_h { |k, v| [k, to_json_value(v)] }
         when FEEL::Range then value.to_feel_string { |endpoint| to_feel_string(endpoint, nested: true) }
-        when ActiveSupport::Duration then format_java_duration(value)
         when ->(v) { Temporal.temporal?(v) } then Temporal.format_iso(value)
         when Function, Proc, Method then format_function(value)
         else to_feel_string(value)
@@ -86,57 +84,6 @@ module FEEL
           function.parameters.map { |_type, name| name.to_s.tr("_", " ") }
         end
         "function(#{params.join(", ")})"
-      end
-
-      def year_month_duration?(duration)
-        parts = duration.parts.reject { |_part, amount| amount.zero? }
-        if parts.empty?
-          duration.parts.any? && duration.parts.keys.all? { |part| YEAR_MONTH_PARTS.include?(part) }
-        else
-          parts.keys.all? { |part| YEAR_MONTH_PARTS.include?(part) }
-        end
-      end
-
-      def total_months(duration)
-        (duration.parts[:years] || 0) * 12 + (duration.parts[:months] || 0)
-      end
-
-      def total_seconds(duration)
-        parts = duration.parts
-        seconds = (parts[:weeks] || 0) * 604_800 +
-          (parts[:days] || 0) * 86_400 +
-          (parts[:hours] || 0) * 3600 +
-          (parts[:minutes] || 0) * 60 +
-          BigDecimal((parts[:seconds] || 0).to_s)
-        seconds.frac.zero? ? seconds.to_i : seconds
-      end
-
-      # ISO-8601 format of java.time Period/Duration: "P1Y6M", "PT2H30M", "PT26H".
-      def format_java_duration(duration)
-        if year_month_duration?(duration)
-          months = total_months(duration)
-          return "P0D" if months.zero?
-
-          years = months.abs / 12 * (months <=> 0)
-          months = months.abs % 12 * (months <=> 0)
-          "P#{amount(years, "Y")}#{amount(months, "M")}"
-        elsif duration.parts.any? { |part, _| YEAR_MONTH_PARTS.include?(part) }
-          duration.iso8601
-        else
-          seconds = total_seconds(duration)
-          return "PT0S" if seconds.zero?
-
-          sign = seconds.negative? ? -1 : 1
-          hours, rest = seconds.abs.divmod(3600)
-          minutes, seconds = rest.divmod(60)
-          "PT#{amount(sign * hours, "H")}#{amount(sign * minutes, "M")}#{amount(sign * seconds, "S")}"
-        end
-      end
-
-      def amount(value, designator)
-        return "" if value.zero?
-
-        "#{format_number(value)}#{designator}"
       end
     end
 

@@ -365,6 +365,21 @@ module FEEL
         _(evaluate(' to json(@"P1Y6M") ')).must_equal '"P1Y6M"'
       end
 
+      # Adapted: durations are serialized in the FEEL format of string(), not
+      # in the java.time format of feel-scala (e.g. "PT26H", "PT0S").
+      it "should convert a duration like string()" do
+        _(evaluate(' to json(@"PT26H") ')).must_equal '"P1DT2H"'
+        _(evaluate(' to json(@"PT0S") ')).must_equal '"P0D"'
+        _(evaluate(' to json(@"P0Y") ')).must_equal '"P0Y"'
+        _(evaluate(' to json(@"-P1DT2H3M4S") ')).must_equal '"-P1DT2H3M4S"'
+        _(evaluate(' to json(duration("P14M")) ')).must_equal '"P1Y2M"'
+        _(evaluate(' to json({d: @"PT26H"}) ')).must_equal '{"d":"P1DT2H"}'
+
+        %w[PT26H PT0S P0Y -P1DT2H3M4S P2D P1Y6M].each do |duration|
+          _(evaluate(%( to json(@"#{duration}") ))).must_equal "\"#{evaluate(%( string(@"#{duration}") ))}\""
+        end
+      end
+
       it "should convert a time with offset" do
         _(evaluate(' to json(@"14:55:00+02:00") ')).must_equal '"14:55:00+02:00"'
       end
