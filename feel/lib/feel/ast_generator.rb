@@ -110,7 +110,7 @@ module FEEL
         when "input" then ["?", PRIMARY]
         when "list" then ["[#{list(node, :items).map { |item| expression(item) }.join(", ")}]", PRIMARY]
         when "context" then [context(node), PRIMARY]
-        when "function call" then ["#{function_name(fetch(node, :name, String))}(#{arguments(node)})", PRIMARY]
+        when "function call" then ["#{function_call_name(node)}(#{arguments(node)})", PRIMARY]
         when "path" then ["#{postfix_head(fetch(node, :value))}.#{property_name(fetch(node, :property, String))}", POSTFIX]
         when "filter" then ["#{postfix_head(fetch(node, :value), name: false)}[#{expression(fetch(node, :filter))}]", POSTFIX]
         when "invocation" then ["#{postfix_head(fetch(node, :function))}(#{arguments(node)})", POSTFIX]
@@ -291,7 +291,12 @@ module FEEL
 
       # Function names may contain spaces (`string length`) and dots (`a.b`).
       def function_name(text)
-        parses?(text, :function_name) && text == text.gsub(/\s+/, " ") ? text : backtick(text)
+        !text.include?(".") && parses?(text, :function_name) && text == text.gsub(/\s+/, " ") ? text : backtick(text)
+      end
+
+      # The name of a function call, or its path for a qualified name (`a.b(x)`).
+      def function_call_name(node)
+        fetch(node, :path, Array, required: false) ? path(node) : function_name(fetch(node, :name, String))
       end
 
       # Context keys are names (with spaces) or strings.

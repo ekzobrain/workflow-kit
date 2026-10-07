@@ -251,7 +251,7 @@ It raises `FEEL::SyntaxError` for invalid input and returns a new tree on each c
 | `if` | `condition`, `then`, `else` | `if a then 1 else 2` |
 | `for` | `iterations` (`[{ name:, in: }]`), `return` | `for i in 1..3 return i * 2` |
 | `some`, `every` | `iterations`, `satisfies` | `some x in l satisfies x > 1` |
-| `function call` | `name`, `arguments` or `named_arguments` (`[{ name:, value: }]`) | `substring(string: s, start position: 2)` |
+| `function call` | `name`, `arguments` or `named_arguments` (`[{ name:, value: }]`), `path` for a qualified name (`a.b(x)`: name `"a.b"`, path `["a", "b"]`) | `substring(string: s, start position: 2)` |
 | `invocation` | `function` (an expression), `arguments` or `named_arguments` | `(function(x) x)(1)` |
 | `function definition` | `parameters` (`[{ name:, type: }]`), `body` | `function(a: number, b) a + b` |
 | `list` | `items` | `[1, 2]` |
@@ -275,6 +275,21 @@ FEEL::AST.transform(FEEL::AST.from_text("a + 1")) do |node|
 end
 # => the tree of "input.a + 1"
 ```
+
+`FEEL::AST.variables` and `FEEL::AST.functions` return what an expression depends on, following the scoping rules of FEEL: names bound in the expression (iteration variables and `partial`, function parameters, context entries, `item` and the entries of filtered contexts) are not dependencies, and neither are the functions defined in the expression. Variables are paths, e.g. to check them against a data model; `builtins: false` leaves out the built-in functions:
+
+```ruby
+ast = FEEL::AST.from_text("for item in order.items return decimal(item.price * `unit count`, 2) + fee(item)")
+FEEL::AST.variables(ast)                    # => [["order", "items"], ["unit count"]]
+FEEL::AST.functions(ast)                    # => ["decimal", "fee"]
+FEEL::AST.functions(ast, builtins: false)   # => ["fee"]
+
+expression = FEEL.compile("if `my var` > 0 then person.age else 0")
+expression.named_variables # => ["my var", "person.age"]
+expression.named_functions # => []
+```
+
+A name called as a function (`f(x)`) may also be a variable holding a function; it is returned as a function. In a filter, a name may be an entry of the filtered contexts (`orders[total > 100]`): it is only known for a list of context literals, otherwise it is returned as a variable.
 
 `FEEL::AST.to_text` does the opposite: it builds the text of an expression or unary tests from a tree, e.g. one translated from another language. Trees with string keys (e.g. read from JSON) are accepted too:
 

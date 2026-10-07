@@ -184,7 +184,8 @@ module FEEL
         _(parse("f()")).must_equal({ type: "function call", name: "f", arguments: [] })
         _(parse('date and time("2020-01-01T10:00:00")')).must_equal({ type: "function call", name: "date and time", arguments: [string("2020-01-01T10:00:00")] })
         _(parse('string  length("a")')[:name]).must_equal "string length"
-        _(parse("a.b(1)")).must_equal({ type: "function call", name: "a.b", arguments: [number(1)] })
+        _(parse("a.b(1)")).must_equal({ type: "function call", name: "a.b", path: ["a", "b"], arguments: [number(1)] })
+        _(parse("`a.b`(1)")).must_equal({ type: "function call", name: "a.b", arguments: [number(1)] })
         _(parse('substring(string: "abc", start position: 2)')).must_equal({
           type: "function call", name: "substring",
           named_arguments: [{ name: "string", value: string("abc") }, { name: "start position", value: number(2) }],

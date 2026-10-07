@@ -357,10 +357,6 @@ module FEEL
       @iteration_contexts ||= [head] + tail.elements.map(&:iteration_context)
     end
 
-    def local_names
-      iteration_contexts.map { |ctx| ctx.variable.eval } + ["partial"]
-    end
-
     private
 
     def iterate(contexts, context, results)
@@ -421,10 +417,6 @@ module FEEL
 
     def iteration_contexts
       @iteration_contexts ||= [head] + tail.elements.map(&:iteration_context)
-    end
-
-    def local_names
-      iteration_contexts.map { |ctx| ctx.variable.eval }
     end
 
     private
@@ -620,14 +612,6 @@ module FEEL
     def operations
       @operations ||= tail.elements
     end
-
-    # The names that a filter can access as variables if the filtered
-    # expression is a list of context literals.
-    def filter_local_names
-      return [] unless head.is_a?(List)
-
-      head.expressions.select { |exp| exp.is_a?(ContextLiteral) }.flat_map(&:local_names)
-    end
   end
 
   #
@@ -653,10 +637,6 @@ module FEEL
       list.each_with_index.select do |item, index|
         (index.zero? ? first : evaluate_for(item, context)) == true
       end.map(&:first)
-    end
-
-    def local_names
-      ["item"]
     end
 
     private
@@ -953,11 +933,6 @@ module FEEL
 
     def entries
       @entries ||= respond_to?(:head) ? [head] + tail.elements.map(&:context_entry) : []
-    end
-
-    # The entries of a context can be referenced by the following entries.
-    def local_names
-      entries.map(&:key_value).compact
     end
   end
 

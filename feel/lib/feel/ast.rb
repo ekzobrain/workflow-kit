@@ -58,6 +58,31 @@ module FEEL
       Generator.new.generate(ast)
     end
 
+    # The variables an AST depends on, as paths (e.g. `["person", "age"]` for
+    # `person.age`). Names bound in the expression (iteration variables,
+    # function parameters, context entries, `item` in a filter…) are not
+    # variables.
+    #
+    #   FEEL::AST.variables(FEEL::AST.from_text("for x in items return x * `unit price`"))
+    #   # => [["items"], ["unit price"]]
+    def variables(ast)
+      Analyzer.new(ast).variables
+    end
+
+    # The names of the functions an AST invokes, except the functions defined
+    # in the expression. With `builtins: false`, without the built-in
+    # functions (see `config.camunda_extensions`).
+    #
+    #   FEEL::AST.functions(FEEL::AST.from_text("decimal(discount(x), 2)"), builtins: false)
+    #   # => ["discount"]
+    def functions(ast, builtins: true)
+      names = Analyzer.new(ast).functions
+      return names if builtins
+
+      builtin_functions = LiteralExpression.builtin_functions
+      names.reject { |name| builtin_functions.key?(name) }
+    end
+
     def range(start, finish, start_included, end_included)
       { type: "range", start: start, end: finish, start_included: start_included, end_included: end_included }
     end
@@ -305,9 +330,14 @@ module FEEL
   end
 
   class FunctionInvocation
+    # A qualified function name (e.g. `a.b(x)`) also has its `path`.
     def to_ast
-      name = fn_name.is_a?(QualifiedName) ? fn_name.path.join(".") : function_name
-      { type: "function call", name: name }.merge(AST.arguments(params))
+      return { type: "function call", name: function_name }.merge(AST.arguments(params)) unless fn_name.is_a?(QualifiedName)
+
+      path = fn_name.path
+      node = { type: "function call", name: path.join(".") }
+      node[:path] = path if path.length > 1
+      node.merge(AST.arguments(params))
     end
   end
 
