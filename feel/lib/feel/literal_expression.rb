@@ -13,8 +13,19 @@ module FEEL
       @text = text&.strip
     end
 
+    # The parsed tree, shared with the expressions of the same text (see
+    # FEEL.tree_cache).
     def tree
-      @tree ||= FEEL::Parser.parse(text)
+      @tree ||= FEEL.tree_cache.fetch(text) { Parser.parse(text) }
+    end
+
+    # Parses the expression and compiles it into closures now rather than on
+    # the first evaluation. Raises FEEL::SyntaxError if it is not valid.
+    def compile!
+      raise SyntaxError, "Expression is not valid: #{text.inspect}" if text.nil? || text.empty?
+
+      tree.compiled
+      self
     end
 
     def valid?

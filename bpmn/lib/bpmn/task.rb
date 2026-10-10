@@ -113,7 +113,16 @@ module BPMN
     end
 
     def run(execution)
-      execution.evaluate_expression(script, variables: execution.scope_variables)
+      execution.evaluate_expression(script_expression, variables: execution.scope_variables)
+    end
+
+    def script_expression
+      expression("zeebe:script expression", script)
+    end
+
+    def compile_expressions
+      super
+      script_expression
     end
   end
 
@@ -128,7 +137,8 @@ module BPMN
     end
 
     def run(execution)
-      DMN.decide(decision_id, definitions: execution.context.dmn_definitions_by_decision_id(decision_id), variables: execution.scope_variables)
+      id = execution.evaluate_expression(expression("zeebe:calledDecision decisionId", decision_id))
+      DMN.decide(id, definitions: execution.context.dmn_definitions_by_decision_id(id), variables: execution.scope_variables)
     end
   end
 end

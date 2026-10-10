@@ -28,6 +28,14 @@ module DMN
   class SyntaxError < FEEL::SyntaxError; end
   class EvaluationError < FEEL::EvaluationError; end
 
+  # Parses and compiles an expression or unary tests of a definition, raising
+  # DMN::SyntaxError (with where it is) if it is not valid.
+  def self.compile!(expression, location)
+    expression.compile!
+  rescue FEEL::SyntaxError
+    raise SyntaxError, "Invalid expression in #{location}: #{expression.text.inspect}"
+  end
+
   def self.decide(decision_id, definitions: nil, definitions_json: nil, definitions_xml: nil, variables: {})
     if definitions_xml.present?
       definitions = DMN::Definitions.from_xml(definitions_xml)

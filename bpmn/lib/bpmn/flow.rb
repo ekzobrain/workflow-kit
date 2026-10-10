@@ -36,7 +36,16 @@ module BPMN
 
     def evaluate(execution)
       return true unless condition
-      execution.evaluate_condition(condition)
+      execution.evaluate_condition(condition_expression)
+    end
+
+    def condition_expression
+      expression("conditionExpression", condition)
+    end
+
+    def compile_expressions
+      super
+      condition_expression
     end
   end
 

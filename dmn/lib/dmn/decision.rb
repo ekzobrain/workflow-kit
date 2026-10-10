@@ -21,6 +21,11 @@ module DMN
       @information_requirements = information_requirements
     end
 
+    def compile!
+      DMN.compile!(literal_expression, "decision #{id.inspect}") if literal_expression
+      decision_table&.compile!(self)
+    end
+
     def evaluate(variables = {})
       if literal_expression.present?
         result = literal_expression.evaluate(variables)

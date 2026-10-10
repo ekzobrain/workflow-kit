@@ -22,6 +22,15 @@ result = DMN.decide('fine_decision', definitions_xml: fixture_source("fine.dmn")
 # => { "amount" => 1000, "points" => 7 })
 ```
 
+All the expressions of the definitions are parsed and compiled when they are loaded (`DMN.definitions_from_xml`, `DMN.decide(definitions_xml:)`, …). An invalid one raises `DMN::SyntaxError` (a `FEEL::SyntaxError`) then, rather than when a decision is evaluated:
+
+```ruby
+DMN.definitions_from_xml(xml)
+# => DMN::SyntaxError: Invalid expression in decision "fine_decision", rule "rule_1", input entry 'Speed': ">"
+```
+
+Parsed expressions are shared by text (see the FEEL expression cache), so loading the same definitions again doesn't parse them again. To evaluate decisions many times, keep the loaded definitions and pass them with `definitions:`.
+
 ## Supported Features
 
 - [x] Parse DMN XML documents

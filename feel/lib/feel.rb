@@ -61,7 +61,7 @@ module FEEL
   # Raises FEEL::SyntaxError if the expression is not valid.
   def self.compile(expression_text)
     expression = expression_cache.fetch(expression_text) do
-      LiteralExpression.new(text: expression_text).tap(&:valid?)
+      LiteralExpression.new(text: expression_text).tap { |expression| expression.compile! if expression.valid? }
     end
     raise SyntaxError, "Expression is not valid: #{expression_text}" unless expression.valid?
 
@@ -72,7 +72,7 @@ module FEEL
   # like FEEL.compile. Raises FEEL::SyntaxError if the tests are not valid.
   def self.compile_test(unary_tests_text)
     unary_tests = unary_tests_cache.fetch(unary_tests_text) do
-      UnaryTests.new(text: unary_tests_text).tap(&:valid?)
+      UnaryTests.new(text: unary_tests_text).tap { |unary_tests| unary_tests.compile! if unary_tests.valid? }
     end
     raise SyntaxError, "Unary tests are not valid: #{unary_tests_text}" unless unary_tests.valid?
 
@@ -87,9 +87,22 @@ module FEEL
     @unary_tests_cache ||= ExpressionCache.new(config.expression_cache_size)
   end
 
+  # The parsed trees, shared by all the expressions (and unary tests) with the
+  # same text: e.g. the expressions of DMN definitions loaded again are not
+  # parsed again. Same size as the expression cache.
+  def self.tree_cache
+    @tree_cache ||= ExpressionCache.new(config.expression_cache_size)
+  end
+
+  def self.unary_tests_tree_cache
+    @unary_tests_tree_cache ||= ExpressionCache.new(config.expression_cache_size)
+  end
+
   def self.clear_expression_cache
     expression_cache.clear
     unary_tests_cache.clear
+    tree_cache.clear
+    unary_tests_tree_cache.clear
   end
 
   def self.config

@@ -37,6 +37,8 @@ module FEEL
       @expression_cache_size = size
       FEEL.expression_cache.max_size = size
       FEEL.unary_tests_cache.max_size = size
+      FEEL.tree_cache.max_size = size
+      FEEL.unary_tests_tree_cache.max_size = size
     end
   end
 end

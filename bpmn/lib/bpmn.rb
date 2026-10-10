@@ -14,6 +14,7 @@ require "fugit"
 require "dmn"
 
 require "bpmn/configuration"
+require "bpmn/expression"
 require "bpmn/element"
 require "bpmn/extensions"
 require "bpmn/extension_elements"

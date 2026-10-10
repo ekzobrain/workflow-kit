@@ -19,6 +19,24 @@ module DMN
       @rules = rules
     end
 
+    def compile!(decision)
+      inputs.each do |input|
+        raise SyntaxError, "Input '#{input.label || input.id}' of decision #{decision.id.inspect} is missing an input expression but it is required" if input.input_expression.nil? || input.input_expression.text.blank?
+
+        DMN.compile!(input.input_expression, "decision #{decision.id.inspect}, input '#{input.label || input.id}'")
+      end
+      rules.each do |rule|
+        rule.input_entries.each_with_index do |entry, index|
+          DMN.compile!(entry, "decision #{decision.id.inspect}, rule #{rule.id.inspect}, input entry '#{inputs[index]&.label || inputs[index]&.id || index + 1}'")
+        end
+        rule.output_entries.each_with_index do |entry, index|
+          next if entry.text.blank? # no output value
+
+          DMN.compile!(entry, "decision #{decision.id.inspect}, rule #{rule.id.inspect}, output entry '#{outputs[index]&.name || index + 1}'")
+        end
+      end
+    end
+
     def evaluate(variables = {})
       output_values = []
 

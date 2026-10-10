@@ -69,12 +69,28 @@ module BPMN
     # step rather than rebuilt on every execution. See #compile_mappings.
     def input_mappings_expression
       return @input_mappings_expression if defined?(@input_mappings_expression)
-      @input_mappings_expression = compile_mappings(input_mappings)
+      @input_mappings_expression = compile_mappings(input_mappings, "zeebe:input")
     end
 
     def output_mappings_expression
       return @output_mappings_expression if defined?(@output_mappings_expression)
-      @output_mappings_expression = compile_mappings(output_mappings)
+      @output_mappings_expression = compile_mappings(output_mappings, "zeebe:output")
+    end
+
+    def input_collection_expression
+      expression("zeebe:loopCharacteristics inputCollection", multi_instance&.input_collection)
+    end
+
+    def output_element_expression
+      expression("zeebe:loopCharacteristics outputElement", multi_instance&.output_element)
+    end
+
+    def compile_expressions
+      super
+      input_mappings_expression
+      output_mappings_expression
+      input_collection_expression
+      output_element_expression
     end
 
     private
@@ -83,32 +99,39 @@ module BPMN
     #   [a -> =1, b -> =a+1, auth.type -> "basic"]
     #   => ={"a": (1), "b": (a + 1), "auth": {"type": "basic"}}
     # Quoted string keys are required by FEEL and also make dotted/special-char
-    # target segments safe.
-    def compile_mappings(mappings)
+    # target segments safe. Each source is compiled first, so that an invalid
+    # one is reported with its target.
+    def compile_mappings(mappings, kind)
       return nil if mappings.blank?
 
       tree = {}
       mappings.each do |parameter|
+        expression("#{kind} source (target #{parameter.target.to_s.inspect})", parameter.source)
         segments = parameter.target.to_s.split(".")
         leaf = segments[0..-2].inject(tree) { |node, segment| node[segment] ||= {} }
         leaf[segments[-1]] = parameter.source
       end
-      "=" + render_feel_context(tree)
+      Expression.compile("=" + render_feel_context(tree), element: self, attribute: kind)
     end
 
     def render_feel_context(tree)
       entries = tree.map do |key, value|
         rendered = value.is_a?(Hash) ? render_feel_context(value) : feel_mapping_value(value)
-        "#{key.inspect}: #{rendered}"
+        "#{feel_string(key)}: #{rendered}"
       end
       "{#{entries.join(", ")}}"
     end
 
-    # A "=..." source is a FEEL expression (embedded, parenthesised for safety);
-    # anything else is a literal value (emitted as a quoted FEEL string).
+    # A "=..." source is a FEEL expression (embedded, parenthesised for safety,
+    # with a line break in case it ends with a comment); anything else is a
+    # literal value (emitted as a quoted FEEL string).
     def feel_mapping_value(source)
       source = source.to_s
-      source.start_with?("=") ? "(#{source.delete_prefix("=")})" : source.inspect
+      source.start_with?("=") ? "(#{source.delete_prefix("=")}\n)" : feel_string(source)
+    end
+
+    def feel_string(text)
+      FEEL::AST.to_text({ type: "string", value: text.to_s })
     end
   end
 

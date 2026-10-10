@@ -135,7 +135,7 @@ module BPMN
     end
 
     def start_multi_instance
-      items = Array.wrap(evaluate_expression(step.multi_instance.input_collection))
+      items = Array.wrap(evaluate_expression(step.input_collection_expression))
 
       if items.empty?
         finish_multi_instance
@@ -180,7 +180,7 @@ module BPMN
       output_collection = step.multi_instance.output_collection
       if output_collection.present?
         variables[output_collection] = multi_instance_instances.sort_by(&:multi_instance_index).map do |instance|
-          instance.evaluate_expression(step.multi_instance.output_element, variables: instance.scope_variables)
+          instance.evaluate_expression(step.output_element_expression, variables: instance.scope_variables)
         end
       end
       step.leave(self)
@@ -312,14 +312,11 @@ module BPMN
       base.merge(local_variables).merge(variables)
     end
 
+    # Evaluates an attribute value: a BPMN::Expression (compiled when the
+    # definition was read), or a text ("=..." for a FEEL expression).
     def evaluate_expression(expression, variables: scope_variables)
-      return nil if expression.nil?
-
-      if expression.start_with?("=")
-        FEEL.evaluate(expression.delete_prefix("="), variables: variables)
-      else
-        expression
-      end
+      expression = Expression.compile(expression) unless expression.nil? || expression.is_a?(Expression)
+      expression&.evaluate(variables)
     end
 
     def run_automated_tasks

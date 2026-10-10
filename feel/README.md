@@ -202,6 +202,8 @@ end
 FEEL.clear_expression_cache
 ```
 
+Parsed trees are also shared by all the `FEEL::LiteralExpression` / `FEEL::UnaryTests` objects with the same text (e.g. the expressions of DMN definitions loaded again), and `compile!` parses and compiles an expression object up front (raising `FEEL::SyntaxError` if it isn't valid) instead of on its first evaluation.
+
 A compiled expression doesn't depend on the variables: names with whitespace or operators (e.g. `` `first name` ``, `` `a+b` ``) must be escaped with backticks, so `a+b` always means an addition, whatever the context contains. Variables take precedence over custom functions (`config.functions`), which take precedence over built-in functions.
 
 Benchmarks of small expressions are in `benchmarks/evaluate.rb`:

@@ -36,12 +36,10 @@ module DMN
     end
 
     it "should raise when an input is missing an input expression" do
-      definitions = Definitions.from_xml(fixture_source("test_empty_input_expression.dmn"))
-      decision_table = definitions.decisions.first.decision_table
       error = assert_raises(SyntaxError) do
-        decision_table.evaluate({})
+        Definitions.from_xml(fixture_source("test_empty_input_expression.dmn"))
       end
-      _(error.message).must_match(/missing an input expression but it is required/)
+      _(error.message).must_match(/Input 'Category' of decision "empty_input_decision" is missing an input expression but it is required/)
       _(error).must_be_kind_of FEEL::SyntaxError
       _(error).must_be_kind_of FEEL::Error
     end

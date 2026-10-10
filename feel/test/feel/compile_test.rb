@@ -44,6 +44,26 @@ module FEEL
         _ { FEEL.compile_test("[1..") }.must_raise SyntaxError
       end
 
+      it "should share the parsed trees between expressions of the same text" do
+        first = LiteralExpression.new(id: "a", text: "x + 1")
+        second = LiteralExpression.new(id: "b", text: "x + 1")
+        _(second.tree).must_be_same_as first.tree
+        _(UnaryTests.new(text: "< 10").tree).must_be_same_as UnaryTests.new(text: "< 10").tree
+        _(UnaryTests.new(text: "x + 1").tree).wont_be_same_as first.tree
+        _(FEEL.compile("x + 1").tree).must_be_same_as first.tree
+      end
+
+      it "should compile expressions on demand" do
+        expression = LiteralExpression.new(text: "x * 2")
+        _(expression.compile!).must_be_same_as expression
+        _(expression.evaluate(x: 2)).must_equal 4
+        _ { LiteralExpression.new(text: "x *").compile! }.must_raise SyntaxError
+        _ { LiteralExpression.new(text: "").compile! }.must_raise SyntaxError
+        _ { UnaryTests.new(text: "< ").compile! }.must_raise SyntaxError
+        _(UnaryTests.new(text: "").compile!.test(1)).must_equal true
+        _(UnaryTests.new(text: nil).compile!.test(1)).must_equal true
+      end
+
       it "should evict the least recently used expressions" do
         FEEL.config.expression_cache_size = 2
         first = FEEL.compile("1")

@@ -120,6 +120,13 @@ module BPMN
       nil
     end
 
+    # Compiles the expressions of the process and of all its elements (nested
+    # sub-processes included).
+    def compile_expressions
+      super
+      elements.each_value(&:compile_expressions)
+    end
+
     def elements_by_type(type)
       elements.select { |e| e.class == type }
     end
@@ -174,7 +181,7 @@ module BPMN
 
     def execute(execution)
       @process_id = execution.evaluate_expression(
-        extension_elements&.called_element&.process_id,
+        expression("zeebe:calledElement processId", extension_elements&.called_element&.process_id),
         variables: execution.variables
       )
 

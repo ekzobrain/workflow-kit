@@ -17,7 +17,7 @@ module DMN
 
     def self.from_json(json)
       decisions = Array.wrap(json[:decision]).map { |decision| Decision.from_json(decision) }
-      Definitions.new(id: json[:id], name: json[:name], namespace: json[:namespace], exporter: json[:exporter], exporter_version: json[:exporter_version], execution_platform: json[:execution_platform], execution_platform_version: json[:execution_platform_version], decisions: decisions)
+      Definitions.new(id: json[:id], name: json[:name], namespace: json[:namespace], exporter: json[:exporter], exporter_version: json[:exporter_version], execution_platform: json[:execution_platform], execution_platform_version: json[:execution_platform_version], decisions: decisions).tap(&:compile!)
     end
 
     def initialize(id:, name:, namespace:, exporter:, exporter_version:, execution_platform:, execution_platform_version:, decisions:)
@@ -29,6 +29,14 @@ module DMN
       @execution_platform = execution_platform
       @execution_platform_version = execution_platform_version
       @decisions = decisions
+    end
+
+    # Parses and compiles all the expressions now, so that an invalid one is
+    # reported when the definitions are loaded rather than when evaluated.
+    # Raises DMN::SyntaxError.
+    def compile!
+      decisions.each(&:compile!)
+      self
     end
 
     def evaluate(decision_id, variables: {}, already_evaluated_decisions: {})

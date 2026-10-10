@@ -22,6 +22,7 @@ module BPMN
         definitions.processes.each do |process|
           process.wire_references(definitions)
         end
+        definitions.compile_expressions
       end
     end
 
@@ -34,6 +35,14 @@ module BPMN
       @escalations = Array.wrap(attributes[:escalation]).map { |atts| Escalation.new(atts) }
       @item_definitions = Array.wrap(attributes[:item_definition]).map { |atts| ItemDefinition.new(atts) }
       @processes = Array.wrap(attributes[:process]).map { |atts| Process.new(atts) }
+    end
+
+    # Compiles all the FEEL expressions now, so that an invalid one is reported
+    # when the definition is read rather than when executed. Raises
+    # BPMN::SyntaxError.
+    def compile_expressions
+      messages.each(&:compile_expressions)
+      processes.each(&:compile_expressions)
     end
 
     def message_by_id(id)
