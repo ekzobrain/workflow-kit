@@ -972,7 +972,7 @@ module FEEL
     end
 
     def function_name
-      @function_name ||= fn_name.text_value.gsub(/\s+/, " ").freeze
+      @function_name ||= (fn_name.is_a?(QualifiedName) ? fn_name.path.join(".") : fn_name.text_value.gsub(/\s+/, " ")).freeze
     end
 
     private
