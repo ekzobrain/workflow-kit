@@ -1,0 +1,484 @@
+# The DMN TCK test cases that are expected to fail (see README.md), with
+# the reason. Regenerate with: rake tck:accept
+compliance-level-2/0110-outputOrder-hitpolicy/0110-outputOrder-hitpolicy-test-01#001  # UNSUPPORTED: priority without output values
+compliance-level-2/0110-outputOrder-hitpolicy/0110-outputOrder-hitpolicy-test-01#002  # UNSUPPORTED: priority without output values
+compliance-level-2/0110-outputOrder-hitpolicy/0110-outputOrder-hitpolicy-test-01#003  # UNSUPPORTED: priority without output values
+compliance-level-2/0118-multi-priority-hitpolicy/0118-multi-priority-hitpolicy-test-01#001  # UNSUPPORTED: priority without output values
+compliance-level-2/0118-multi-priority-hitpolicy/0118-multi-priority-hitpolicy-test-01#002  # UNSUPPORTED: priority without output values
+compliance-level-2/0118-multi-priority-hitpolicy/0118-multi-priority-hitpolicy-test-01#003  # UNSUPPORTED: priority without output values
+compliance-level-3/0021-singleton-list/0021-singleton-list-test-01#001  # FAILURE: decision2: expected "John", got ["John"] | decision4: expected "Bob", got ["Bob"] | decision5: expected "BOB", got null
+compliance-level-3/0036-dt-variable-input/0036-dt-variable-input-test-01#_20445ee0-744d-4488-a90e-136701510871  # FAILURE: Compare Boolean: expected "Not same boolean", got "Same boolean"
+compliance-level-3/0036-dt-variable-input/0036-dt-variable-input-test-01#_58109f16-2e9b-496e-bfff-5f0adbfa0279  # FAILURE: Compare Boolean: expected "Not same boolean", got "Same boolean"
+compliance-level-3/0037-dt-on-bkm-implicit-params/0037-dt-on-bkm-implicit-params-test-01#_0de87bf9-0269-40b1-b7ac-767ae9a99b89  # FAILURE: Person's description: expected "Bob is a dad of 3 children.", got null
+compliance-level-3/0037-dt-on-bkm-implicit-params/0037-dt-on-bkm-implicit-params-test-01#_20d7e21f-f58f-4a78-8074-a70cbf13de83  # FAILURE: Person's description: expected "Alice is a mother of 2 children.", got null
+compliance-level-3/0050-feel-abs-function/0050-feel-abs-function-test-01#007  # FAILURE: decision007: expected null, got 1
+compliance-level-3/0057-feel-context/0057-feel-context-test-01#008  # FAILURE: decision008: expected null, got {foo:"baz"}
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#number_008  # ERROR: number_008: Expression is not valid: 12300 = 1.23e4
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#number_009  # ERROR: number_009: Expression is not valid: 12300 = 1.23e+4
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#number_010  # ERROR: number_010: Expression is not valid: 0.000123 = 1.23e-4
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_006  # FAILURE: list_006: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_007  # FAILURE: list_007: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_008  # FAILURE: list_008: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_009  # FAILURE: list_009: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_010  # FAILURE: list_010: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_011  # FAILURE: list_011: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_012  # FAILURE: list_012: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_013  # FAILURE: list_013: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_014  # FAILURE: list_014: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#time_005  # FAILURE: time_005: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#datetime_003_a  # FAILURE: datetime_003_a: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#datetime_005  # FAILURE: datetime_005: expected true, got null
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_001  # ERROR: range_001: Expression is not valid: [1..10] = [1..10]
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_002  # ERROR: range_002: Expression is not valid: [1..2] = [1..3]
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_003  # ERROR: range_003: Expression is not valid: [2..10] = [1..10]
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_004  # ERROR: range_004: Expression is not valid: (1..10] = ]1..10]
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_005  # ERROR: range_005: Expression is not valid: [1..10) = [1..10[
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_006  # ERROR: range_006: Expression is not valid: (< 10) = (null..10)
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_006_a  # ERROR: range_006_a: Expression is not valid: (< 10) = (< 10)
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_007  # ERROR: range_007: Expression is not valid: (<= 10) = (null..10]
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_008  # ERROR: range_008: Expression is not valid: (> 10) = (10..null)
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_009  # ERROR: range_009: Expression is not valid: (>= 10) = [10..null)
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_010  # ERROR: range_010: Expression is not valid: (=10) = [10..10]
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_011  # ERROR: range_011: Expression is not valid: (=10) = (=10)
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_012  # ERROR: range_012: Expression is not valid: (!=10) = (!=10)
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#012  # FAILURE: decision012: expected [true], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#013  # FAILURE: decision013: expected [], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#014  # FAILURE: decision014: expected [100], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#015  # FAILURE: decision015: expected [], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#016  # FAILURE: decision016: expected ["foo"], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#017  # FAILURE: decision017: expected [], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#018  # FAILURE: decision018: expected true, got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#019  # FAILURE: decision019: expected 100, got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#020  # FAILURE: decision020: expected "foo", got null
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#null_012  # ERROR: null_012: Expression is not valid: null instance of function<> -> Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#number_012  # ERROR: number_012: Expression is not valid: 123.01 instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#number_013  # FAILURE: number_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#string_012  # ERROR: string_012: Expression is not valid: "foo" instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#string_013  # FAILURE: string_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#boolean_012  # ERROR: boolean_012: Expression is not valid: true instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#date_012  # ERROR: date_012: Expression is not valid: date("2018-12-08") instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#time_012  # ERROR: time_012: Expression is not valid: time("10:30:00") instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_012  # ERROR: list_012: Expression is not valid: [1,2,3] instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_013  # FAILURE: list_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_014  # FAILURE: list_014: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_014_a  # FAILURE: list_014_a: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_019  # FAILURE: list_019: expected false, got true
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_020  # ERROR: list_020: Expression is not valid: [{a: "a", b: "b"}] instance of list<context<a: string, b: string>>
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#ym_duration_012  # ERROR: ym_duration_012: Expression is not valid: duration("P1Y") instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#dt_duration_012  # ERROR: dt_duration_012: Expression is not valid: duration("P1D") instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_012  # ERROR: context_012: Expression is not valid: {a: "foo"} instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_013  # FAILURE: context_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_014  # FAILURE: context_014: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_018  # ERROR: context_018: Expression is not valid: {a: "foo"} instance of context<a: string>
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_019  # ERROR: context_019: Expression is not valid: {a: null} instance of context<a: string>
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_020  # ERROR: context_020: Expression is not valid: {a: "123", b: 123} instance of context<a: string>
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_021  # ERROR: context_021: Expression is not valid: {a: "123", b: 123} instance of context<a: string, b: number>
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_022  # ERROR: context_022: Expression is not valid: {a: "123"} instance of context<a: number>
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_023  # ERROR: context_023: Expression is not valid: {a: {b: 123}} instance of context<a: context<b: number>>
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_024  # ERROR: context_024: Expression is not valid: {a: {b: 123}} instance of context<a: context<b: string>>
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_002  # ERROR: number_002: Expression is not valid: 1 in [[2..4], [1..3]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_002_a  # ERROR: number_002_a: Expression is not valid: 5 in [[2..4], [1..3]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_015_a  # ERROR: number_015_a: Expression is not valid: 10 in =10
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_015_b  # ERROR: number_015_b: Expression is not valid: 10 in (=10)
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_015_c  # ERROR: number_015_c: Expression is not valid: 10 in =11
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_016_a  # ERROR: number_016_a: Expression is not valid: 10 in !=10
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_016_b  # ERROR: number_016_b: Expression is not valid: 10 in (!=10)
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#number_016_c  # ERROR: number_016_c: Expression is not valid: 10 in !=11
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_002  # ERROR: string_002: Expression is not valid: "b" in [["f".."h"], ["a".."c"]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_002_a  # ERROR: string_002_a: Expression is not valid: "i" in [["f".."h"], ["a".."c"]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_015_a  # ERROR: string_015_a: Expression is not valid: "a" in ="a"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_015_b  # ERROR: string_015_b: Expression is not valid: "a" in (="a")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_015_c  # ERROR: string_015_c: Expression is not valid: "a" in ="b"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_016_a  # ERROR: string_016_a: Expression is not valid: "a" in !="a"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_016_b  # ERROR: string_016_b: Expression is not valid: "a" in (!="a")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#string_016_c  # ERROR: string_016_c: Expression is not valid: "a" in !="b"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#boolean_015_a  # ERROR: boolean_015_a: Expression is not valid: true in =true
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#boolean_015_b  # ERROR: boolean_015_b: Expression is not valid: true in (=true)
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#boolean_015_c  # ERROR: boolean_015_c: Expression is not valid: true in =false
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#boolean_016_a  # ERROR: boolean_016_a: Expression is not valid: true in !=true
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#boolean_016_b  # ERROR: boolean_016_b: Expression is not valid: true in (!=true)
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#boolean_016_c  # ERROR: boolean_016_c: Expression is not valid: true in !=false
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_002  # ERROR: date_002: Expression is not valid: date("2018-12-11") in [[date("2018-12-05") .. date("2018-12-07")], [date("2018-12-10") .. date("2018-12-12")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_002_a  # ERROR: date_002_a: Expression is not valid: date("2018-12-04") in [[date("2018-12-05") .. date("2018-12-07")], [date("2018-12-10") .. date("2018-12-12")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_015_a  # ERROR: date_015_a: Expression is not valid: @"2018-12-05" in =@"2018-12-05"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_015_b  # ERROR: date_015_b: Expression is not valid: @"2018-12-05" in (=@"2018-12-05")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_015_c  # ERROR: date_015_c: Expression is not valid: @"2018-12-05" in =@"2018-12-06"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_016_a  # ERROR: date_016_a: Expression is not valid: @"2018-12-05" in !=@"2018-12-05"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_016_b  # ERROR: date_016_b: Expression is not valid: @"2018-12-05" in (!=@"2018-12-05")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#date_016_c  # ERROR: date_016_c: Expression is not valid: @"2018-12-05" in !=@"2018-12-06"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_002  # ERROR: time_002: Expression is not valid: time("10:30:11") in [[time("10:30:05") .. time("10:30:07")], [time("10:30:10") .. time("10:30:12")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_002_a  # ERROR: time_002_a: Expression is not valid: time("10:30:04") in [[time("10:30:05") .. time("10:30:07")], [time("10:30:10") .. time("10:30:12")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_015_a  # ERROR: time_015_a: Expression is not valid: @"10:30:05" in =@"10:30:05"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_015_b  # ERROR: time_015_b: Expression is not valid: @"10:30:05" in (=@"10:30:05")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_015_c  # ERROR: time_015_c: Expression is not valid: @"10:30:05" in =@"10:30:06"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_016_a  # ERROR: time_016_a: Expression is not valid: @"10:30:05" in !=@"10:30:05"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_016_b  # ERROR: time_016_b: Expression is not valid: @"10:30:05" in (!=@"10:30:05")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#time_016_c  # ERROR: time_016_c: Expression is not valid: @"10:30:05" in !=@"10:30:06"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dateTime_002  # ERROR: dateTime_002: Expression is not valid: date and time("2018-12-08T10:30:11") in [[date and time("2018-12-08T10:30:05") .. date and time("2018-12-08T10:30:07")], 
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dateTime_002_a  # ERROR: dateTime_002_a: Expression is not valid: date and time("2018-12-08T10:30:04") in [[date and time("2018-12-08T10:30:05") .. date and time("2018-12-08T10:30:07")]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#datetime_015_a  # ERROR: datetime_015_a: Expression is not valid: @"2018-12-08T10:30:05" in =@"2018-12-08T10:30:05"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#datetime_015_b  # ERROR: datetime_015_b: Expression is not valid: @"2018-12-08T10:30:05" in (=@"2018-12-08T10:30:05")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#datetime_015_c  # ERROR: datetime_015_c: Expression is not valid: @"2018-12-08T10:30:05" in =@"2018-12-08T10:30:06"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#datetime_016_a  # ERROR: datetime_016_a: Expression is not valid: @"2018-12-08T10:30:05" in !=@"2018-12-08T10:30:05"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#datetime_016_b  # ERROR: datetime_016_b: Expression is not valid: @"2018-12-08T10:30:05" in (!=@"2018-12-08T10:30:05")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#datetime_016_c  # ERROR: datetime_016_c: Expression is not valid: @"2018-12-08T10:30:05" in !=@"2018-12-08T10:30:06"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#list_015_a  # ERROR: list_015_a: Expression is not valid: [1,2,3] in =[1,2,3]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#list_015_b  # ERROR: list_015_b: Expression is not valid: [1,2,3] in (=[1,2,3])
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#list_015_c  # ERROR: list_015_c: Expression is not valid: [1,2,3] in =[1,2,3,4]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#list_016_a  # ERROR: list_016_a: Expression is not valid: [1,2,3] in !=[1,2,3]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#list_016_b  # ERROR: list_016_b: Expression is not valid: [1,2,3] in (!=[1,2,3])
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#list_016_c  # ERROR: list_016_c: Expression is not valid: [1,2,3] in !=[1,2,3,4]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#ym_duration_002  # ERROR: ym_duration_002: Expression is not valid: duration("P11Y") in [[duration("P5Y") .. duration("P7Y")], [duration("P10Y") .. duration("P12Y")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#ym_duration_002_a  # ERROR: ym_duration_002_a: Expression is not valid: duration("P4Y") in [[duration("P5Y") .. duration("P7Y")], [duration("P10Y") .. duration("P12Y")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_002  # ERROR: dt_duration_002: Expression is not valid: duration("P11D") in [[duration("P5D") .. duration("P7D")], [duration("P10D") .. duration("P12D")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_002_a  # ERROR: dt_duration_002_a: Expression is not valid: duration("P4D") in [[duration("P5D") .. duration("P7D")], [duration("P10D") .. duration("P12D")]]
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_015_a  # ERROR: dt_duration_015_a: Expression is not valid: @"P5D" in =@"P5D"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_015_b  # ERROR: dt_duration_015_b: Expression is not valid: @"P5D" in (=@"P5D")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_015_c  # ERROR: dt_duration_015_c: Expression is not valid: @"P5D" in =@"P6D"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_016_a  # ERROR: dt_duration_016_a: Expression is not valid: @"P5D" in !=@"P5D"
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_016_b  # ERROR: dt_duration_016_b: Expression is not valid: @"P5D" in (!=@"P5D")
+compliance-level-3/0072-feel-in/0072-feel-in-test-01#dt_duration_016_c  # ERROR: dt_duration_016_c: Expression is not valid: @"P5D" in !=@"P6D"
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_001  # ERROR: range_001: Expression is not valid: {"start included": ([1..10].`start included` ), "start": ([1..10].start ), "end": ([1..10].end ), "end included": ([1..10].`
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_002  # ERROR: range_002: Expression is not valid: {"start included": ((1..10].`start included` ), "start": ((1..10].start ), "end": ((1..10].end ), "end included": ((1..10].`
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_003  # ERROR: range_003: Expression is not valid: {"start included": (]1..10].`start included` ), "start": (]1..10].start ), "end": (]1..10].end ), "end included": (]1..10].`
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_004  # ERROR: range_004: Expression is not valid: {"start included": ([1..10).`start included` ), "start": ([1..10).start ), "end": ([1..10).end ), "end included": ([1..10).`
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_005  # ERROR: range_005: Expression is not valid: {"start included": ([1..10[.`start included` ), "start": ([1..10[.start ), "end": ([1..10[.end ), "end included": ([1..10[.`
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_006  # ERROR: range_006: Expression is not valid: {"start included": ((<10).`start included` ), "start": ((<10).start ), "end": ((<10).end ), "end included": ((<10).`end incl
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_007  # ERROR: range_007: Expression is not valid: {"start included": ((<=10).`start included` ), "start": ((<=10).start ), "end": ((<=10).end ), "end included": ((<=10).`end 
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_009  # ERROR: range_009: Expression is not valid: {"start included": ((>10).`start included` ), "start": ((>10).start ), "end": ((>10).end ), "end included": ((>10).`end incl
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_010  # ERROR: range_010: Expression is not valid: {"start included": ((>=10).`start included` ), "start": ((>=10).start ), "end": ((>=10).end ), "end included": ((>=10).`end 
+compliance-level-3/0074-feel-properties/0074-feel-properties-test-01#range_011  # ERROR: range_011: Expression is not valid: {"start included": ((=10).`start included` ), "start": ((=10).start ), "end": ((=10).end ), "end included": ((=10).`end incl
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#boxed_001  # UNSUPPORTED: function kind Java
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_001  # ERROR: incorrect_001: Expression is not valid: {"mathFoo": (function(n1) external {java:{class:"java.lang.Math",`method signature`:"foo(double)"}} ), "__result": (math
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_002  # ERROR: incorrect_002: Expression is not valid: {"fooValueOf": (function(n1) external {java:{class:"java.lang.Foo",`method signature`:"valueOf(double)"}} ), "__result":
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_003  # ERROR: incorrect_003: Expression is not valid: {"mathMaxString": (function(s1, s2) external {java:{class:"java.lang.Math",`method signature`:"max(java.lang.String, jav
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_001  # ERROR: literal_001: Expression is not valid: {"cos": (function(n1) external {java:{class:"java.lang.Math",`method signature`:"cos(double)"}} ), "__result": (cos(123) )
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_002  # ERROR: literal_002: Expression is not valid: {"maxDouble": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(double,double)"}} ), "__resu
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_003  # ERROR: literal_003: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(double,double)"}} ), "__result": (
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_004  # ERROR: literal_004: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(int,int)"}} ), "__result": (max(12
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_005  # ERROR: literal_005: Expression is not valid: {"valueOf": (function(s1) external {java:{class:"java.lang.Short",`method signature`:"valueOf(short)"}} ), "__result": (va
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_006  # ERROR: literal_006: Expression is not valid: {"valueOf": (function(b1) external {java:{class:"java.lang.Byte",`method signature`:"valueOf(byte)"}} ), "__result": (valu
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_007  # ERROR: literal_007: Expression is not valid: {"valueOf": (function(c1) external {java:{class:"java.lang.String",`method signature`:"valueOf(char)"}} ), "__result": (va
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_007_a  # ERROR: literal_007_a: Expression is not valid: {"valueOf": (function(c1) external {java:{class:"java.lang.String",`method signature`:"valueOf(char)"}} ), "__result": (
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_008  # ERROR: literal_008: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(long,long)"}} ), "__result": (max(
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_009  # ERROR: literal_009: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(float,float)"}} ), "__result": (ma
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_010  # ERROR: literal_010: Expression is not valid: {"valueOf": (function(n1) external {java:{class:"java.lang.Integer",`method signature`:"valueOf(java.lang.String)"}} ), "_
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_011  # ERROR: literal_011: Expression is not valid: {"valueOf": (function(n1) external {java:{class:"java.lang.Float",`method signature`:"valueOf(java.lang.String)"}} ), "__r
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_012  # ERROR: literal_012: Expression is not valid: {"valueOf": (function(n1) external {java:{class:"java.lang.Double",`method signature`:"valueOf(java.lang.String)"}} ), "__
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#varargs_001  # ERROR: varargs_001: Expression is not valid: {"format": (function(s1, n1) external {java:{class:"java.lang.String",`method signature`:"format(java.lang.String, [Ljava.
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_001  # FAILURE: decision_001: expected null, got 2
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_003  # FAILURE: decision_003: expected null, got [1, 2, "foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_005  # FAILURE: decision_005: expected null, got {name:"foo"}
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_006_a  # FAILURE: decision_006_a: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_007  # FAILURE: decision_007: expected "foo", got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_007_a  # FAILURE: decision_007_a: expected null, got [1]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_002  # FAILURE: decision_bkm_002: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_003  # FAILURE: decision_bkm_003: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_004_a  # FAILURE: decision_bkm_004_a: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_005  # FAILURE: decision_bkm_005: expected 10, got [10]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_005_a  # FAILURE: decision_bkm_005_a: expected null, got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_001  # FAILURE: invoke_001: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_002  # FAILURE: invoke_002: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_004  # FAILURE: invoke_004: expected null, got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_005  # FAILURE: invoke_005: expected null, got [[10]]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_006  # FAILURE: invoke_006: expected null, got [["foo"]]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#fd_002  # FAILURE: fd_002: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_002  # FAILURE: literal_002: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_004  # FAILURE: literal_004: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_005  # FAILURE: literal_005: expected 10, got [10]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_006  # FAILURE: literal_006: expected null, got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_001  # UNSUPPORTED: decision service invocation
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002  # UNSUPPORTED: decision service invocation
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_a  # UNSUPPORTED: decision service
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_b  # UNSUPPORTED: decision service invocation
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_c  # UNSUPPORTED: decision service
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_context_03  # FAILURE: decision_context_03: expected null, got {a:1, b:2}
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#decision_001_a  # FAILURE: decision_001_a: expected 1, got 8
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#decision_001_b  # FAILURE: decision_001_b: expected true, got false
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#decision_003  # FAILURE: decision_003: expected 1, got 6
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#decision_003_a  # FAILURE: decision_003_a: expected 1, got 6
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#decision_004  # FAILURE: decision_004: expected 2, got 12
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#decision_005  # FAILURE: decision_005: expected true, got false
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#decision_005_a  # FAILURE: decision_005_a: expected true, got false
+compliance-level-3/0083-feel-unicode/0083-feel-unicode-test-01#substring_004  # FAILURE: substring_004: expected true, got false
+compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_017  # FAILURE: decision_017: expected [1980-01-01, 1980-01-02, 1980-01-03], got null
+compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_018  # FAILURE: decision_018: expected [1980-01-03, 1980-01-02, 1980-01-01], got null
+compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_019_a  # ERROR: decision_019_a: Expression is not valid: for i in ["a".."z"] return i
+compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_020_a  # ERROR: decision_020_a: Expression is not valid: for i in [@"1980-01-03T00:00:00"..@"1980-01-01T00:00:00"] return i
+compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_021_a  # ERROR: decision_021_a: Expression is not valid: for i in [@"00:00:00"..@"00:00:00"] return i
+compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_022_a  # ERROR: decision_022_a: Expression is not valid: for i in [@"P1D"..@"P2D"] return i
+compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_025  # ERROR: decision_025: Expression is not valid: for i in [2..1] return i
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#001  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002_a  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002_b  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002_c  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#003  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#004  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#005  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#006  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#007  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#008  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#009  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#010  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#011  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#012  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#013  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#014  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#015  # UNSUPPORTED: decision service invocation
+compliance-level-3/0086-import/0086-import-test-01#test_001  # UNSUPPORTED: import
+compliance-level-3/0086-import/0086-import-test-01#test_002  # UNSUPPORTED: import
+compliance-level-3/0088-no-decision-logic/0088-no-decision-logic-test-01#001  # UNSUPPORTED: decision service invocation
+compliance-level-3/0089-nested-inputdata-imports/0089-nested-inputdata-imports-test-01#001  # UNSUPPORTED: import
+compliance-level-3/0092-feel-lambda/0092-feel-lambda-test-01#013  # UNSUPPORTED: decision service
+compliance-level-3/0099-arithmetic-negation/0099-arithmetic-negation-test-01#decision_011  # ERROR: decision_011: Expression is not valid: -[1..5]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dateAndTime_to_rhs_dtDuration_009  # FAILURE: add_lhs_dateAndTime_to_rhs_dtDuration_009: expected 2021-01-02T00:00:01, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dateAndTime_to_rhs_dtDuration_010  # FAILURE: add_lhs_dateAndTime_to_rhs_dtDuration_010: expected 2021-01-01T23:59:59, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dtDuration_to_rhs_dateAndTime_009  # FAILURE: add_lhs_dtDuration_to_rhs_dateAndTime_009: expected 2021-01-02T00:00:01, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dtDuration_to_rhs_dateAndTime_010  # FAILURE: add_lhs_dtDuration_to_rhs_dateAndTime_010: expected 2021-01-01T23:59:59, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_002  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_002: expected null, got P1D
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_003  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_003: expected null, got P1D
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_004  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_004: expected null, got P1D
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_005  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_005: expected null, got P1D
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_009  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_009: expected null, got P1D
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_010  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_010: expected P0D, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_002  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_002: expected P1DT9H10M10S, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_003  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_003: expected P1DT9H10M10S, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_004  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_004: expected P9498DT9H10M10S, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_005  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_005: expected P9498DT9H10M10S, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_005  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_005: expected 2021-01-01T23:59:59, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_006  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_006: expected 2021-01-02T00:00:01, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_008  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_008: expected 2021-01-01T23:59:59, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_009  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_009: expected 2021-01-02T00:00:01, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_002  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_002: expected P1DT49M50S, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_003  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_003: expected P1DT49M50S, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_004  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_004: expected P0D, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_005  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_005: expected P9498DT49M50S, got null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_number_by_rhs_range  # ERROR: error_when_multiply_lhs_number_by_rhs_range: Expression is not valid: 10 * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_string_by_rhs_range  # ERROR: error_when_multiply_lhs_string_by_rhs_range: Expression is not valid: "10" * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_boolean_by_rhs_range  # ERROR: error_when_multiply_lhs_boolean_by_rhs_range: Expression is not valid: true * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_date_by_rhs_range  # ERROR: error_when_multiply_lhs_date_by_rhs_range: Expression is not valid: @"2021-01-01" * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_dateAndTime_by_rhs_range  # ERROR: error_when_multiply_lhs_dateAndTime_by_rhs_range: Expression is not valid: @"2021-01-01T10:10:10" * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_time_by_rhs_range  # ERROR: error_when_multiply_lhs_time_by_rhs_range: Expression is not valid: @"10:10:10" * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_list_by_rhs_range  # ERROR: error_when_multiply_lhs_list_by_rhs_range: Expression is not valid: [10] * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_context_by_rhs_range  # ERROR: error_when_multiply_lhs_context_by_rhs_range: Expression is not valid: {a: 10} * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_dtDuration_by_rhs_range  # ERROR: error_when_multiply_lhs_dtDuration_by_rhs_range: Expression is not valid: @"P1D" * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_ymDuration_by_rhs_range  # ERROR: error_when_multiply_lhs_ymDuration_by_rhs_range: Expression is not valid: @"P1Y" * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_number  # ERROR: error_when_multiply_lhs_range_by_rhs_number: Expression is not valid: [1..10] * 10
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_string  # ERROR: error_when_multiply_lhs_range_by_rhs_string: Expression is not valid: [1..10] * "10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_boolean  # ERROR: error_when_multiply_lhs_range_by_rhs_boolean: Expression is not valid: [1..10] * true
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_date  # ERROR: error_when_multiply_lhs_range_by_rhs_date: Expression is not valid: [1..10] * @"2021-01-01"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_dateAndTime  # ERROR: error_when_multiply_lhs_range_by_rhs_dateAndTime: Expression is not valid: [1..10] * @"2021-01-01T10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_time  # ERROR: error_when_multiply_lhs_range_by_rhs_time: Expression is not valid: [1..10] * @"10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_list  # ERROR: error_when_multiply_lhs_range_by_rhs_list: Expression is not valid: [1..10] * [10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_context  # ERROR: error_when_multiply_lhs_range_by_rhs_context: Expression is not valid: [1..10] * {a: 10}
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_dtDuration  # ERROR: error_when_multiply_lhs_range_by_rhs_dtDuration: Expression is not valid: [1..10] * @"P1D"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_ymDuration  # ERROR: error_when_multiply_lhs_range_by_rhs_ymDuration: Expression is not valid: [1..10] * @"P1Y"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_range  # ERROR: error_when_multiply_lhs_range_by_rhs_range: Expression is not valid: [1..10] * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_function  # ERROR: error_when_multiply_lhs_range_by_rhs_function: Expression is not valid: [1..10] * (function(a) a)
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_range_by_rhs_null  # ERROR: error_when_multiply_lhs_range_by_rhs_null: Expression is not valid: [1..10] * null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_function_by_rhs_range  # ERROR: error_when_multiply_lhs_function_by_rhs_range: Expression is not valid: (function(a) a) * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_multiply_lhs_null_by_rhs_range  # ERROR: error_when_multiply_lhs_null_by_rhs_range: Expression is not valid: null * [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_number_by_rhs_range  # ERROR: error_when_divide_lhs_number_by_rhs_range: Expression is not valid: 10 / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_string_by_rhs_range  # ERROR: error_when_divide_lhs_string_by_rhs_range: Expression is not valid: "10" / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_boolean_by_rhs_range  # ERROR: error_when_divide_lhs_boolean_by_rhs_range: Expression is not valid: true / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_date_by_rhs_range  # ERROR: error_when_divide_lhs_date_by_rhs_range: Expression is not valid: @"2021-01-01" / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_dateAndTime_by_rhs_range  # ERROR: error_when_divide_lhs_dateAndTime_by_rhs_range: Expression is not valid: @"2021-01-01T10:10:10" / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_time_by_rhs_range  # ERROR: error_when_divide_lhs_time_by_rhs_range: Expression is not valid: @"10:10:10" / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_list_by_rhs_range  # ERROR: error_when_divide_lhs_list_by_rhs_range: Expression is not valid: [10] / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_context_by_rhs_range  # ERROR: error_when_divide_lhs_context_by_rhs_range: Expression is not valid: {a: 10} / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_dtDuration_by_rhs_range  # ERROR: error_when_divide_lhs_dtDuration_by_rhs_range: Expression is not valid: @"P1D" / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_ymDuration_by_rhs_range  # ERROR: error_when_divide_lhs_ymDuration_by_rhs_range: Expression is not valid: @"P1Y" / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_number  # ERROR: error_when_divide_lhs_range_by_rhs_number: Expression is not valid: [1..10] / 10
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_string  # ERROR: error_when_divide_lhs_range_by_rhs_string: Expression is not valid: [1..10] / "10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_boolean  # ERROR: error_when_divide_lhs_range_by_rhs_boolean: Expression is not valid: [1..10] / true
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_date  # ERROR: error_when_divide_lhs_range_by_rhs_date: Expression is not valid: [1..10] / @"2021-01-01"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_dateAndTime  # ERROR: error_when_divide_lhs_range_by_rhs_dateAndTime: Expression is not valid: [1..10] / @"2021-01-01T10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_time  # ERROR: error_when_divide_lhs_range_by_rhs_time: Expression is not valid: [1..10] / @"10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_list  # ERROR: error_when_divide_lhs_range_by_rhs_list: Expression is not valid: [1..10] / [10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_context  # ERROR: error_when_divide_lhs_range_by_rhs_context: Expression is not valid: [1..10] / {a: 10}
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_dtDuration  # ERROR: error_when_divide_lhs_range_by_rhs_dtDuration: Expression is not valid: [1..10] / @"P1D"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_ymDuration  # ERROR: error_when_divide_lhs_range_by_rhs_ymDuration: Expression is not valid: [1..10] / @"P1Y"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_range  # ERROR: error_when_divide_lhs_range_by_rhs_range: Expression is not valid: [1..10] / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_function  # ERROR: error_when_divide_lhs_range_by_rhs_function: Expression is not valid: [1..10] / (function(a) a)
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_range_by_rhs_null  # ERROR: error_when_divide_lhs_range_by_rhs_null: Expression is not valid: [1..10] / null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_function_by_rhs_range  # ERROR: error_when_divide_lhs_function_by_rhs_range: Expression is not valid: (function(a) a) / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_divide_lhs_null_by_rhs_range  # ERROR: error_when_divide_lhs_null_by_rhs_range: Expression is not valid: null / [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_number_to_rhs_range  # ERROR: error_when_add_lhs_number_to_rhs_range: Expression is not valid: 10 + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_string_to_rhs_range  # ERROR: error_when_add_lhs_string_to_rhs_range: Expression is not valid: "10" + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_boolean_to_rhs_range  # ERROR: error_when_add_lhs_boolean_to_rhs_range: Expression is not valid: true + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_date_to_rhs_range  # ERROR: error_when_add_lhs_date_to_rhs_range: Expression is not valid: @"2021-01-01" + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_dateAndTime_to_rhs_range  # ERROR: error_when_add_lhs_dateAndTime_to_rhs_range: Expression is not valid: @"2021-01-01T10:10:10" + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_time_to_rhs_range  # ERROR: error_when_add_lhs_time_to_rhs_range: Expression is not valid: @"10:10:10" + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_list_to_rhs_range  # ERROR: error_when_add_lhs_list_to_rhs_range: Expression is not valid: [10] + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_context_to_rhs_range  # ERROR: error_when_add_lhs_context_to_rhs_range: Expression is not valid: {a: 10} + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_dtDuration_to_rhs_range  # ERROR: error_when_add_lhs_dtDuration_to_rhs_range: Expression is not valid: @"P1D" + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_ymDuration_to_rhs_range  # ERROR: error_when_add_lhs_ymDuration_to_rhs_range: Expression is not valid: @"P1Y" + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_number  # ERROR: error_when_add_lhs_range_to_rhs_number: Expression is not valid: [1..10] + 10
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_string  # ERROR: error_when_add_lhs_range_to_rhs_string: Expression is not valid: [1..10] + "10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_boolean  # ERROR: error_when_add_lhs_range_to_rhs_boolean: Expression is not valid: [1..10] + true
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_date  # ERROR: error_when_add_lhs_range_to_rhs_date: Expression is not valid: [1..10] + @"2021-01-01"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_dateAndTime  # ERROR: error_when_add_lhs_range_to_rhs_dateAndTime: Expression is not valid: [1..10] + @"2021-01-01T10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_time  # ERROR: error_when_add_lhs_range_to_rhs_time: Expression is not valid: [1..10] + @"10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_list  # ERROR: error_when_add_lhs_range_to_rhs_list: Expression is not valid: [1..10] + [10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_context  # ERROR: error_when_add_lhs_range_to_rhs_context: Expression is not valid: [1..10] + {a: 10}
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_dtDuration  # ERROR: error_when_add_lhs_range_to_rhs_dtDuration: Expression is not valid: [1..10] + @"P1D"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_ymDuration  # ERROR: error_when_add_lhs_range_to_rhs_ymDuration: Expression is not valid: [1..10] + @"P1Y"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_range  # ERROR: error_when_add_lhs_range_to_rhs_range: Expression is not valid: [1..10] + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_function  # ERROR: error_when_add_lhs_range_to_rhs_function: Expression is not valid: [1..10] + (function(a) a)
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_range_to_rhs_null  # ERROR: error_when_add_lhs_range_to_rhs_null: Expression is not valid: [1..10] + null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_function_to_rhs_range  # ERROR: error_when_add_lhs_function_to_rhs_range: Expression is not valid: (function(a) a) + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_add_lhs_null_to_rhs_range  # ERROR: error_when_add_lhs_null_to_rhs_range: Expression is not valid: null + [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_number_minus_rhs_range  # ERROR: error_when_subtract_lhs_number_minus_rhs_range: Expression is not valid: 10 - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_string_minus_rhs_range  # ERROR: error_when_subtract_lhs_string_minus_rhs_range: Expression is not valid: "10" - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_boolean_minus_rhs_range  # ERROR: error_when_subtract_lhs_boolean_minus_rhs_range: Expression is not valid: true - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_date_minus_rhs_range  # ERROR: error_when_subtract_lhs_date_minus_rhs_range: Expression is not valid: @"2021-01-01" - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_dateAndTime_minus_rhs_range  # ERROR: error_when_subtract_lhs_dateAndTime_minus_rhs_range: Expression is not valid: @"2021-01-01T10:10:10" - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_time_minus_rhs_range  # ERROR: error_when_subtract_lhs_time_minus_rhs_range: Expression is not valid: @"10:10:10" - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_list_minus_rhs_range  # ERROR: error_when_subtract_lhs_list_minus_rhs_range: Expression is not valid: [10] - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_context_minus_rhs_range  # ERROR: error_when_subtract_lhs_context_minus_rhs_range: Expression is not valid: {a: 10} - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_dtDuration_minus_rhs_range  # ERROR: error_when_subtract_lhs_dtDuration_minus_rhs_range: Expression is not valid: @"P1D" - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_ymDuration_minus_rhs_range  # ERROR: error_when_subtract_lhs_ymDuration_minus_rhs_range: Expression is not valid: @"P1Y" - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_number  # ERROR: error_when_subtract_lhs_range_minus_rhs_number: Expression is not valid: [1..10] - 10
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_string  # ERROR: error_when_subtract_lhs_range_minus_rhs_string: Expression is not valid: [1..10] - "10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_boolean  # ERROR: error_when_subtract_lhs_range_minus_rhs_boolean: Expression is not valid: [1..10] - true
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_date  # ERROR: error_when_subtract_lhs_range_minus_rhs_date: Expression is not valid: [1..10] - @"2021-01-01"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_dateAndTime  # ERROR: error_when_subtract_lhs_range_minus_rhs_dateAndTime: Expression is not valid: [1..10] - @"2021-01-01T10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_time  # ERROR: error_when_subtract_lhs_range_minus_rhs_time: Expression is not valid: [1..10] - @"10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_list  # ERROR: error_when_subtract_lhs_range_minus_rhs_list: Expression is not valid: [1..10] - [10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_context  # ERROR: error_when_subtract_lhs_range_minus_rhs_context: Expression is not valid: [1..10] - {a: 10}
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_dtDuration  # ERROR: error_when_subtract_lhs_range_minus_rhs_dtDuration: Expression is not valid: [1..10] - @"P1D"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_ymDuration  # ERROR: error_when_subtract_lhs_range_minus_rhs_ymDuration: Expression is not valid: [1..10] - @"P1Y"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_range  # ERROR: error_when_subtract_lhs_range_minus_rhs_range: Expression is not valid: [1..10] - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_function  # ERROR: error_when_subtract_lhs_range_minus_rhs_function: Expression is not valid: [1..10] - (function(a) a)
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_range_minus_rhs_null  # ERROR: error_when_subtract_lhs_range_minus_rhs_null: Expression is not valid: [1..10] - null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_function_minus_rhs_range  # ERROR: error_when_subtract_lhs_function_minus_rhs_range: Expression is not valid: (function(a) a) - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_subtract_lhs_null_minus_rhs_range  # ERROR: error_when_subtract_lhs_null_minus_rhs_range: Expression is not valid: null - [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_number_exp_rhs_range  # ERROR: error_when_exponent_lhs_number_exp_rhs_range: Expression is not valid: 10 ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_string_exp_rhs_range  # ERROR: error_when_exponent_lhs_string_exp_rhs_range: Expression is not valid: "10" ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_boolean_exp_rhs_range  # ERROR: error_when_exponent_lhs_boolean_exp_rhs_range: Expression is not valid: true ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_date_exp_rhs_range  # ERROR: error_when_exponent_lhs_date_exp_rhs_range: Expression is not valid: @"2021-01-01" ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_dateAndTime_exp_rhs_range  # ERROR: error_when_exponent_lhs_dateAndTime_exp_rhs_range: Expression is not valid: @"2021-01-01T10:10:10" ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_time_exp_rhs_range  # ERROR: error_when_exponent_lhs_time_exp_rhs_range: Expression is not valid: @"10:10:10" ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_list_exp_rhs_range  # ERROR: error_when_exponent_lhs_list_exp_rhs_range: Expression is not valid: [10] ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_context_exp_rhs_range  # ERROR: error_when_exponent_lhs_context_exp_rhs_range: Expression is not valid: {a: 10} ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_dtDuration_exp_rhs_range  # ERROR: error_when_exponent_lhs_dtDuration_exp_rhs_range: Expression is not valid: @"P1D" ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_ymDuration_exp_rhs_range  # ERROR: error_when_exponent_lhs_ymDuration_exp_rhs_range: Expression is not valid: @"P1Y" ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_number  # ERROR: error_when_exponent_lhs_range_exp_rhs_number: Expression is not valid: [1..10] ** 10
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_string  # ERROR: error_when_exponent_lhs_range_exp_rhs_string: Expression is not valid: [1..10] ** "10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_boolean  # ERROR: error_when_exponent_lhs_range_exp_rhs_boolean: Expression is not valid: [1..10] ** true
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_date  # ERROR: error_when_exponent_lhs_range_exp_rhs_date: Expression is not valid: [1..10] ** @"2021-01-01"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_dateAndTime  # ERROR: error_when_exponent_lhs_range_exp_rhs_dateAndTime: Expression is not valid: [1..10] ** @"2021-01-01T10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_time  # ERROR: error_when_exponent_lhs_range_exp_rhs_time: Expression is not valid: [1..10] ** @"10:10:10"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_list  # ERROR: error_when_exponent_lhs_range_exp_rhs_list: Expression is not valid: [1..10] ** [10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_context  # ERROR: error_when_exponent_lhs_range_exp_rhs_context: Expression is not valid: [1..10] ** {a: 10}
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_dtDuration  # ERROR: error_when_exponent_lhs_range_exp_rhs_dtDuration: Expression is not valid: [1..10] ** @"P1D"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_ymDuration  # ERROR: error_when_exponent_lhs_range_exp_rhs_ymDuration: Expression is not valid: [1..10] ** @"P1Y"
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_range  # ERROR: error_when_exponent_lhs_range_exp_rhs_range: Expression is not valid: [1..10] ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_function  # ERROR: error_when_exponent_lhs_range_exp_rhs_function: Expression is not valid: [1..10] ** (function(a) a)
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_range_exp_rhs_null  # ERROR: error_when_exponent_lhs_range_exp_rhs_null: Expression is not valid: [1..10] ** null
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_function_exp_rhs_range  # ERROR: error_when_exponent_lhs_function_exp_rhs_range: Expression is not valid: (function(a) a) ** [1..10]
+compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#error_when_exponent_lhs_null_exp_rhs_range  # ERROR: error_when_exponent_lhs_null_exp_rhs_range: Expression is not valid: null ** [1..10]
+compliance-level-3/1101-feel-floor-function/1101-feel-floor-function-test-01#009  # FAILURE: decision009: expected null, got 1
+compliance-level-3/1102-feel-ceiling-function/1102-feel-ceiling-function-test-01#009  # FAILURE: decision009: expected null, got 2
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#fn-matchesErr-1  # FAILURE: fn-matchesErr-1: expected null, got true
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#fn-matches-45  # FAILURE: fn-matches-45: expected false, got true
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#caselessmatch10  # FAILURE: caselessmatch10: expected false, got true
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#caselessmatch11  # FAILURE: caselessmatch11: expected false, got true
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K-MatchesFunc-3  # FAILURE: K-MatchesFunc-3: expected null, got false
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K-MatchesFunc-5  # FAILURE: K-MatchesFunc-5: expected null, got false
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K-MatchesFunc-6  # FAILURE: K-MatchesFunc-6: expected null, got false
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-1  # FAILURE: K2-MatchesFunc-1: expected true, got false
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-5  # FAILURE: K2-MatchesFunc-5: expected true, got null
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-6  # FAILURE: K2-MatchesFunc-6: expected true, got null
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-11  # FAILURE: K2-MatchesFunc-11: expected null, got false
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-12  # FAILURE: K2-MatchesFunc-12: expected null, got false
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-13  # FAILURE: K2-MatchesFunc-13: expected null, got false
+compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-14  # FAILURE: K2-MatchesFunc-14: expected null, got false
+compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#044_74893220b4  # FAILURE: feel-date-function_ErrorCase_044_74893220b4: expected null, got 2017-05-02
+compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#045_969723fed5  # FAILURE: feel-date-function_ErrorCase_045_969723fed5: expected null, got 2017-08-30
+compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#046_36bf30268a  # FAILURE: feel-date-function_ErrorCase_046_36bf30268a: expected null, got -1000999999-12-01
+compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#052_63457d78b7  # FAILURE: feel-date-function_052_63457d78b7: expected 2017-08-30, got null
+compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#067_8285edad7b  # FAILURE: feel-time-function_ErrorCase_067_8285edad7b: expected null, got 13:20:00+19:00
+compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#068_ad528abb23  # FAILURE: feel-time-function_ErrorCase_068_ad528abb23: expected null, got 13:20:00-19:00
+compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#082_36a78e5396  # FAILURE: feel-time-function_082_36a78e5396: expected 11:59:00+02:01, got null
+compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#083_6b608254c7  # FAILURE: feel-time-function_083_6b608254c7: expected 11:59:00-02:00, got null
+compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#003_335cff371a  # FAILURE: feel-date-and-time-function_ErrorCase_003_335cff371a: expected null, got 2017-08-10T10:20:00
+compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#004_28ef3e7882  # FAILURE: feel-date-and-time-function_ErrorCase_004_28ef3e7882: expected null, got 2017-08-10T00:00:00
+compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#078_e113dabcdd  # FAILURE: feel-date-and-time-function_ErrorCase_078_e113dabcdd: expected null, got 2017-12-31T13:20:00+19:00
+compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#079_2e6f80eb94  # FAILURE: feel-date-and-time-function_ErrorCase_079_2e6f80eb94: expected null, got 2017-12-31T13:20:00-19:00
+compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#087_e9fd32063a  # FAILURE: feel-date-and-time-function_087_e9fd32063a: expected 2017-01-01T23:59:01, got null
+compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#088_1db0287718  # FAILURE: feel-date-and-time-function_088_1db0287718: expected 2017-01-01T23:59:01, got null
+compliance-level-3/1140-feel-string-join-function/1140-feel-string-join-function-test-01#015  # FAILURE: decision015: expected "a", got null
+compliance-level-3/1140-feel-string-join-function/1140-feel-string-join-function-test-01#016  # FAILURE: decision016: expected "a", got null
+compliance-level-3/1141-feel-round-up-function/1141-feel-round-up-function-test-01#016_b  # FAILURE: decision016_b: expected null, got 0
+compliance-level-3/1141-feel-round-up-function/1141-feel-round-up-function-test-01#017_b  # FAILURE: decision017_b: expected null, got 5.5
+compliance-level-3/1142-feel-round-down-function/1142-feel-round-down-function-test-01#016_b  # FAILURE: decision016_b: expected null, got 0
+compliance-level-3/1142-feel-round-down-function/1142-feel-round-down-function-test-01#017_b  # FAILURE: decision017_b: expected null, got 5.5
+compliance-level-3/1143-feel-round-half-up-function/1143-feel-round-half-up-function-test-01#016_b  # FAILURE: decision016_b: expected null, got 0
+compliance-level-3/1143-feel-round-half-up-function/1143-feel-round-half-up-function-test-01#017_b  # FAILURE: decision017_b: expected null, got 5.5
+compliance-level-3/1144-feel-round-half-down-function/1144-feel-round-half-down-function-test-01#016_b  # FAILURE: decision016_b: expected null, got 0
+compliance-level-3/1144-feel-round-half-down-function/1144-feel-round-half-down-function-test-01#017_b  # FAILURE: decision017_b: expected null, got 5.5
+compliance-level-3/1145-feel-context-function/1145-feel-context-function-test-01#003  # FAILURE: decision003: expected null, got {a:2}
+compliance-level-3/1145-feel-context-function/1145-feel-context-function-test-01#005  # FAILURE: decision005: expected {a:1}, got null
+compliance-level-3/1145-feel-context-function/1145-feel-context-function-test-01#009  # FAILURE: decision009: expected {a:null}, got null
+compliance-level-3/1145-feel-context-function/1145-feel-context-function-test-01#010  # FAILURE: decision010: expected {:1}, got null
+compliance-level-3/1145-feel-context-function/1145-feel-context-function-test-01#014_b  # FAILURE: decision014_b: expected {a:1}, got null
+compliance-level-3/1146-feel-context-put-function/1146-feel-context-put-function-test-01#nested008  # FAILURE: nested008: expected null, got {x:1, y:{a:2}}
+compliance-level-3/1146-feel-context-put-function/1146-feel-context-put-function-test-01#nested009  # FAILURE: nested009: expected null, got {x:1, y:{a:{b:{c:2}}}}
+compliance-level-3/1155-list-replace-function/1155-list-replace-function-test-01#017  # FAILURE: decision017: expected null, got [5, 4]
+compliance-level-3/1155-list-replace-function/1155-list-replace-function-test-01#018  # FAILURE: decision018: expected null, got [5, 4]
+compliance-level-3/1155-list-replace-function/1155-list-replace-function-test-01#021  # FAILURE: decision021: expected [5], got null
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_a  # FAILURE: decision001_a: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_b  # FAILURE: decision001_b: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_c  # FAILURE: decision001_c: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_d  # FAILURE: decision001_d: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_e  # FAILURE: decision001_e: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_g  # FAILURE: decision001_g: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_h  # FAILURE: decision001_h: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#001_i  # FAILURE: decision001_i: expected true, got false
+compliance-level-3/1156-range-function/1156-range-function-test-01#003_a  # ERROR: decision003_a: Expression is not valid: range("[18..21]") = [18..21]
+compliance-level-3/1156-range-function/1156-range-function-test-01#003_b  # ERROR: decision003_b: Expression is not valid: range("(18..21]") = (18..21]
+compliance-level-3/1156-range-function/1156-range-function-test-01#003_c  # ERROR: decision003_c: Expression is not valid: range("]18..21]") = ]18..21]
+compliance-level-3/1156-range-function/1156-range-function-test-01#003_d  # ERROR: decision003_d: Expression is not valid: range("[18..21)") = [18..21)
+compliance-level-3/1156-range-function/1156-range-function-test-01#003_e  # ERROR: decision003_e: Expression is not valid: range("[18..21[") = [18..21[
+compliance-level-3/1156-range-function/1156-range-function-test-01#005_a  # ERROR: decision005_a: Expression is not valid: range("[\"a\"..\"c\"]") = ["a".."c"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#005_b  # ERROR: decision005_b: Expression is not valid: range("[@\"1970-01-01\"..@\"1970-01-02\"]") = [@"1970-01-01"..@"1970-01-02"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#005_c  # ERROR: decision005_c: Expression is not valid: range("[@\"1970-01-01T00:00:00\"..@\"1970-01-02T00:00:00\"]") = [@"1970-01-01T00:00:00"..@"1970-01-02T00:00:00"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#005_d  # ERROR: decision005_d: Expression is not valid: range("[@\"00:00:00\"..@\"00:00:00\"]") = [@"00:00:00"..@"00:00:00"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#005_e  # ERROR: decision005_e: Expression is not valid: range("[@\"P1D\"..@\"P2D\"]") = [@"P1D"..@"P2D"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#005_f  # ERROR: decision005_f: Expression is not valid: range("[@\"P1Y\"..@\"P2Y\"]") = [@"P1Y"..@"P2Y"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#006  # ERROR: decision006: Expression is not valid: range(" [ 1 .. 3 ] ") = [1..3]
+compliance-level-3/1156-range-function/1156-range-function-test-01#007_a  # ERROR: decision007_a: Expression is not valid: range("[date(\"1970-01-01\")..date(\"1970-01-02\")]") = [date("1970-01-01")..date("1970-01-02")]
+compliance-level-3/1156-range-function/1156-range-function-test-01#007_b  # FAILURE: decision007_b: expected null, got [1970-01-01..1970-01-02]
+compliance-level-3/1156-range-function/1156-range-function-test-01#008_a  # ERROR: decision008_a: Expression is not valid: range("[date and time(\"1970-01-01T00:00:00\")..@\"1970-01-02T00:00:00\"]") = [@"1970-01-01T00:00:00"..@"1970-01-02T00:0
+compliance-level-3/1156-range-function/1156-range-function-test-01#008_b  # FAILURE: decision008_b: expected null, got [1970-01-01T00:00:00..1970-01-02T00:00:00]
+compliance-level-3/1156-range-function/1156-range-function-test-01#009_a  # ERROR: decision009_a: Expression is not valid: range("[time(\"00:00:00\")..@\"00:00:00\"]") = [@"00:00:00"..@"00:00:00"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#009_b  # FAILURE: decision009_b: expected null, got [00:00:00..00:00:00]
+compliance-level-3/1156-range-function/1156-range-function-test-01#010_a  # ERROR: decision010_a: Expression is not valid: range("[duration(\"P1D\")..@\"P2D\"]") = [@"P1D"..@"P2D"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#010_b  # FAILURE: decision010_b: expected null, got [P1D..P2D]
+compliance-level-3/1156-range-function/1156-range-function-test-01#011  # ERROR: decision011: Expression is not valid: range(from: "[1..3]") = [1..3]
+compliance-level-3/1156-range-function/1156-range-function-test-01#017  # FAILURE: decision017: expected null, got >= 10
+compliance-level-3/1156-range-function/1156-range-function-test-01#020  # FAILURE: decision020: expected null, got [3..1]
+compliance-level-3/1156-range-function/1156-range-function-test-01#021  # FAILURE: decision021: expected null, got [1970-01-02..1970-01-01]
+compliance-level-3/1156-range-function/1156-range-function-test-01#022  # FAILURE: decision022: expected null, got [1970-01-02T00:00:00..1970-01-01T00:00:00]
+compliance-level-3/1156-range-function/1156-range-function-test-01#023  # FAILURE: decision023: expected null, got ["z".."a"]
+compliance-level-3/1156-range-function/1156-range-function-test-01#024  # FAILURE: decision024: expected null, got [P2D..P1D]
+compliance-level-3/1156-range-function/1156-range-function-test-01#025  # FAILURE: decision025: expected null, got [P2Y..P1Y]
+compliance-level-3/1156-range-function/1156-range-function-test-01#026  # FAILURE: decision026: expected null, got [02:00:00..01:00:00]
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#001  # FAILURE: To Singleton List: expected ["abc"], got "abc"
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#002  # FAILURE: From Singleton List: expected "abc", got ["abc"]
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#002_a  # FAILURE: From Singleton List Error: expected null, got ["abc", "bcd"]
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#003  # FAILURE: From Date To Date and Time: expected 2000-01-02T00:00:00Z, got 2000-01-02
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#004  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#005  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#006  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#007  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#008  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#009  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#010  # FAILURE: Implicit Conversions CE: expected [[1], 2, 2000-12-01T00:00:00Z], got [1, [2], 2000-12-01]
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#011  # FAILURE: Implicit Conversions FUNCT: expected [[1], 2, 2000-02-01T00:00:00Z], got [1, [2], 2000-02-01]
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-01#001  # UNSUPPORTED: import
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-02#001  # UNSUPPORTED: import
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-03#001  # UNSUPPORTED: import
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-04#001  # UNSUPPORTED: import
