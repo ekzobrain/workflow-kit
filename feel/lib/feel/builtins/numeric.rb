@@ -34,6 +34,8 @@ module FEEL
         n = number(n)
         scale = number(scale)
         return if n.nil? || scale.nil? || mode.nil?
+        # the range of the scale of a decimal128 (IEEE 754)
+        return unless scale.between?(-6111, 6176)
 
         n = BigDecimal(n)
         scale = scale.to_i

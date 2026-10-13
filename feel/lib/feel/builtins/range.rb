@@ -176,17 +176,36 @@ module FEEL
     # The lambda parameters list the parameter names of all signatures of a
     # function (e.g. `before(point1, point2)`, `before(point, range)`,
     # `before(range1, range2)`); positional arguments fill the first signature.
-    # range(from): a range value from the text of a range literal, e.g.
-    # "[1..10]", "(date(\"2020-01-01\")..date(\"2020-12-31\")]" or "< 5"
-    # (DMN 1.5). The endpoints are evaluated without variables.
+    # range(from): a range value from the text of an interval of literals in
+    # ascending order, e.g. "[1..10]" or
+    # "(date(\"2020-01-01\")..date(\"2020-12-31\")]" (DMN 1.5).
     def self.parse_range(text)
       return unless text.is_a?(String)
 
       node = FEEL::Parser.parse(text.strip, root: :range_literal)
+      return unless node.is_a?(FEEL::RangeLiteral) && literal_endpoint?(node.low) && literal_endpoint?(node.high)
+
       value = node.eval(FEEL::RootScope.build({}))
-      value.is_a?(FEEL::Range) ? value : nil
+      return unless value.is_a?(FEEL::Range) && !value.start.nil? && !value.end.nil?
+
+      FEEL::Range.compare_values(value.start, value.end)&.<=(0) ? value : nil
     rescue FEEL::SyntaxError, FEEL::EvaluationError
       nil
+    end
+
+    TEMPORAL_FUNCTIONS = ["date", "time", "date and time", "duration", "years and months duration"].freeze
+
+    # A literal (e.g. `1`, `"a"`, `@"2020-01-01"`), or a temporal function of
+    # a string literal (e.g. `date("2020-01-01")`).
+    def self.literal_endpoint?(node)
+      case node
+      when FEEL::NumericLiteral, FEEL::StringLiteral, FEEL::AtLiteral then true
+      when FEEL::ArithmeticNegation then node.operand.is_a?(FEEL::NumericLiteral)
+      when FEEL::FunctionInvocation
+        TEMPORAL_FUNCTIONS.include?(node.function_name) && node.params.is_a?(FEEL::PositionalParameters) &&
+          node.params.expressions.all? { |argument| argument.is_a?(FEEL::StringLiteral) }
+      else false
+      end
     end
 
     RANGE = {

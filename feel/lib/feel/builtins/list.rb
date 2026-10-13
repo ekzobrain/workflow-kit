@@ -23,6 +23,14 @@ module FEEL
       # Arguments of a varargs function: either the items themselves or a
       # single list argument, e.g. `min(1, 2, 3)` and `min([1, 2, 3])`.
       # Returns nil if no argument was passed.
+      # Whether a function can be invoked with the number of arguments.
+      def accepts_arguments?(function, count)
+        return function.params.length == count if function.is_a?(Function)
+        return true unless function.respond_to?(:arity)
+
+        function.arity.negative? ? count >= -function.arity - 1 : function.arity == count
+      end
+
       def varargs(args)
         return if args.empty?
         return args.first if args.length == 1 && args.first.is_a?(Array)
@@ -274,11 +282,12 @@ module FEEL
       # newItem), where match is a function(item, newItem) returning a
       # boolean (DMN 1.5).
       "list replace": ->(list, position = nil, newItem = ListSupport::NOT_GIVEN, match = nil) { # rubocop:disable Naming/VariableName
+        list = [list] unless list.is_a?(Array) || list.nil? # a singleton list
         return unless list.is_a?(Array) && !newItem.equal?(ListSupport::NOT_GIVEN)
 
         match ||= position if position.respond_to?(:call)
         if match
-          return unless match.respond_to?(:call)
+          return unless match.respond_to?(:call) && ListSupport.accepts_arguments?(match, 2)
 
           results = list.map { |item| match.call(item, newItem) }
           return unless results.all? { |result| result == true || result == false }
@@ -336,6 +345,7 @@ module FEEL
         end
       },
       "string join": ->(list, delimiter = nil, prefix = ListSupport::NOT_GIVEN, suffix = ListSupport::NOT_GIVEN) {
+        list = [list] if list.is_a?(String) # a singleton list
         return unless delimiter.nil? || delimiter.is_a?(String)
         given = [prefix, suffix].reject { |value| value.equal?(ListSupport::NOT_GIVEN) }
         return unless given.empty? || given.length == 2

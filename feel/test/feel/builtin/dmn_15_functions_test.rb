@@ -80,8 +80,6 @@ module FEEL
         _(evaluate('range("[1..10]")')).must_equal Range.build(1, 10, true, true)
         _(evaluate('range("(1..10]")')).must_equal Range.build(1, 10, false, true)
         _(evaluate('range("]1..10[")')).must_equal Range.build(1, 10, false, false)
-        _(evaluate('range("< 5")')).must_equal Range.build(nil, 5, false, false)
-        _(evaluate('range(">= 5")')).must_equal Range.build(5, nil, true, false)
         _(evaluate('range("[\"a\"..\"z\"]")')).must_equal Range.build("a", "z", true, true)
         _(evaluate('range("[date(\"2020-01-01\")..@\"2020-12-31\"]")')).must_equal Range.build(Date.new(2020, 1, 1), Date.new(2020, 12, 31), true, true)
       end
@@ -99,6 +97,12 @@ module FEEL
         _(evaluate('range("[1..\"z\"]")')).must_be_nil
         _(evaluate("range(5)")).must_be_nil
         _(evaluate("range(null)")).must_be_nil
+        # as the DMN TCK: an interval of literals, in ascending order
+        _(evaluate('range("< 5")')).must_be_nil
+        _(evaluate('range("[3..1]")')).must_be_nil
+        _(evaluate('range("[null..1]")')).must_be_nil
+        _(evaluate('range("[date(string(\"2020-01-01\"))..@\"2020-12-31\"]")')).must_be_nil
+        _(evaluate('range("[-5..5]")')).must_equal Range.build(-5, 5, true, true)
       end
     end
 
@@ -108,7 +112,7 @@ module FEEL
         _(evaluate('range("(1..10]").end')).must_equal 10
         _(evaluate('range("(1..10]").start included')).must_equal false
         _(evaluate('range("(1..10]").end included')).must_equal true
-        _(evaluate('range("< 10").start')).must_be_nil
+        _(evaluate("(< 10).start")).must_be_nil
         _(evaluate("r.end included", r: Range.build(1, 5, true, false))).must_equal false
       end
 

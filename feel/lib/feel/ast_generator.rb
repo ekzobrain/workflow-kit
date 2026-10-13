@@ -21,7 +21,7 @@ module FEEL
 
       ARITHMETIC_LEVELS = { "+" => ADDITIVE, "-" => ADDITIVE, "*" => MULTIPLICATIVE, "/" => MULTIPLICATIVE, "**" => EXPONENTIATION }.freeze
       COMPARISON_OPERATORS = %w[= != < <= > >=].freeze
-      UNARY_OPERATORS = %w[< <= > >=].freeze
+      UNARY_OPERATORS = %w[< <= > >= = !=].freeze
       PROPERTY_NAMES = ["time offset", "start included", "end included"].freeze
       STRING_ESCAPES = { '"' => '\\"', "\\" => "\\\\", "\n" => "\\n", "\r" => "\\r", "\t" => "\\t", "\b" => "\\b", "\f" => "\\f" }.freeze
 
@@ -134,7 +134,13 @@ module FEEL
         when "for" then ["for #{iterations(node)} return #{expression(fetch(node, :return))}", EXPRESSION]
         when "some", "every" then ["#{type(node)} #{iterations(node)} satisfies #{expression(fetch(node, :satisfies))}", EXPRESSION]
         when "function definition" then [function_definition(node), EXPRESSION]
-        when "unary comparison", "range", "unary tests", "not", "any"
+        when "range" then [range_value(node), PRIMARY]
+        # `(!= 10)` (the others are ranges, e.g. `(< 10)`)
+        when "unary comparison"
+          raise invalid(node, "not allowed as an expression here") unless fetch(node, :operator, String) == "!="
+
+          ["(#{unary_comparison(node)})", PRIMARY]
+        when "unary tests", "not", "any"
           raise invalid(node, "not allowed as an expression here")
         else raise invalid(node, "unknown type")
         end
@@ -189,6 +195,13 @@ module FEEL
         raise invalid(node, "unknown operator #{operator.inspect}") unless UNARY_OPERATORS.include?(operator)
 
         "#{operator} #{expression(fetch(node, :value), ADDITIVE)}"
+      end
+
+      # A range as a value: `[1..10]`, or `(< 10)` if it has one endpoint.
+      def range_value(node)
+        low = fetch(node, :start, required: false)
+        high = fetch(node, :end, required: false)
+        low.nil? || high.nil? ? "(#{argument(node)})" : interval(node)
       end
 
       def interval(node)

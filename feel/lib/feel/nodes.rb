@@ -262,10 +262,12 @@ module FEEL
       keys = named_args.keys.map { |key| key.to_s.tr(" ", "_") }
       return named_arguments_mismatch(fn, named_args.keys) unless (keys - names).empty?
 
+      given = parameters.map { |_type, name| named_args.any? { |key, _value| key.to_s.tr(" ", "_") == name.to_s } }
       args = parameters.each_with_index.map do |(_type, name), _index|
         named_args.find { |key, _value| key.to_s.tr(" ", "_") == name.to_s }&.last
       end
-      args.pop while args.any? && args.last.nil? && optional_parameter?(parameters[args.length - 1])
+      # optional parameters not given are left out (an explicit null is given)
+      args.pop while args.any? && !given[args.length - 1] && optional_parameter?(parameters[args.length - 1])
       return arguments_mismatch(fn, args.length) unless arity_matches?(fn, args.length)
 
       call_function(fn, *args)
@@ -307,6 +309,15 @@ module FEEL
 
       result = feel_equal_or_nil(left, right)
       result.nil? ? not_comparable(left, right) : result
+    end
+
+    # The comparison of a unary test (`< 10`, `= 10`, `!= 10`).
+    def unary_compare(operator, input, value)
+      case operator
+      when "=" then equal_values(input, value)
+      when "!=" then (equal = equal_values(input, value)).nil? ? nil : !equal
+      else compare_values(operator, input, value)
+      end
     end
 
     # Ordering comparison: null if the values have different types.
@@ -500,7 +511,7 @@ module FEEL
     end
 
     def matches(input, context)
-      compare_values(operator_text, input, endpoint.eval(context))
+      unary_compare(operator_text, input, endpoint.eval(context))
     end
 
     def operator_text
@@ -534,6 +545,8 @@ module FEEL
     def eval(context = {})
       low_value = low.eval(context)
       high_value = high.eval(context)
+      # a null endpoint is not valid (as in feel-scala; the DMN TCK expects
+      # an unbounded range, e.g. `(null..10)` as `< 10`)
       return nil if low_value.nil? || high_value.nil?
 
       FEEL::Range.build(low_value, high_value, start_token.text_value == "[", end_token.text_value == "]")
@@ -553,6 +566,7 @@ module FEEL
       when "<=" then FEEL::Range.build(nil, value, false, true)
       when ">" then FEEL::Range.build(value, nil, false, false)
       when ">=" then FEEL::Range.build(value, nil, true, false)
+      when "=" then FEEL::Range.build(value, value, true, true)
       end
     end
   end
@@ -605,6 +619,7 @@ module FEEL
 
       current, *rest = contexts
       items = current.domain.eval(context)
+      items = range_items(items) if items.is_a?(FEEL::Range)
       return list_expected(items) || false unless items.is_a?(Array)
 
       variable_name = current.variable.eval
@@ -616,6 +631,27 @@ module FEEL
   end
 
   class IterationContext < Node
+  end
+
+  class Node
+    # The items of a range to iterate over: integers or dates, in ascending
+    # or descending order. Null for other ranges.
+    def range_items(range)
+      first = range.start
+      last = range.end
+      return nil if first.nil? || last.nil?
+
+      items = if first.is_a?(Integer) && last.is_a?(Integer) then first <= last ? (first..last).to_a : first.downto(last).to_a
+      elsif Numbers.number?(first) && Numbers.number?(last) && first == first.to_i && last == last.to_i
+        first.to_i <= last.to_i ? (first.to_i..last.to_i).to_a : first.to_i.downto(last.to_i).to_a
+      elsif first.instance_of?(Date) && last.instance_of?(Date) then first <= last ? (first..last).to_a : first.downto(last).to_a
+      end
+      return nil unless items
+
+      items.shift if !range.start_included && items.any?
+      items.pop if !range.end_included && items.any?
+      items
+    end
   end
 
   class RangeExpression < Node
@@ -897,6 +933,7 @@ module FEEL
     include PostfixOperation
 
     def apply(list, context)
+      # not a singleton list, as feel-scala does (the DMN TCK expects one)
       return list_expected(list) unless list.is_a?(Array)
       return [] if list.empty?
 
@@ -1107,10 +1144,10 @@ module FEEL
     end
 
     def value
-      @value ||= chars.elements.map do |char|
+      @value ||= join_surrogates(chars.elements.map do |char|
         text = char.text_value
         text.start_with?("\\") ? process_escape_sequence(text) : text
-      end.join.freeze
+      end).freeze
     end
 
     private
@@ -1125,9 +1162,31 @@ module FEEL
       when '\\"' then '"'
       when "\\'" then "'"
       when "\\\\" then "\\"
-      when /\A\\u([0-9a-fA-F]{4})\z/ then [Regexp.last_match(1).hex].pack("U")
+      when /\A\\[uU]([0-9a-fA-F]{4}|[0-9a-fA-F]{6})\z/ then Regexp.last_match(1).hex
       else escape_seq
       end
+    end
+
+    # Escaped code points (`\uD83D\uDE00`, `\U01F600`) as characters: a
+    # UTF-16 surrogate pair is one character.
+    def join_surrogates(parts)
+      result = +""
+      index = 0
+      while index < parts.length
+        part = parts[index]
+        if part.is_a?(Integer)
+          following = parts[index + 1]
+          if (0xD800..0xDBFF).cover?(part) && following.is_a?(Integer) && (0xDC00..0xDFFF).cover?(following)
+            part = 0x10000 + ((part - 0xD800) << 10) + (following - 0xDC00)
+            index += 1
+          end
+          result << ((0xD800..0xDFFF).cover?(part) ? "\uFFFD" : [part].pack("U"))
+        else
+          result << part
+        end
+        index += 1
+      end
+      result
     end
   end
 
@@ -1148,7 +1207,12 @@ module FEEL
   class NumericLiteral < Node
     # Decimal literals are exact (BigDecimal), integer literals are Integers.
     def eval(_context = {})
-      @value ||= text_value.include?(".") ? BigDecimal(text_value) : text_value.to_i
+      @value ||= if text_value.match?(/[.eE]/)
+        number = BigDecimal(text_value)
+        number.frac.zero? && !text_value.include?(".") ? number.to_i : number
+      else
+        text_value.to_i
+      end
     end
   end
 
@@ -1192,6 +1256,8 @@ module FEEL
       scope = Scope.new(context, {})
       entries.each do |entry|
         key = entry.key_value
+        return duplicate_key(key) if result.key?(key)
+
         value = entry.value.eval(scope)
         result[key] = value
         scope.define(key, value) unless key.nil?
@@ -1201,6 +1267,10 @@ module FEEL
 
     def entries
       @entries ||= respond_to?(:head) ? [head] + tail.elements.map(&:context_entry) : []
+    end
+
+    def duplicate_key(key)
+      failure(:duplicate_key) { "The context has two entries with the key #{key.inspect}" }
     end
   end
 

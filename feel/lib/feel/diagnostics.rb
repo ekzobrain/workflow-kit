@@ -16,6 +16,7 @@ module FEEL
   # - :division_by_zero
   # - :not_a_context     - a path into a value that has no such property
   # - :assertion         - a failed `assert()`
+  # - :duplicate_key     - a context literal with two entries with the same key
   # - :function_failure  - a custom (Ruby) function raised an error
   # - :null_operand      - null as an operand or argument: the result is null,
   #                        as FEEL defines it (a warning only, never raised)

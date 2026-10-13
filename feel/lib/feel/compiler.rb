@@ -120,7 +120,7 @@ module FEEL
     def compile_test
       operator = operator_text
       endpoint_value = endpoint.compiled
-      ->(input, context) { compare_values(operator, input, endpoint_value.call(context)) }
+      ->(input, context) { unary_compare(operator, input, endpoint_value.call(context)) }
     end
   end
 

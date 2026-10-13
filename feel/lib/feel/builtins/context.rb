@@ -83,11 +83,13 @@ module FEEL
       def put_path(context, keys, value)
         result = to_context(context)
         key, *rest = keys
-        result[key] = if rest.empty?
-          value
+        if rest.empty?
+          result[key] = value
         else
+          # a value that is not a context is replaced (as feel-scala does)
           child = fetch(result, key)
-          put_path(context?(child) ? child : {}, rest, value)
+          result[key] = put_path(context?(child) ? child : {}, rest, value)
+          return nil if result[key].nil?
         end
         result
       end
@@ -119,7 +121,12 @@ module FEEL
         context.to_h.map { |key, value| { "key" => key.to_s, "value" => value } }
       end
 
+      # A context from a list of entries (a single entry is a singleton
+      # list). Null if an entry is not valid. A later entry overrides an
+      # earlier one with the same key (as feel-scala does; the DMN TCK
+      # expects null).
       def from_entries(entries)
+        entries = [entries] if context?(entries)
         return nil unless entries.is_a?(Array)
 
         entries.each_with_object({}) do |entry, result|
@@ -133,7 +140,15 @@ module FEEL
       end
     end
 
-    context_put = AliasedBuiltin.new(%w[context key value], "keys" => "key") do |context, keys, value|
+    # `key` is a key, `keys` a list of keys (a path).
+    context_put = Class.new(AliasedBuiltin) do
+      def call_named(named_args)
+        key = named_args.find { |name, _value| name.to_s == "key" }
+        return nil if key && key.last.is_a?(Array)
+
+        super
+      end
+    end.new(%w[context key value], "keys" => "key") do |context, keys, value|
       ContextSupport.context_put(context, keys, value)
     end
 

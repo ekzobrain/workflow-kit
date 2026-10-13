@@ -144,7 +144,8 @@ module FEEL
     # Matches an input value against the result of a unary test expression.
     def unary_match(input, value)
       return true if value == true
-      return true if value.is_a?(Array) && value.any? { |item| feel_equal(item, input) }
+      # a list of values or ranges
+      return true if value.is_a?(Array) && value.any? { |item| item.is_a?(FEEL::Range) ? item.include?(input) == true : feel_equal(item, input) }
 
       equal = feel_equal_or_nil(input, value)
       return true if equal == true
