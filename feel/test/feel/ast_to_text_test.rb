@@ -197,6 +197,11 @@ module FEEL
       end
     end
 
+    it "should write ranges as values" do
+      _(to_text({ type: "list", items: [range(number(1), number(2), true, true), range(nil, number(5), false, false)] })).must_equal "[[1..2], (< 5)]"
+      _(to_text({ type: "comparison", operator: "=", left: range(number(1), number(2), false, true), right: var("r") })).must_equal "(1..2] = r"
+    end
+
     it "should accept string keys, e.g. an AST read from JSON" do
       ast = JSON.parse(JSON.generate(FEEL::AST.from_text('a.b > 1 and c in ("x", [1..2])')))
       _(to_text(ast)).must_equal 'a.b > 1 and c in ("x", [1..2])'
@@ -220,7 +225,6 @@ module FEEL
         { type: "in", value: var("a"), tests: [] },
         { type: "instance of", value: var("a"), of: "not a type!" },
         { type: "list", items: [{ type: "unary comparison", operator: "<", value: number(1) }] },
-        { type: "list", items: [range(number(1), number(2), true, true)] },
         { type: "list", items: [{ type: "any" }] },
         { type: "for", iterations: [{ name: "i", in: range(number(1), number(3), false, true) }], return: var("i") },
         { type: "function call", name: "f", arguments: [range(nil, nil, false, false)] },

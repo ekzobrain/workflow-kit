@@ -23,6 +23,11 @@ module FEEL
       _(evaluate("{add: function(a, b) a + b}.add(2, 3)")).must_equal 5
     end
 
+    it "should be invoked by a name in backticks" do
+      _(evaluate("`to hex`(255)", "to hex" => ->(x) { x.to_s(16) })).must_equal "ff"
+      _(evaluate('`string length`("abc")')).must_equal 3
+    end
+
     it "should be invoked directly" do
       _(evaluate("(function(x) x * 2)(21)")).must_equal 42
     end

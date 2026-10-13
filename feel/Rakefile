@@ -18,4 +18,36 @@ namespace :test do
   end
 end
 
-task default: %i[test test:interop]
+# The test cases of the DMN TCK (test/tck/README.md).
+desc "Run the DMN TCK test cases (FILTER=part of a test case folder name)"
+task :tck do
+  ruby "-Ilib", "test/tck/run.rb", *[ENV["FILTER"]].compact
+end
+
+namespace :tck do
+  desc "Accept the current failures of the DMN TCK as expected (test/tck/expected_failures.txt)"
+  task :accept do
+    ruby "-Ilib", "test/tck/run.rb", "--accept"
+  end
+
+  desc "Update the DMN TCK test cases from GitHub (REVISION=commit, default: the latest)"
+  task :update do
+    require "tmpdir"
+    Dir.mktmpdir do |dir|
+      sh "git", "clone", "--quiet", "https://github.com/dmn-tck/tck.git", dir
+      sh "git", "-C", dir, "checkout", "--quiet", ENV["REVISION"] if ENV["REVISION"]
+      cases = File.expand_path("test/tck/cases", __dir__)
+      FileUtils.rm_rf(Dir[File.join(cases, "compliance-level-*")])
+      Dir.chdir(File.join(dir, "TestCases")) do
+        Dir["compliance-level-{2,3}/**/*.dmn", "compliance-level-{2,3}/**/*-test-*.xml"].each do |file|
+          FileUtils.mkdir_p(File.join(cases, File.dirname(file)))
+          FileUtils.cp(file, File.join(cases, file))
+        end
+      end
+      FileUtils.cp(File.join(dir, "LICENSE-ASL-2.0.txt"), File.join(cases, "LICENSE"))
+      File.write(File.join(cases, "REVISION"), `git -C #{dir} rev-parse HEAD`)
+    end
+  end
+end
+
+task default: %i[test test:interop tck]

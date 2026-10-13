@@ -283,6 +283,7 @@ module FEEL
         hour, minute, second, fraction, offset, zone_id = match.captures
         local = local_time(hour.to_i, minute.to_i, second.to_i + parse_fraction(fraction))
         return nil unless local
+        return nil if offset && !valid_offset?(offset)
         return ZonedTime.new(local, parse_offset(offset)) if offset
 
         tz = zone(zone_id)
@@ -302,8 +303,8 @@ module FEEL
 
       if (match = OFFSET_DATE_TIME_PATTERN.match(value))
         year, month, day, hour, minute, second, fraction, offset, bracket_zone, at_zone = match.captures
-        fields = [year.to_i, month.to_i, day.to_i, hour.to_i, minute.to_i, second.to_i + parse_fraction(fraction)]
-        return nil unless valid_date_time?(*fields)
+        fields = end_of_day([year.to_i, month.to_i, day.to_i, hour.to_i, minute.to_i, second.to_i + parse_fraction(fraction)])
+        return nil unless valid_date_time?(*fields) && (offset.nil? || valid_offset?(offset))
 
         zone_id = bracket_zone || at_zone
         if zone_id
@@ -318,9 +319,23 @@ module FEEL
         end
       elsif (match = LOCAL_DATE_TIME_PATTERN.match(value))
         year, month, day, hour, minute, second, fraction = match.captures
-        fields = [year.to_i, month.to_i, day.to_i, hour.to_i, minute.to_i, second.to_i + parse_fraction(fraction)]
+        fields = end_of_day([year.to_i, month.to_i, day.to_i, hour.to_i, minute.to_i, second.to_i + parse_fraction(fraction)])
         LocalDateTime.new(*fields) if valid_date_time?(*fields)
       end
+    end
+
+    # "24:00:00" (the end of a day, as in XML Schema) is the start of the next day.
+    def end_of_day(fields)
+      year, month, day, hour, minute, second = fields
+      return fields unless hour == 24 && minute.zero? && second.zero? && Date.valid_date?(year, month, day)
+
+      date = Date.new(year, month, day) + 1
+      [date.year, date.month, date.day, 0, 0, 0]
+    end
+
+    # Offsets are within -18:00..+18:00 (like java.time.ZoneOffset).
+    def valid_offset?(offset)
+      parse_offset(offset).abs <= 18 * 3600
     end
 
     def parse_duration(value)
@@ -713,11 +728,17 @@ module FEEL
           days_time_duration(left.utc_seconds - right.utc_seconds)
         end
       when %i[date_time date_time]
-        if left.is_a?(LocalDateTime) || right.is_a?(LocalDateTime)
+        if left.is_a?(LocalDateTime) && right.is_a?(LocalDateTime)
           days_time_duration(wall_clock(left) - wall_clock(right))
-        else
+        elsif !left.is_a?(LocalDateTime) && !right.is_a?(LocalDateTime)
           days_time_duration(left.to_r - right.to_r)
         end
+      # a date is a date-time at midnight UTC, subtracted from (or by) a
+      # date-time with offset or zone (not a local one)
+      when %i[date_time date]
+        days_time_duration(left.to_r - Time.utc(right.year, right.month, right.day).to_r) unless left.is_a?(LocalDateTime)
+      when %i[date date_time]
+        days_time_duration(Time.utc(left.year, left.month, left.day).to_r - right.to_r) unless right.is_a?(LocalDateTime)
       end
     end
 

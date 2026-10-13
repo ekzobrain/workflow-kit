@@ -356,11 +356,12 @@ The text is canonical (`FEEL::AST.from_text(FEEL::AST.to_text(ast)) == ast` for 
 ### Data Types
 
 - [x] Boolean (true, false)
-- [x] Number (integer, decimal)
+- [x] Number (integer, decimal, exponent: `1.5e3`)
 - [x] String (single and double quoted)
 - [x] Date, Time, Duration (ISO 8601)
 - [x] List (array)
 - [x] Context (hash)
+- [x] Range (`[1..10]`, `(< 5)`, also as values: `x in [1..10]`, `[1..10] instance of range<number>`)
 
 ### Expressions
 
@@ -379,12 +380,12 @@ The text is canonical (`FEEL::AST.from_text(FEEL::AST.to_text(ast)) == ast` for 
 - [x] Conjunction
 - [x] Between
 - [x] In
-- [x] Instance Of
+- [x] Instance Of (also structured types: `list<number>`, `range<date>`, `context<name: string, age: number>`, `function<number> -> Any`)
 - [x] Function Definition
 
 ### Unary Tests
 
-- [x] Comparison
+- [x] Comparison (`< 5`, `= 5`, `!= 5`)
 - [x] Interval/Range (inclusive and exclusive)
 - [x] Disjunction
 - [x] Negation
@@ -483,6 +484,8 @@ A context that contains the key `"$feel"` itself is escaped as `{"$feel": "conte
 
 The behavior is verified against the test suite of [feel-scala](https://github.com/camunda/feel-scala) (Camunda), which is ported to `test/feel/interpreter` and `test/feel/builtin`. Only the cases specific to the JVM API (value mappers, Java beans, script engine) are not applicable.
 
+It is also checked against the [DMN TCK](https://github.com/dmn-tck/tck) (compliance levels 2 and 3, the decision models are translated to FEEL by a runner in `test/tck`): 3280 of the 3407 test cases pass. Most of the others need DMN features outside of FEEL (item definitions, typed decisions, decision services, imports, Java functions), a few differ from feel-scala on purpose (where feel-scala's tests define the behavior). See `test/tck/README.md` and `test/tck/expected_failures.txt`.
+
 ### Comments
 
 - [x] Single-line
@@ -515,6 +518,13 @@ $ bin/guard
 ```
 
 ## Development
+
+```bash
+$ bundle exec rake          # unit tests, interoperability tests and the DMN TCK
+$ bundle exec rake test     # unit tests
+$ bundle exec rake tck      # the DMN TCK, compared with test/tck/expected_failures.txt
+$ bundle exec rake tck:accept  # accepts the current TCK results as expected
+```
 
 [Treetop Doumentation](https://cjheath.github.io/treetop/syntactic_recognition.html) is a good place to start learning about Treetop.
 

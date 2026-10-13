@@ -7,8 +7,8 @@ grammar FEEL
   # textual expression (2.i) and is evaluated against the input value `?`.
   #
   rule start
-    __ expr:expression __ !. <Root> /
-    __ expr:simple_positive_unary_test __ !. <UnaryTestRoot>
+    __ expr:simple_positive_unary_test __ !. <UnaryTestRoot> /
+    __ expr:expression __ !. <Root>
   end
 
   #
@@ -51,7 +51,7 @@ grammar FEEL
   end
 
   rule unary_operator
-    "<=" / ">=" / "<" / ">"
+    "<=" / ">=" / "!=" / "<" / ">" / "="
   end
 
   #
@@ -201,7 +201,13 @@ grammar FEEL
   #
   rule type_name
     ("date and time" / "years and months duration" / "days and time duration") !name_part_char /
-    ("function" !name_part_char / identifier) (__ "<" __ type_name (__ "," __ type_name)* __ ">")?
+    "function" !name_part_char (__ "<" __ (type_name (__ "," __ type_name)*)? __ ">")? (__ "->" __ type_name)? /
+    "context" !name_part_char __ "<" __ context_type_entry (__ "," __ context_type_entry)* __ ">" /
+    identifier (__ "<" __ type_name (__ "," __ type_name)* __ ">")?
+  end
+
+  rule context_type_entry
+    name __ ":" __ type_name
   end
 
   #
@@ -269,6 +275,7 @@ grammar FEEL
 
   rule primary
     literal /
+    range_value /
     list /
     context /
     "(" __ expr:expression __ ")" <Parenthesized> /
@@ -282,6 +289,15 @@ grammar FEEL
   end
 
   #
+  # A range (DMN 1.4), e.g. `[1..10]`, `(1..10]`, `]1..10[`, `(< 10)`,
+  # `(null..10)`.
+  #
+  rule range_value
+    start_token:("(" / "]" / "[") __ low:endpoint __ ".." __ high:endpoint __ end_token:(")" / "[" / "]") <RangeLiteral> /
+    "(" __ operator:unary_operator __ endpoint __ ")" <OpenRangeLiteral>
+  end
+
+  #
   # 40. function invocation = expression , parameters ;
   #
   rule function_invocation
@@ -289,7 +305,8 @@ grammar FEEL
   end
 
   rule function_name
-    ("date and time" / "years and months duration" / "get or else" / "and" / "or") !name_part_char /
+    ("date" white_space+ "and" white_space+ "time" / "years" white_space+ "and" white_space+ "months" white_space+ "duration" /
+     "get" white_space+ "or" white_space+ "else" / "and" / "or") !name_part_char /
     multi_word_name /
     qualified_name
   end
@@ -433,6 +450,7 @@ grammar FEEL
   # Any character can follow a backslash: known escape sequences are
   # translated, any other one (e.g. regex characters like \d) is kept as is.
   rule escape_sequence
+    "U" [0-9a-fA-F] 6..6 /
     "u" [0-9a-fA-F] 4..4 /
     .
   end
@@ -458,8 +476,12 @@ grammar FEEL
   # Note: the sign is handled by the arithmetic negation.
   #
   rule numeric_literal
-    [0-9]+ ("." [0-9]+)? <NumericLiteral> /
-    "." [0-9]+ <NumericLiteral>
+    [0-9]+ ("." [0-9]+)? exponent? <NumericLiteral> /
+    "." [0-9]+ exponent? <NumericLiteral>
+  end
+
+  rule exponent
+    [eE] [+-]? [0-9]+
   end
 
   #

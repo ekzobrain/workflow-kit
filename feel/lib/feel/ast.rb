@@ -192,6 +192,8 @@ module FEEL
       when "<=" then AST.range(nil, value, false, true)
       when ">" then AST.range(value, nil, false, false)
       when ">=" then AST.range(value, nil, true, false)
+      when "=" then AST.range(value, value, true, true)
+      when "!=" then { type: "unary comparison", operator: "!=", value: value }
       end
     end
   end

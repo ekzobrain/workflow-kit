@@ -1,0 +1,129 @@
+# The DMN TCK test cases that are expected to fail (see README.md), with
+# the reason. Regenerate with: rake tck:accept
+compliance-level-2/0110-outputOrder-hitpolicy/0110-outputOrder-hitpolicy-test-01#001  # UNSUPPORTED: priority without output values
+compliance-level-2/0110-outputOrder-hitpolicy/0110-outputOrder-hitpolicy-test-01#002  # UNSUPPORTED: priority without output values
+compliance-level-2/0110-outputOrder-hitpolicy/0110-outputOrder-hitpolicy-test-01#003  # UNSUPPORTED: priority without output values
+compliance-level-2/0118-multi-priority-hitpolicy/0118-multi-priority-hitpolicy-test-01#001  # UNSUPPORTED: priority without output values
+compliance-level-2/0118-multi-priority-hitpolicy/0118-multi-priority-hitpolicy-test-01#002  # UNSUPPORTED: priority without output values
+compliance-level-2/0118-multi-priority-hitpolicy/0118-multi-priority-hitpolicy-test-01#003  # UNSUPPORTED: priority without output values
+compliance-level-3/0021-singleton-list/0021-singleton-list-test-01#001  # FAILURE: decision2: expected "John", got ["John"] | decision4: expected "Bob", got ["Bob"] | decision5: expected "BOB", got null
+compliance-level-3/0036-dt-variable-input/0036-dt-variable-input-test-01#_20445ee0-744d-4488-a90e-136701510871  # FAILURE: Compare Boolean: expected "Not same boolean", got "Same boolean"
+compliance-level-3/0036-dt-variable-input/0036-dt-variable-input-test-01#_58109f16-2e9b-496e-bfff-5f0adbfa0279  # FAILURE: Compare Boolean: expected "Not same boolean", got "Same boolean"
+compliance-level-3/0037-dt-on-bkm-implicit-params/0037-dt-on-bkm-implicit-params-test-01#_0de87bf9-0269-40b1-b7ac-767ae9a99b89  # FAILURE: Person's description: expected "Bob is a dad of 3 children.", got null
+compliance-level-3/0037-dt-on-bkm-implicit-params/0037-dt-on-bkm-implicit-params-test-01#_20d7e21f-f58f-4a78-8074-a70cbf13de83  # FAILURE: Person's description: expected "Alice is a mother of 2 children.", got null
+compliance-level-3/0050-feel-abs-function/0050-feel-abs-function-test-01#007  # FAILURE: decision007: expected null, got 1
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_006  # FAILURE: list_006: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_007  # FAILURE: list_007: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_008  # FAILURE: list_008: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_009  # FAILURE: list_009: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_010  # FAILURE: list_010: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_011  # FAILURE: list_011: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_012  # FAILURE: list_012: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_013  # FAILURE: list_013: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#list_014  # FAILURE: list_014: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#time_005  # FAILURE: time_005: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#datetime_003_a  # FAILURE: datetime_003_a: expected true, got false
+compliance-level-3/0068-feel-equality/0068-feel-equality-test-01#range_010  # FAILURE: range_010: expected false, got true
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#012  # FAILURE: decision012: expected [true], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#013  # FAILURE: decision013: expected [], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#014  # FAILURE: decision014: expected [100], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#015  # FAILURE: decision015: expected [], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#016  # FAILURE: decision016: expected ["foo"], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#017  # FAILURE: decision017: expected [], got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#018  # FAILURE: decision018: expected true, got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#019  # FAILURE: decision019: expected 100, got null
+compliance-level-3/0069-feel-list/0069-feel-list-test-01#020  # FAILURE: decision020: expected "foo", got null
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#number_013  # FAILURE: number_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#string_013  # FAILURE: string_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_013  # FAILURE: list_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_014  # FAILURE: list_014: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_014_a  # FAILURE: list_014_a: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_018  # FAILURE: list_018: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_013  # FAILURE: context_013: expected true, got false
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_014  # FAILURE: context_014: expected true, got false
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#boxed_001  # UNSUPPORTED: function kind Java
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_001  # ERROR: incorrect_001: Expression is not valid: {"mathFoo": (function(n1) external {java:{class:"java.lang.Math",`method signature`:"foo(double)"}} ), "__result": (math
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_002  # ERROR: incorrect_002: Expression is not valid: {"fooValueOf": (function(n1) external {java:{class:"java.lang.Foo",`method signature`:"valueOf(double)"}} ), "__result":
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_003  # ERROR: incorrect_003: Expression is not valid: {"mathMaxString": (function(s1, s2) external {java:{class:"java.lang.Math",`method signature`:"max(java.lang.String, jav
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_001  # ERROR: literal_001: Expression is not valid: {"cos": (function(n1) external {java:{class:"java.lang.Math",`method signature`:"cos(double)"}} ), "__result": (cos(123) )
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_002  # ERROR: literal_002: Expression is not valid: {"maxDouble": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(double,double)"}} ), "__resu
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_003  # ERROR: literal_003: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(double,double)"}} ), "__result": (
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_004  # ERROR: literal_004: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(int,int)"}} ), "__result": (max(12
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_005  # ERROR: literal_005: Expression is not valid: {"valueOf": (function(s1) external {java:{class:"java.lang.Short",`method signature`:"valueOf(short)"}} ), "__result": (va
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_006  # ERROR: literal_006: Expression is not valid: {"valueOf": (function(b1) external {java:{class:"java.lang.Byte",`method signature`:"valueOf(byte)"}} ), "__result": (valu
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_007  # ERROR: literal_007: Expression is not valid: {"valueOf": (function(c1) external {java:{class:"java.lang.String",`method signature`:"valueOf(char)"}} ), "__result": (va
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_007_a  # ERROR: literal_007_a: Expression is not valid: {"valueOf": (function(c1) external {java:{class:"java.lang.String",`method signature`:"valueOf(char)"}} ), "__result": (
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_008  # ERROR: literal_008: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(long,long)"}} ), "__result": (max(
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_009  # ERROR: literal_009: Expression is not valid: {"max": (function(n1,n2) external {java:{class:"java.lang.Math",`method signature`:"max(float,float)"}} ), "__result": (ma
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_010  # ERROR: literal_010: Expression is not valid: {"valueOf": (function(n1) external {java:{class:"java.lang.Integer",`method signature`:"valueOf(java.lang.String)"}} ), "_
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_011  # ERROR: literal_011: Expression is not valid: {"valueOf": (function(n1) external {java:{class:"java.lang.Float",`method signature`:"valueOf(java.lang.String)"}} ), "__r
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#literal_012  # ERROR: literal_012: Expression is not valid: {"valueOf": (function(n1) external {java:{class:"java.lang.Double",`method signature`:"valueOf(java.lang.String)"}} ), "__
+compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#varargs_001  # ERROR: varargs_001: Expression is not valid: {"format": (function(s1, n1) external {java:{class:"java.lang.String",`method signature`:"format(java.lang.String, [Ljava.
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_001  # FAILURE: decision_001: expected null, got 2
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_003  # FAILURE: decision_003: expected null, got [1, 2, "foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_005  # FAILURE: decision_005: expected null, got {name:"foo"}
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_006_a  # FAILURE: decision_006_a: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_007  # FAILURE: decision_007: expected "foo", got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_007_a  # FAILURE: decision_007_a: expected null, got [1]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_002  # FAILURE: decision_bkm_002: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_003  # FAILURE: decision_bkm_003: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_004_a  # FAILURE: decision_bkm_004_a: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_005  # FAILURE: decision_bkm_005: expected 10, got [10]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_bkm_005_a  # FAILURE: decision_bkm_005_a: expected null, got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_001  # FAILURE: invoke_001: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_002  # FAILURE: invoke_002: expected null, got true
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_004  # FAILURE: invoke_004: expected null, got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_005  # FAILURE: invoke_005: expected null, got [[10]]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#invoke_006  # FAILURE: invoke_006: expected null, got [["foo"]]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#fd_002  # FAILURE: fd_002: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_002  # FAILURE: literal_002: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_004  # FAILURE: literal_004: expected null, got "foo"
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_005  # FAILURE: literal_005: expected 10, got [10]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#literal_006  # FAILURE: literal_006: expected null, got ["foo"]
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_001  # UNSUPPORTED: decision service invocation
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002  # UNSUPPORTED: decision service invocation
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_a  # UNSUPPORTED: decision service
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_b  # UNSUPPORTED: decision service invocation
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_c  # UNSUPPORTED: decision service
+compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_context_03  # FAILURE: decision_context_03: expected null, got {a:1, b:2}
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#001  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002_a  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002_b  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#002_c  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#003  # UNSUPPORTED: decision service invocation
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#004  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#005  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#006  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#007  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#008  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#009  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#010  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#011  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#012  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#013  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#014  # UNSUPPORTED: decision service
+compliance-level-3/0085-decision-services/0085-decision-services-test-01#015  # UNSUPPORTED: decision service invocation
+compliance-level-3/0086-import/0086-import-test-01#test_001  # UNSUPPORTED: import
+compliance-level-3/0086-import/0086-import-test-01#test_002  # UNSUPPORTED: import
+compliance-level-3/0088-no-decision-logic/0088-no-decision-logic-test-01#001  # UNSUPPORTED: decision service invocation
+compliance-level-3/0089-nested-inputdata-imports/0089-nested-inputdata-imports-test-01#001  # UNSUPPORTED: import
+compliance-level-3/0092-feel-lambda/0092-feel-lambda-test-01#013  # UNSUPPORTED: decision service
+compliance-level-3/1145-feel-context-function/1145-feel-context-function-test-01#003  # FAILURE: decision003: expected null, got {a:2}
+compliance-level-3/1146-feel-context-put-function/1146-feel-context-put-function-test-01#nested009  # FAILURE: nested009: expected null, got {x:1, y:{a:{b:{c:2}}}}
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#001  # FAILURE: To Singleton List: expected ["abc"], got "abc"
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#002  # FAILURE: From Singleton List: expected "abc", got ["abc"]
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#002_a  # FAILURE: From Singleton List Error: expected null, got ["abc", "bcd"]
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#003  # FAILURE: From Date To Date and Time: expected 2000-01-02T00:00:00Z, got 2000-01-02
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#004  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#005  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#006  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#007  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#008  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#009  # UNSUPPORTED: decision service invocation
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#010  # FAILURE: Implicit Conversions CE: expected [[1], 2, 2000-12-01T00:00:00Z], got [1, [2], 2000-12-01]
+compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#011  # FAILURE: Implicit Conversions FUNCT: expected [[1], 2, 2000-02-01T00:00:00Z], got [1, [2], 2000-02-01]
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-01#001  # UNSUPPORTED: import
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-02#001  # UNSUPPORTED: import
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-03#001  # UNSUPPORTED: import
+compliance-level-3/1160-multiple-imports/1160-multiple-imports-test-04#001  # UNSUPPORTED: import
