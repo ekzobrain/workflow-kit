@@ -104,15 +104,12 @@ module FEEL
       if expr.contains_input_placeholder?
         lambda do |input, context|
           result = expression.call(context.merge("?" => input))
-          result == true || result == false ? result : nil
+          result == true || result == false ? result : boolean_expected(result)
         end
       elsif expr.is_a?(BooleanLiteral)
-        ->(input, context) { feel_equal_or_nil(input, expression.call(context)) }
+        ->(input, context) { equal_values(input, expression.call(context)) }
       else
-        lambda do |input, context|
-          value = expression.call(context)
-          value.is_a?(FEEL::Range) ? value.include?(input) : unary_match(input, value)
-        end
+        ->(input, context) { range_or_value_match(input, expression.call(context)) }
       end
     end
   end
@@ -209,36 +206,38 @@ module FEEL
   class QualifiedName
     private
 
+    # Same as `resolve`, with a fast path for nested Hashes.
     def compile
       name = head_name
       symbol = head_symbol
       keys = path_keys
 
+      if keys.empty?
+        return lambda do |context|
+          value = Scope === context ? context.lookup(name, symbol) : Scope.hash_lookup(context, name, symbol)
+          Scope::MISSING.equal?(value) ? unknown_name(:unknown_variable, full_name, context) : value
+        end
+      end
+
       lambda do |context|
         value = Scope === context ? context.lookup(name, symbol) : Scope.hash_lookup(context, name, symbol)
-        return missing_name(context) if Scope::MISSING.equal?(value)
+        return unknown_name(:unknown_variable, full_name, context) if Scope::MISSING.equal?(value)
 
         keys.each do |key, key_symbol|
-          return nil if value.nil?
-
-          value = if Hash === value
-            found = Scope.hash_lookup(value, key, key_symbol)
-            return missing_name(context) if Scope::MISSING.equal?(found)
-
-            found
-          elsif value.respond_to?(:key?)
-            context_get(value, key, key_symbol, strict: FEEL.config.strict, root: context)
+          if Hash === value
+            value = Scope.hash_lookup(value, key, key_symbol)
+            return unknown_name(:no_context_entry, full_name, context) if Scope::MISSING.equal?(value)
+          elsif value.nil?
+            return null_path(key)
+          elsif Scope === value
+            value = value.lookup(key, key_symbol)
+            return unknown_name(:no_context_entry, full_name, context) if Scope::MISSING.equal?(value)
           else
-            path_get(value, key)
+            value = path_value(value, key, key_symbol, full_name)
           end
         end
         value
       end
-    end
-
-    def missing_name(context)
-      raise_evaluation_error(text_value.gsub(/\s+/, ""), context) if FEEL.config.strict
-      nil
     end
   end
 
@@ -255,14 +254,27 @@ module FEEL
 
       if steps.size == 1
         plus, second = steps.first
-        return plus ? ->(c) { add(first.call(c), second.call(c)) } : ->(c) { subtract(first.call(c), second.call(c)) }
+        if plus
+          return lambda do |c|
+            left = first.call(c)
+            right = second.call(c)
+            (result = add(left, right)).nil? ? arithmetic_failure("+", left, right) : result
+          end
+        end
+        return lambda do |c|
+          left = first.call(c)
+          right = second.call(c)
+          (result = subtract(left, right)).nil? ? arithmetic_failure("-", left, right) : result
+        end
       end
 
       lambda do |context|
         result = first.call(context)
         steps.each do |plus, operand|
           value = operand.call(context)
-          result = plus ? add(result, value) : subtract(result, value)
+          left = result
+          result = plus ? add(left, value) : subtract(left, value)
+          return arithmetic_failure(plus ? "+" : "-", left, value) if result.nil?
         end
         result
       end
@@ -278,14 +290,22 @@ module FEEL
 
       if steps.size == 1
         times, second = steps.first
-        return times ? ->(c) { multiply(first.call(c), second.call(c)) } : ->(c) { divide(first.call(c), second.call(c)) }
+        operator = times ? "*" : "/"
+        return lambda do |c|
+          left = first.call(c)
+          right = second.call(c)
+          result = times ? multiply(left, right) : divide(left, right)
+          result.nil? ? arithmetic_failure(operator, left, right) : result
+        end
       end
 
       lambda do |context|
         result = first.call(context)
         steps.each do |times, operand|
           value = operand.call(context)
-          result = times ? multiply(result, value) : divide(result, value)
+          left = result
+          result = times ? multiply(left, value) : divide(left, value)
+          return arithmetic_failure(times ? "*" : "/", left, value) if result.nil?
         end
         result
       end
@@ -301,6 +321,7 @@ module FEEL
         number = value.call(context)
         if Numbers.number?(number) then -number
         elsif Temporal.duration?(number) then -Temporal.normalize(number)
+        else failure(null_or_mismatch(number)) { "Can't negate #{describe(number)}" }
         end
       end
     end
@@ -360,7 +381,10 @@ module FEEL
         compiled_operands.each do |operand|
           value = operand.call(context)
           return false if value == false
-          undecided = true unless value == true
+          next if value == true
+
+          boolean_expected(value)
+          undecided = true
         end
         undecided ? nil : true
       end
@@ -377,7 +401,10 @@ module FEEL
         compiled_operands.each do |operand|
           value = operand.call(context)
           return true if value == true
-          undecided = true unless value == false
+          next if value == false
+
+          boolean_expected(value)
+          undecided = true
         end
         undecided ? nil : false
       end
@@ -391,7 +418,13 @@ module FEEL
       condition_value = condition.compiled
       then_value = true_case.compiled
       else_value = false_case.compiled
-      ->(context) { condition_value.call(context) == true ? then_value.call(context) : else_value.call(context) }
+      lambda do |context|
+        result = condition_value.call(context)
+        return then_value.call(context) if result == true
+
+        boolean_expected(result) unless result == false
+        else_value.call(context)
+      end
     end
   end
 
@@ -434,10 +467,7 @@ module FEEL
       lambda do |context|
         fn = lookup_function(context)
 
-        unless fn.respond_to?(:call)
-          raise_evaluation_error(function_name, context) if FEEL.config.strict
-          next nil
-        end
+        next unknown_name(:unknown_function, function_name, context) unless fn.respond_to?(:call)
         next function_not_found(function_name, count, context) unless arity_matches?(fn, count)
 
         case count

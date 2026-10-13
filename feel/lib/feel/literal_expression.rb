@@ -38,8 +38,15 @@ module FEEL
       end
     end
 
-    def evaluate(variables = {})
-      Numbers.normalize(tree.compiled.call(RootScope.build(variables)))
+    # Evaluates the expression with the variables (a Hash, also accepted as
+    # keywords: `evaluate(a: 1, b: 2)`), and the options `strict:` and
+    # `warnings:` as in FEEL.evaluate: `evaluate({ a: 1 }, strict: true)`.
+    def evaluate(variables = {}, options = nil)
+      if options.nil? && (!Diagnostics.enabled || Thread.current[Diagnostics::KEY].nil?)
+        return Numbers.normalize(tree.compiled.call(RootScope.build(variables)))
+      end
+
+      Diagnostics.evaluating(options) { Numbers.normalize(tree.compiled.call(RootScope.build(variables))) }
     end
 
     def functions
@@ -82,6 +89,12 @@ module FEEL
           .merge(Builtins::TEMPORAL)
           .merge(Builtins::RANGE)
       ).transform_keys(&:to_s).freeze
+    end
+
+    # The name of a built-in function, or nil.
+    def self.builtin_name(function)
+      @builtin_names ||= all_builtin_functions.each_with_object({}.compare_by_identity) { |(name, fn), names| names[fn] = name }
+      @builtin_names[function]
     end
 
     def self.standard_builtin_functions

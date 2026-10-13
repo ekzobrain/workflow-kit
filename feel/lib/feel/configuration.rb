@@ -8,8 +8,15 @@ module FEEL
     # `{ "reverse" => ->(s) { s.reverse } }`.
     attr_accessor :functions
 
-    # Raise FEEL::EvaluationError for unknown names instead of returning null.
-    attr_accessor :strict
+    # Strict mode: an expression that can't be computed raises
+    # FEEL::EvaluationError instead of returning null (see FEEL::Diagnostics).
+    # The default of the `strict:` option of FEEL.evaluate. Default: false.
+    attr_reader :strict
+
+    def strict=(value)
+      @strict = value
+      Diagnostics.update
+    end
 
     # The zone id (e.g. "Europe/Berlin") of `now()` and `today()`. Default:
     # nil, i.e. `Time.zone` of ActiveSupport if the application uses it, else

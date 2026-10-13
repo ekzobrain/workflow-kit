@@ -16,6 +16,7 @@ require "treetop"
 $VERBOSE = verbose
 
 require "feel/errors"
+require "feel/diagnostics"
 require "feel/configuration"
 require "feel/expression_cache"
 require "feel/scope"
@@ -39,14 +40,25 @@ require "feel/serialization"
 module FEEL
   # Evaluates an expression with the given variables. The parsed expression is
   # cached (see FEEL.compile), so evaluating the same text again is cheap.
-  def self.evaluate(expression_text, variables: {})
-    compile(expression_text).evaluate(variables)
+  #
+  # With `strict: true` (default: `config.strict`), an expression that can't
+  # be computed raises FEEL::EvaluationError instead of returning null (see
+  # FEEL::Diagnostics for the reasons). With a `warnings:` array, the reasons
+  # of the null results are added to it as FEEL::Warning.
+  def self.evaluate(expression_text, variables: {}, strict: nil, warnings: nil)
+    expression = compile(expression_text)
+    return expression.evaluate(variables) if strict.nil? && warnings.nil?
+
+    expression.evaluate(variables, strict: strict, warnings: warnings)
   end
 
   # Evaluates unary tests against an input value. The parsed tests are cached
   # (see FEEL.compile_test).
-  def self.test(input, unary_tests_text, variables: {})
-    compile_test(unary_tests_text).test(input, variables)
+  def self.test(input, unary_tests_text, variables: {}, strict: nil, warnings: nil)
+    unary_tests = compile_test(unary_tests_text)
+    return unary_tests.test(input, variables) if strict.nil? && warnings.nil?
+
+    unary_tests.test(input, variables, strict: strict, warnings: warnings)
   end
 
   # Parses an expression once and returns a reusable FEEL::LiteralExpression

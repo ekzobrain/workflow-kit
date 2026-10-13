@@ -35,7 +35,7 @@ FEEL.evaluate('if person.age >= 18 then "adult" else "minor"', variables:)
 # => "adult"
 ```
 
-Strict mode will raise an exception if an expression references a variable that is not defined in the context.
+Strict mode raises an exception if an expression can't be computed, e.g. if it references a variable that is not defined in the context (see [Strict mode and warnings](#strict-mode-and-warnings)).
 
 ```ruby
 FEEL.configure do |config|
@@ -165,7 +165,7 @@ All errors raised by the gem are subclasses of `FEEL::Error`:
 | Error | Raised when |
 |---|---|
 | `FEEL::SyntaxError` | an expression or unary tests text is not valid |
-| `FEEL::EvaluationError` | in strict mode: an unknown variable or function, wrong arguments, a failed `assert()` (otherwise the result is null) |
+| `FEEL::EvaluationError` | in strict mode: an expression can't be computed (see below; otherwise the result is null) |
 | `FEEL::SerializationError` | a value can't be serialized or deserialized (`FEEL.serialize` / `FEEL.deserialize`) |
 
 ```ruby
@@ -177,6 +177,50 @@ end
 ```
 
 Failures of built-in or custom functions (Ruby procs) result in null, as in FEEL.
+
+### Strict mode and warnings
+
+As in FEEL, an expression that can't be computed results in null. In strict mode it raises `FEEL::EvaluationError` instead: null then comes only from null (null propagates, e.g. `price * qty` with `qty` null is null) or from where FEEL defines null as the result of valid arguments (e.g. `max([])`, `get value(context, "absent")`, `list[5]`).
+
+```ruby
+FEEL.evaluate("name + 1", variables: { name: "abc" })                # => nil
+FEEL.evaluate("name + 1", variables: { name: "abc" }, strict: true)  # => FEEL::EvaluationError
+FEEL.compile("a + 1").evaluate({ a: "x" }, strict: true)              # => FEEL::EvaluationError
+FEEL.test("a", "< 10", strict: true)                                  # => FEEL::EvaluationError
+```
+
+`strict:` defaults to `config.strict`, and applies to everything evaluated in the expression (filters, `for`, `some` / `every`, contexts, functions defined in FEEL, custom functions). The error tells why (`reason`) and which part of the expression failed (`expression`, `position` in the text):
+
+```ruby
+rescue FEEL::EvaluationError => e
+  e.message     # => "Can't add \"abc\" and 1"
+  e.reason      # => :type_mismatch
+  e.expression  # => "name + 1"
+  e.position    # => 0...8
+```
+
+| Reason | Example |
+|---|---|
+| `:unknown_variable` | `missing + 1` |
+| `:no_context_entry` | `customer.missing`, `{a: 1}.b` |
+| `:unknown_function` | `nope(1)` |
+| `:arguments` (number or names) | `substring("abc")`, `(function(x) x)(y: 1)` |
+| `:type_mismatch` | `name + 1`, `price > name`, `name and true`, `if name then 1 else 2`, `for x in 10 return x`, `10[1]` |
+| `:invalid_argument` (built-in function) | `upper case(10)`, `date("2026-13-45")`, `number("abc")`, `matches("a", "[")` |
+| `:division_by_zero` | `price / 0`, `modulo(price, 0)` |
+| `:not_a_context` (no such property) | `name.x` with a string, `[1, 2].a`, `date("2020-01-01").hour` |
+| `:assertion` | `assert(x, x > 0)` |
+| `:function_failure` (a custom function raised, see `cause`) | `my function(1)` |
+
+A missing variable or context entry is not an error where its existence is checked: compared with `null` (`customer.name = null`, `customer.name != null`), in `is defined(customer.name)` and `get or else(customer.name, "")`.
+
+With a `warnings:` array, the reasons of the null results are collected as `FEEL::Warning` (`reason`, `message`, `expression`, `position`), in both modes, like the suppressed failures of Camunda's FEEL engine. They also include `:null_operand` (a null operand or argument, never raised):
+
+```ruby
+warnings = []
+FEEL.evaluate("price * qty + discount", variables: { price: 10, qty: nil }, warnings: warnings) # => nil
+warnings.map(&:reason) # => [:null_operand, :unknown_variable, :null_operand]
+```
 
 ### Compiling and caching expressions
 

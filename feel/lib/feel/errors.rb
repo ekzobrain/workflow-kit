@@ -8,8 +8,18 @@ module FEEL
   class SyntaxError < Error; end
 
   # An expression can't be evaluated (only raised in strict mode, otherwise
-  # the result is null).
-  class EvaluationError < Error; end
+  # the result is null). `reason` tells why (see FEEL::Diagnostics), and
+  # `expression` / `position` which part of the expression failed.
+  class EvaluationError < Error
+    attr_accessor :reason, :expression, :position
+
+    def initialize(message = nil, reason: nil, expression: nil, position: nil)
+      super(message)
+      @reason = reason
+      @expression = expression
+      @position = position
+    end
+  end
 
   # A value can't be serialized (FEEL.serialize) or deserialized
   # (FEEL.deserialize).

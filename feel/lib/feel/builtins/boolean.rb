@@ -74,9 +74,8 @@ module FEEL
       # result is null.
       "assert": ->(value, condition, cause = nil) {
         return value if condition == true
-        raise EvaluationError, (cause.is_a?(String) ? cause : "The condition is not fulfilled") if FEEL.config.strict
 
-        nil
+        Diagnostics.report(nil, :assertion) { cause.is_a?(String) ? cause : "The condition is not fulfilled" }
       },
     }.freeze
   end

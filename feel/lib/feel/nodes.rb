@@ -42,15 +42,193 @@ module FEEL
       qualified_names.to_a
     end
 
-    def raise_evaluation_error(missing_name, ctx = {})
-      names = qualified_names_in_context(ctx)
-      checker = DidYouMean::SpellChecker.new(dictionary: names)
-      guess = checker.correct(missing_name)
-      suffix = " Did you mean #{guess.first}?" unless guess.empty?
-      raise EvaluationError.new("Identifier #{missing_name} not found.#{suffix}")
+    #
+    # Diagnostics (see FEEL::Diagnostics): each method records why the node's
+    # result is null - raising FEEL::EvaluationError in strict mode - and
+    # returns nil.
+    #
+
+    # The part of the expression reported for a failure of the node.
+    def diagnostic_interval
+      interval
+    end
+
+    def failure(reason, raise_error: true)
+      return nil unless diagnostics?
+
+      Diagnostics.report(self, reason, raise_error: raise_error) { yield }
+    end
+
+    # Whether failures are reported (warnings collected or strict mode):
+    # checked first, so a lenient evaluation doesn't pay for them.
+    def diagnostics?
+      Diagnostics.enabled
+    end
+
+    def describe(value)
+      Diagnostics.describe(value)
+    end
+
+    # A name not in scope (`missing_name` is the full path, e.g. "a.b").
+    def unknown_name(reason, missing_name, ctx = {})
+      return nil unless diagnostics?
+
+      failure(reason, raise_error: !existence_check?) do
+        names = qualified_names_in_context(ctx)
+        guess = DidYouMean::SpellChecker.new(dictionary: names).correct(missing_name)
+        suffix = " Did you mean #{guess.first}?" unless guess.empty?
+        "Identifier #{missing_name} not found.#{suffix}"
+      end
+    end
+
+    # A path (`value.name`) into null.
+    def null_path(name)
+      return nil unless diagnostics?
+
+      failure(:null_operand) { "Can't get '#{name}' of null" }
+    end
+
+    def null_or_mismatch(value)
+      value.nil? ? :null_operand : :type_mismatch
+    end
+
+    # A value that is not true or false where a boolean is needed.
+    def boolean_expected(value)
+      return nil unless diagnostics?
+
+      failure(null_or_mismatch(value)) { "Expected a boolean but found #{describe(value)}" }
+    end
+
+    # A value that is not a list where a list is needed.
+    def list_expected(value)
+      return nil unless diagnostics?
+
+      failure(null_or_mismatch(value)) { "Expected a list but found #{describe(value)}" }
+    end
+
+    ARITHMETIC_VERBS = { "+" => "add", "-" => "subtract", "*" => "multiply", "/" => "divide", "**" => "raise" }.freeze
+
+    # An arithmetic operation that results in null.
+    def arithmetic_failure(operator, left, right)
+      return nil unless diagnostics?
+
+      verb = ARITHMETIC_VERBS[operator]
+      if left.nil? || right.nil?
+        failure(:null_operand) { "Can't #{verb} #{describe(left)} and #{describe(right)}" }
+      elsif operator == "/" && zero?(right)
+        failure(:division_by_zero) { "Can't divide #{describe(left)} by zero" }
+      else
+        failure(:type_mismatch) { "Can't #{verb} #{describe(left)} and #{describe(right)}" }
+      end
+    end
+
+    def zero?(value)
+      (Numbers.number?(value) && value.zero?) || (Temporal.duration?(value) && Temporal.normalize(value).zero?)
+    rescue NoMethodError
+      false
+    end
+
+    # A context without an entry for the key, in a path over an expression.
+    def missing_entry(name, context)
+      return nil unless diagnostics?
+
+      failure(:no_context_entry, raise_error: !existence_check?) do
+        keys = context.respond_to?(:keys) ? context.keys.map(&:to_s) : []
+        guess = DidYouMean::SpellChecker.new(dictionary: keys).correct(name)
+        suffix = " Did you mean #{guess.first}?" unless guess.empty?
+        "No context entry found with key '#{name}'.#{suffix}"
+      end
+    end
+
+    def not_comparable(left, right)
+      return nil unless diagnostics?
+
+      reason = left.nil? || right.nil? ? :null_operand : :type_mismatch
+      failure(reason) { "Can't compare #{describe(left)} with #{describe(right)}" }
     end
 
     #
+    # Paths
+    #
+
+    PROPERTIES = {
+      date: %w[year month day weekday],
+      time: ["hour", "minute", "second", "time offset", "timezone"],
+      date_time: ["year", "month", "day", "weekday", "hour", "minute", "second", "time offset", "timezone"],
+      years_months_duration: %w[years months],
+      days_time_duration: %w[days hours minutes seconds],
+      range: ["start", "end", "start included", "end included"],
+    }.freeze
+
+    # The entry of a context with the key, or MISSING.
+    def context_entry(context, key, symbol)
+      context.is_a?(Scope) ? context.lookup(key, symbol) : Scope.hash_lookup(context, key, symbol)
+    end
+
+    # The property of a value (`value.name`), the properties of the items of a
+    # list.
+    def path_value(value, name, symbol = name.to_sym, full_name = nil)
+      if value.nil?
+        null_path(name)
+      elsif value.is_a?(Hash) || value.is_a?(Scope)
+        found = context_entry(value, name, symbol)
+        return found unless Scope::MISSING.equal?(found)
+
+        full_name ? unknown_name(:no_context_entry, full_name, value) : missing_entry(name, value)
+      elsif value.is_a?(Array)
+        value.map { |item| path_value(item, name, symbol, full_name) }
+      elsif value.respond_to?(:key?) && !Temporal.temporal?(value)
+        found = Scope.hash_lookup(value, name, symbol)
+        return found unless Scope::MISSING.equal?(found)
+
+        full_name ? unknown_name(:no_context_entry, full_name, {}) : missing_entry(name, value)
+      else
+        result = access_property(value, name)
+        return result unless result.nil?
+
+        properties = PROPERTIES[value.is_a?(FEEL::Range) ? :range : type_kind(value)]
+        return nil if properties&.include?(name)
+
+        failure(:not_a_context) do
+          available = properties ? ". Available properties: #{properties.join(", ")}" : ""
+          "No property '#{name}' of #{describe(value)}#{available}"
+        end
+      end
+    end
+
+    # Whether the node is only checked for existence, so a missing name or
+    # context entry is null rather than an error: `x = null`, `x != null`,
+    # `is defined(x)`, `get or else(x, default)`.
+    def existence_check?
+      return @existence_check if defined?(@existence_check)
+
+      @existence_check = Node.existence_check?(self)
+    end
+
+    def self.existence_check?(node)
+      child = node
+      parent = node.parent
+      while parent && (parent.instance_of?(Treetop::Runtime::SyntaxNode) || parent.is_a?(Parenthesized) ||
+                       parent.is_a?(QualifiedName) || parent.is_a?(PostfixExpression) || parent.is_a?(PathOperation))
+        child = parent
+        parent = parent.parent
+      end
+
+      case parent
+      when Comparison
+        return false unless %w[= !=].include?(parent.operator.text_value)
+
+        other = parent.left.equal?(child) ? parent.right : parent.left
+        other = other.expr while other.is_a?(Parenthesized)
+        other.is_a?(NullLiteral)
+      when PositionalParameters
+        invocation = parent.parent
+        invocation.is_a?(FunctionInvocation) && ["is defined", "get or else"].include?(invocation.function_name) &&
+          parent.expressions.first.equal?(child)
+      else
+        false
+      end
+    end
 
     #
     # Function invocation helpers
@@ -66,25 +244,29 @@ module FEEL
     end
 
     def invoke_with_positional_parameters(fn, args)
-      return nil unless arity_matches?(fn, args.length)
+      return arguments_mismatch(fn, args.length) unless arity_matches?(fn, args.length)
 
       call_function(fn, *args)
     end
 
     def invoke_with_named_parameters(fn, named_args)
+      if fn.instance_of?(Function)
+        names = named_args.keys.map { |key| key.to_s.gsub(/\s+/, " ") }
+        return named_arguments_mismatch(fn, names) unless (names - fn.params).empty?
+      end
       return fn.call_named(named_args) if fn.is_a?(Function)
-      return nil unless fn.respond_to?(:parameters)
+      return named_arguments_mismatch(fn, named_args.keys) unless fn.respond_to?(:parameters)
 
       parameters = fn.parameters
       names = parameters.map { |_type, name| name.to_s }
       keys = named_args.keys.map { |key| key.to_s.tr(" ", "_") }
-      return nil unless (keys - names).empty?
+      return named_arguments_mismatch(fn, named_args.keys) unless (keys - names).empty?
 
       args = parameters.each_with_index.map do |(_type, name), _index|
         named_args.find { |key, _value| key.to_s.tr(" ", "_") == name.to_s }&.last
       end
       args.pop while args.any? && args.last.nil? && optional_parameter?(parameters[args.length - 1])
-      return nil unless arity_matches?(fn, args.length)
+      return arguments_mismatch(fn, args.length) unless arity_matches?(fn, args.length)
 
       call_function(fn, *args)
     end
@@ -121,33 +303,83 @@ module FEEL
     # Three-valued equality: null if the values are not comparable (different
     # types, or functions).
     def equal_values(left, right)
-      return nil if type_kind(left) == :function && type_kind(right) == :function
+      return not_comparable(left, right) if type_kind(left) == :function && type_kind(right) == :function
 
-      feel_equal_or_nil(left, right)
+      result = feel_equal_or_nil(left, right)
+      result.nil? ? not_comparable(left, right) : result
     end
 
     # Ordering comparison: null if the values have different types.
     def compare_values(operator, left, right)
-      return nil unless type_kind(left) == type_kind(right)
+      result = feel_compare(operator, left, right) if type_kind(left) == type_kind(right)
+      result.nil? ? not_comparable(left, right) : result
+    end
 
-      feel_compare(operator, left, right)
+    # Matches an input value with the value of a unary test expression (see
+    # Values#unary_match): null if they are not comparable.
+    def unary_test_match(input, value)
+      result = unary_match(input, value)
+      result.nil? ? not_comparable(input, value) : result
     end
 
     # Invokes a built-in or user function (Ruby proc). A failure of the
     # function results in null.
     def call_function(fn, *args)
-      fn.call(*args)
-    rescue EvaluationError
+      result = fn.call(*args)
+      result.nil? ? function_returned_null(fn, args, nil) : result
+    rescue EvaluationError => e
+      e.expression ||= text_value.strip
+      e.position ||= interval
       raise
-    rescue StandardError
+    rescue StandardError => e
       raise if fn.is_a?(Function)
 
-      nil
+      function_returned_null(fn, args, e)
     end
 
-    def function_not_found(name, args_count, context)
-      raise EvaluationError.new("No function found with name '#{name}' and #{args_count} parameters") if FEEL.config.strict
-      nil
+    # Why a function call results in null: a null argument, an invalid
+    # argument of a built-in function, or an error of a custom function.
+    def function_returned_null(fn, args, error)
+      name = LiteralExpression.builtin_name(fn)
+      return builtin_returned_null(name, args, error) if name
+      return nil if fn.is_a?(Function) || error.nil?
+
+      failure(:function_failure) { "Function '#{display_name(fn)}' failed: #{error.message}" }
+    end
+
+    def builtin_returned_null(name, args, error)
+      return nil if name == "assert" # reports its own failure
+      if args.any? { |arg| arg.nil? || (arg.is_a?(Array) && arg.include?(nil)) }
+        return failure(:null_operand) { "Function '#{name}' returns null for a null argument" }
+      end
+
+      if (validate = Builtins::NULL_RESULTS[name])
+        reason, problem = validate.call(*args)
+        return nil if reason.nil?
+
+        return failure(reason) { "Function '#{name}' can't be applied to #{args.map { |arg| describe(arg) }.join(", ")}: #{problem}" }
+      end
+
+      failure(:invalid_argument) do
+        detail = error && !error.message.empty? ? " (#{error.message})" : ""
+        "Function '#{name}' can't be applied to #{args.map { |arg| describe(arg) }.join(", ")}#{detail}"
+      end
+    end
+
+    def display_name(fn)
+      respond_to?(:function_name) ? function_name : "function"
+    end
+
+    def arguments_mismatch(fn, count)
+      failure(:arguments) { "No function found with name '#{display_name(fn)}' and #{count} parameters" }
+    end
+
+    def named_arguments_mismatch(fn, names)
+      failure(:arguments) { "Function '#{display_name(fn)}' has no parameters named #{names.map(&:to_s).join(", ")}" }
+    end
+
+    def function_not_found(name, args_count, _context = nil)
+      failure(:arguments) { "No function found with name '#{name}' and #{args_count} parameters" }
     end
   end
 
@@ -241,13 +473,19 @@ module FEEL
     def matches(input, context)
       if expr.contains_input_placeholder?
         result = expr.eval(context.merge("?" => input))
-        result == true || result == false ? result : nil
+        result == true || result == false ? result : boolean_expected(result)
       elsif expr.is_a?(BooleanLiteral)
-        feel_equal_or_nil(input, expr.eval(context))
+        equal_values(input, expr.eval(context))
       else
-        value = expr.eval(context)
-        value.is_a?(FEEL::Range) ? value.include?(input) : unary_match(input, value)
+        range_or_value_match(input, expr.eval(context))
       end
+    end
+
+    def range_or_value_match(input, value)
+      return unary_test_match(input, value) unless value.is_a?(FEEL::Range)
+
+      result = value.include?(input)
+      result.nil? ? not_comparable(input, value) : result
     end
   end
 
@@ -367,7 +605,7 @@ module FEEL
 
       current, *rest = contexts
       items = current.domain.eval(context)
-      return false unless items.is_a?(Array)
+      return list_expected(items) || false unless items.is_a?(Array)
 
       variable_name = current.variable.eval
       items.each do |item|
@@ -384,7 +622,10 @@ module FEEL
     def eval(context = {})
       low_value = low.eval(context)
       high_value = high.eval(context)
-      return nil unless low_value.is_a?(Integer) && high_value.is_a?(Integer)
+      unless low_value.is_a?(Integer) && high_value.is_a?(Integer)
+        reason = low_value.nil? || high_value.nil? ? :null_operand : :type_mismatch
+        return failure(reason) { "Expected integers for a range but found #{describe(low_value)} and #{describe(high_value)}" }
+      end
 
       low_value <= high_value ? (low_value..high_value).to_a : low_value.downto(high_value).to_a
     end
@@ -395,11 +636,11 @@ module FEEL
   #
   class IfExpression < Node
     def eval(context = {})
-      if condition.eval(context) == true
-        true_case.eval(context)
-      else
-        false_case.eval(context)
-      end
+      result = condition.eval(context)
+      return true_case.eval(context) if result == true
+
+      boolean_expected(result) unless result == false
+      false_case.eval(context)
     end
   end
 
@@ -423,11 +664,14 @@ module FEEL
 
     # Returns true/false/nil, or :invalid if an iteration domain is not a list.
     def iterate(contexts, context)
-      return condition.eval(context) if contexts.empty?
+      if contexts.empty?
+        result = condition.eval(context)
+        return result == true || result == false ? result : boolean_expected(result)
+      end
 
       current, *rest = contexts
       items = current.domain.eval(context)
-      return :invalid unless items.is_a?(Array)
+      return list_expected(items) || :invalid unless items.is_a?(Array)
 
       variable_name = current.variable.eval
       decisive = @some ? true : false
@@ -450,7 +694,10 @@ module FEEL
       operands.each do |operand|
         value = operand.eval(context)
         return true if value == true
-        undecided = true unless value == false
+        next if value == false
+
+        boolean_expected(value)
+        undecided = true
       end
       undecided ? nil : false
     end
@@ -469,7 +716,10 @@ module FEEL
       operands.each do |operand|
         value = operand.eval(context)
         return false if value == false
-        undecided = true unless value == true
+        next if value == true
+
+        boolean_expected(value)
+        undecided = true
       end
       undecided ? nil : true
     end
@@ -540,7 +790,9 @@ module FEEL
       result = head.eval(context)
       operations.each do |plus, operand|
         value = operand.eval(context)
-        result = plus ? add(result, value) : subtract(result, value)
+        left = result
+        result = plus ? add(left, value) : subtract(left, value)
+        return arithmetic_failure(plus ? "+" : "-", left, value) if result.nil?
       end
       result
     end
@@ -562,7 +814,9 @@ module FEEL
       result = head.eval(context)
       operations.each do |times, operand|
         value = operand.eval(context)
-        result = times ? multiply(result, value) : divide(result, value)
+        left = result
+        result = times ? multiply(left, value) : divide(left, value)
+        return arithmetic_failure(times ? "*" : "/", left, value) if result.nil?
       end
       result
     end
@@ -580,7 +834,7 @@ module FEEL
     def eval(context = {})
       tail.elements.inject(head.eval(context)) do |base, element|
         exponent = element.operand.eval(context)
-        next nil unless base.is_a?(Numeric) && exponent.is_a?(Numeric)
+        return arithmetic_failure("**", base, exponent) unless Numbers.number?(base) && Numbers.number?(exponent)
 
         base**exponent
       end
@@ -594,8 +848,9 @@ module FEEL
     def eval(context = {})
       value = operand.eval(context)
       return -value if Numbers.number?(value)
+      return -Temporal.normalize(value) if Temporal.duration?(value)
 
-      Temporal.duration?(value) ? -Temporal.normalize(value) : nil
+      failure(null_or_mismatch(value)) { "Can't negate #{describe(value)}" }
     end
   end
 
@@ -614,12 +869,24 @@ module FEEL
     end
   end
 
+  # A path, filter or invocation is reported with the expression it applies
+  # to, e.g. `a[1].b` rather than `.b`.
+  module PostfixOperation
+    def diagnostic_interval
+      postfix = parent
+      postfix = postfix.parent until postfix.nil? || postfix.is_a?(PostfixExpression)
+      postfix ? (postfix.interval.begin...interval.end) : interval
+    end
+  end
+
   #
   # 45. path expression = expression , "." , name ;
   #
   class PathOperation < Node
+    include PostfixOperation
+
     def apply(value, context)
-      path_get(value, @property_name ||= (property.respond_to?(:eval) ? property.eval(context) : property.text_value).freeze)
+      path_value(value, @property_name ||= (property.respond_to?(:eval) ? property.eval(context) : property.text_value).freeze)
     end
   end
 
@@ -627,15 +894,19 @@ module FEEL
   # 52. filter expression = expression , "[" , expression , "]" ;
   #
   class FilterOperation < Node
+    include PostfixOperation
+
     def apply(list, context)
-      return nil unless list.is_a?(Array)
+      return list_expected(list) unless list.is_a?(Array)
       return [] if list.empty?
 
       first = evaluate_for(list.first, context)
       return item_at(list, first) if first.is_a?(Numeric)
 
       list.each_with_index.select do |item, index|
-        (index.zero? ? first : evaluate_for(item, context)) == true
+        result = index.zero? ? first : evaluate_for(item, context)
+        boolean_expected(result) unless result == true || result == false || result.nil?
+        result == true
       end.map(&:first)
     end
 
@@ -659,8 +930,10 @@ module FEEL
   # Invocation of a function value, e.g. `(function(x) x + 1)(2)`.
   #
   class InvocationOperation < Node
+    include PostfixOperation
+
     def apply(fn, context)
-      return nil unless fn.respond_to?(:call)
+      return failure(null_or_mismatch(fn)) { "Expected a function but found #{describe(fn)}" } unless fn.respond_to?(:call)
 
       invoke_function(fn, params, context)
     end
@@ -688,10 +961,7 @@ module FEEL
     def eval(context = {})
       fn = lookup_function(context)
 
-      unless fn.respond_to?(:call)
-        raise_evaluation_error(function_name, context) if FEEL.config.strict
-        return nil
-      end
+      return unknown_name(:unknown_function, function_name, context) unless fn.respond_to?(:call)
 
       args_count = params_count
       unless params.is_a?(NamedParameters) || arity_matches?(fn, args_count)
@@ -718,7 +988,7 @@ module FEEL
       return context[name.to_sym] if context.key?(name.to_sym)
       return nil unless fn_name.is_a?(QualifiedName) && !fn_name.tail.empty?
 
-      fn_name.resolve(context, strict: false)
+      fn_name.resolve(context, report: false)
     end
   end
 
@@ -766,23 +1036,31 @@ module FEEL
   #
   class QualifiedName < Node
     def eval(context = {})
-      resolve(context, strict: FEEL.config.strict)
+      resolve(context)
     end
 
-    def resolve(context, strict:)
-      value = context_get(context, head_name, head_symbol, strict: strict, root: context)
+    # The value of the name, reporting a missing name or context entry
+    # (unless `report` is false).
+    def resolve(context, report: true)
+      value = context_entry(context, head_name, head_symbol)
+      return report ? unknown_name(:unknown_variable, full_name, context) : nil if Scope::MISSING.equal?(value)
 
       path_keys.each do |key, symbol|
-        return nil if value.nil?
-
-        value = if value.respond_to?(:key?)
-          context_get(value, key, symbol, strict: strict, root: context)
+        if value.nil?
+          return report ? null_path(key) : nil
+        elsif Hash === value || Scope === value
+          value = context_entry(value, key, symbol)
+          return report ? unknown_name(:no_context_entry, full_name, context) : nil if Scope::MISSING.equal?(value)
         else
-          path_get(value, key)
+          value = report ? path_value(value, key, symbol, full_name) : path_get(value, key)
         end
       end
 
       value
+    end
+
+    def full_name
+      @full_name ||= text_value.gsub(/\s+/, "").freeze
     end
 
     private
@@ -801,16 +1079,6 @@ module FEEL
         key = (element.name.respond_to?(:eval) ? element.name.eval : element.name.text_value).freeze
         [key, key.to_sym]
       end
-    end
-
-    # Get a key from the context, using string/symbol lookup, with errors if
-    # need be, using the root object for the full path during errors.
-    def context_get(context, key, symbol, strict:, root:)
-      value = context.is_a?(Scope) ? context.lookup(key, symbol) : Scope.hash_lookup(context, key, symbol)
-      return value unless Scope::MISSING.equal?(value)
-
-      raise_evaluation_error(text_value.gsub(/\s+/, ""), root) if strict
-      nil
     end
   end
 

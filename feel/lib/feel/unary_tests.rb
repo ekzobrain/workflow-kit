@@ -32,9 +32,15 @@ module FEEL
       end
     end
 
-    def test(input, variables = {})
+    # Tests the input value. The options `strict:` and `warnings:` as in
+    # FEEL.evaluate: `test(5, { max: 10 }, strict: true)`.
+    def test(input, variables = {}, options = nil)
       return true if any_input?
-      tree.compiled_test.call(input, RootScope.build(variables)) == true
+      if options.nil? && (!Diagnostics.enabled || Thread.current[Diagnostics::KEY].nil?)
+        return tree.compiled_test.call(input, RootScope.build(variables)) == true
+      end
+
+      Diagnostics.evaluating(options) { tree.compiled_test.call(input, RootScope.build(variables)) == true }
     end
 
     private
