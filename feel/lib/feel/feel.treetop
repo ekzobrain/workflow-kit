@@ -201,7 +201,13 @@ grammar FEEL
   #
   rule type_name
     ("date and time" / "years and months duration" / "days and time duration") !name_part_char /
-    ("function" !name_part_char / identifier) (__ "<" __ type_name (__ "," __ type_name)* __ ">")?
+    "function" !name_part_char (__ "<" __ (type_name (__ "," __ type_name)*)? __ ">")? (__ "->" __ type_name)? /
+    "context" !name_part_char __ "<" __ context_type_entry (__ "," __ context_type_entry)* __ ">" /
+    identifier (__ "<" __ type_name (__ "," __ type_name)* __ ">")?
+  end
+
+  rule context_type_entry
+    name __ ":" __ type_name
   end
 
   #

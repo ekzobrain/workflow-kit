@@ -22,29 +22,52 @@ module FEEL
         values.all? { |value| value.is_a?(String) }
       end
 
-      # Returns a Regexp for a Java-style pattern and flags, or nil if invalid.
+      # Returns a Regexp for a pattern and flags (the XML Schema / XPath
+      # dialect), or nil if the pattern or the flags are invalid. The flags
+      # are any of "s" (dot matches all), "m" (multi-line), "i" (ignore case),
+      # "x" (ignore whitespace) and "q" (literal pattern).
       def regexp(pattern, flags = nil)
         return unless string?(pattern)
 
-        flags = flags.is_a?(String) ? flags : ""
+        flags = "" if flags.nil?
+        return unless flags.is_a?(String) && flags.match?(/\A[smixq]*\z/)
+
         options = 0
-        options |= Regexp::MULTILINE if flags.include?("s")
         options |= Regexp::IGNORECASE if flags.include?("i")
-        options |= Regexp::EXTENDED if flags.include?("x")
-        Regexp.new(translate_pattern(pattern, multiline: flags.include?("m")), options)
+        source = if flags.include?("q")
+          Regexp.escape(pattern)
+        else
+          translate_pattern(pattern, multiline: flags.include?("m"), dot_all: flags.include?("s"),
+            extended: flags.include?("x"))
+        end
+        Regexp.new(source, options)
       rescue RegexpError
         nil
       end
 
-      def translate_pattern(pattern, multiline:)
+      def translate_pattern(pattern, multiline:, dot_all: false, extended: false)
         result = +""
         in_class = 0
         index = 0
         while index < pattern.length
           char = pattern[index]
+          # "x": whitespace is removed, except within character classes
+          if extended && in_class.zero? && char.match?(/\s/)
+            index += 1
+            next
+          end
+
           if char == "\\" && index + 1 < pattern.length
             escaped = pattern[index + 1]
             index += 2
+            # "x": "\ s" is "\s"
+            if extended && in_class.zero? && escaped.match?(/\s/)
+              index += 1 while index < pattern.length && pattern[index].match?(/\s/)
+              raise RegexpError, "invalid escape" if index >= pattern.length
+
+              escaped = pattern[index]
+              index += 1
+            end
             case escaped
             when "Q"
               finish = pattern.index("\\E", index) || pattern.length
@@ -55,8 +78,32 @@ module FEEL
             when "H" then result << "[^#{HORIZONTAL_WHITESPACE}]"
             when "v" then result << (in_class.positive? ? VERTICAL_WHITESPACE : "[#{VERTICAL_WHITESPACE}]")
             when "V" then result << "[^#{VERTICAL_WHITESPACE}]"
+            when "0" then raise RegexpError, "invalid escape \\0"
+            when /\d/
+              # no back-references within character classes
+              raise RegexpError, "invalid back-reference" if in_class.positive?
+
+              result << char << escaped
+            when "p", "P"
+              finish = pattern.index("}", index) if pattern[index] == "{"
+              raise RegexpError, "invalid property" unless finish
+
+              property = pattern[(index + 1)...finish]
+              property = property.gsub(/\s/, "") if extended
+              # XML Schema blocks (IsBasicLatin) are Onigmo's InBasicLatin
+              property = "In#{property[2..]}" if property.start_with?("Is")
+              result << char << escaped << "{" << property << "}"
+              index = finish + 1
             else result << char << escaped
             end
+            next
+          end
+
+          if char == "-" && pattern[index + 1] == "[" && in_class.positive?
+            # character class subtraction: [a-z-[aeiou]]
+            result << "&&[^"
+            in_class += 1
+            index += 2
             next
           end
 
@@ -68,6 +115,8 @@ module FEEL
             "\\A"
           elsif in_class.zero? && !multiline && char == "$"
             "\\Z"
+          elsif in_class.zero? && char == "."
+            dot_all ? "(?m:.)" : "[^\\n\\r]"
           else
             char
           end

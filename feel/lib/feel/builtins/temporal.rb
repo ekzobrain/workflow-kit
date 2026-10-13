@@ -8,6 +8,9 @@ module FEEL
     # FEEL::Temporal for the Ruby representation of the temporal values.
     #
     module TemporalFunctions
+      # The range of years (like java.time.Year).
+      MAX_YEAR = 999_999_999
+
       module_function
 
       def date(from, month = nil, day = nil)
@@ -24,6 +27,8 @@ module FEEL
         return unless [year, month, day].all? { |v| v.is_a?(Numeric) && !Temporal.duration?(v) }
 
         year, month, day = [year, month, day].map(&:to_i)
+        return unless year.abs <= MAX_YEAR && month.positive? && day.positive?
+
         Date.new(year, month, day) if Date.valid_date?(year, month, day)
       end
 
@@ -57,9 +62,9 @@ module FEEL
         Temporal.wall_clock(date_time).local_time
       end
 
-      def date_and_time(from, time = nil)
-        return if from.nil?
-        return combine_date_and_time(from, time) unless time.nil?
+      def date_and_time(from, time = StringHelpers::ABSENT)
+        return if from.nil? || time.nil?
+        return combine_date_and_time(from, time) unless time.equal?(StringHelpers::ABSENT)
 
         from = Temporal.normalize(from)
         case from
@@ -158,9 +163,24 @@ module FEEL
     end
 
     TEMPORAL = {
-      "date": ->(from, month = nil, day = nil) { TemporalFunctions.date(from, month, day) },
-      "time": ->(from, minute = nil, second = nil, offset = nil) { TemporalFunctions.time(from, minute, second, offset) },
-      "date and time": ->(from, time = nil) { TemporalFunctions.date_and_time(from, time) },
+      # The lambda parameters list the parameter names of all signatures, e.g.
+      # date(from) and date(year, month, day); positional arguments fill the
+      # first ones, e.g. date(2020, 1, 31).
+      "date": ->(from, month = nil, day = nil, year = nil) {
+        next if !from.nil? && !year.nil?
+
+        TemporalFunctions.date(from.nil? ? year : from, month, day)
+      },
+      "time": ->(from, minute = nil, second = nil, offset = nil, hour = nil) {
+        next if !from.nil? && !hour.nil?
+
+        TemporalFunctions.time(from.nil? ? hour : from, minute, second, offset)
+      },
+      "date and time": ->(from, time = StringHelpers::ABSENT, date = nil) {
+        next if !from.nil? && !date.nil?
+
+        TemporalFunctions.date_and_time(from.nil? ? date : from, time)
+      },
       "duration": ->(from, to = nil) { TemporalFunctions.duration(from, to) },
       "years and months duration": ->(from, to) { TemporalFunctions.years_and_months_duration(from, to) },
       "now": ->() { TemporalFunctions.now },

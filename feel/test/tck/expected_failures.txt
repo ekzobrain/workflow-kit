@@ -33,32 +33,14 @@ compliance-level-3/0069-feel-list/0069-feel-list-test-01#017  # FAILURE: decisio
 compliance-level-3/0069-feel-list/0069-feel-list-test-01#018  # FAILURE: decision018: expected true, got null
 compliance-level-3/0069-feel-list/0069-feel-list-test-01#019  # FAILURE: decision019: expected 100, got null
 compliance-level-3/0069-feel-list/0069-feel-list-test-01#020  # FAILURE: decision020: expected "foo", got null
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#null_012  # ERROR: null_012: Expression is not valid: null instance of function<> -> Any
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#number_012  # ERROR: number_012: Expression is not valid: 123.01 instance of function<>->Any
 compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#number_013  # FAILURE: number_013: expected true, got false
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#string_012  # ERROR: string_012: Expression is not valid: "foo" instance of function<>->Any
 compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#string_013  # FAILURE: string_013: expected true, got false
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#boolean_012  # ERROR: boolean_012: Expression is not valid: true instance of function<>->Any
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#date_012  # ERROR: date_012: Expression is not valid: date("2018-12-08") instance of function<>->Any
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#time_012  # ERROR: time_012: Expression is not valid: time("10:30:00") instance of function<>->Any
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_012  # ERROR: list_012: Expression is not valid: [1,2,3] instance of function<>->Any
 compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_013  # FAILURE: list_013: expected true, got false
 compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_014  # FAILURE: list_014: expected true, got false
 compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_014_a  # FAILURE: list_014_a: expected true, got false
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_019  # FAILURE: list_019: expected false, got true
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_020  # ERROR: list_020: Expression is not valid: [{a: "a", b: "b"}] instance of list<context<a: string, b: string>>
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#ym_duration_012  # ERROR: ym_duration_012: Expression is not valid: duration("P1Y") instance of function<>->Any
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#dt_duration_012  # ERROR: dt_duration_012: Expression is not valid: duration("P1D") instance of function<>->Any
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_012  # ERROR: context_012: Expression is not valid: {a: "foo"} instance of function<>->Any
+compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#list_018  # FAILURE: list_018: expected true, got false
 compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_013  # FAILURE: context_013: expected true, got false
 compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_014  # FAILURE: context_014: expected true, got false
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_018  # ERROR: context_018: Expression is not valid: {a: "foo"} instance of context<a: string>
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_019  # ERROR: context_019: Expression is not valid: {a: null} instance of context<a: string>
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_020  # ERROR: context_020: Expression is not valid: {a: "123", b: 123} instance of context<a: string>
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_021  # ERROR: context_021: Expression is not valid: {a: "123", b: 123} instance of context<a: string, b: number>
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_022  # ERROR: context_022: Expression is not valid: {a: "123"} instance of context<a: number>
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_023  # ERROR: context_023: Expression is not valid: {a: {b: 123}} instance of context<a: context<b: number>>
-compliance-level-3/0070-feel-instance-of/0070-feel-instance-of-test-01#context_024  # ERROR: context_024: Expression is not valid: {a: {b: 123}} instance of context<a: context<b: string>>
 compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#boxed_001  # UNSUPPORTED: function kind Java
 compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_001  # ERROR: incorrect_001: Expression is not valid: {"mathFoo": (function(n1) external {java:{class:"java.lang.Math",`method signature`:"foo(double)"}} ), "__result": (math
 compliance-level-3/0076-feel-external-java/0076-feel-external-java-test-01#incorrect_002  # ERROR: incorrect_002: Expression is not valid: {"fooValueOf": (function(n1) external {java:{class:"java.lang.Foo",`method signature`:"valueOf(double)"}} ), "__result":
@@ -104,9 +86,6 @@ compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService
 compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_b  # UNSUPPORTED: decision service invocation
 compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decisionService_002_c  # UNSUPPORTED: decision service
 compliance-level-3/0082-feel-coercion/0082-feel-coercion-test-01#decision_context_03  # FAILURE: decision_context_03: expected null, got {a:1, b:2}
-compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_017  # FAILURE: decision_017: expected [1980-01-01, 1980-01-02, 1980-01-03], got null
-compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_018  # FAILURE: decision_018: expected [1980-01-03, 1980-01-02, 1980-01-01], got null
-compliance-level-3/0084-feel-for-loops/0084-feel-for-loops-test-01#decision_025  # FAILURE: decision_025: expected null, got [2, 1]
 compliance-level-3/0085-decision-services/0085-decision-services-test-01#001  # UNSUPPORTED: decision service invocation
 compliance-level-3/0085-decision-services/0085-decision-services-test-01#002  # UNSUPPORTED: decision service invocation
 compliance-level-3/0085-decision-services/0085-decision-services-test-01#002_a  # UNSUPPORTED: decision service invocation
@@ -130,66 +109,8 @@ compliance-level-3/0086-import/0086-import-test-01#test_002  # UNSUPPORTED: impo
 compliance-level-3/0088-no-decision-logic/0088-no-decision-logic-test-01#001  # UNSUPPORTED: decision service invocation
 compliance-level-3/0089-nested-inputdata-imports/0089-nested-inputdata-imports-test-01#001  # UNSUPPORTED: import
 compliance-level-3/0092-feel-lambda/0092-feel-lambda-test-01#013  # UNSUPPORTED: decision service
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dateAndTime_to_rhs_dtDuration_009  # FAILURE: add_lhs_dateAndTime_to_rhs_dtDuration_009: expected 2021-01-02T00:00:01, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dateAndTime_to_rhs_dtDuration_010  # FAILURE: add_lhs_dateAndTime_to_rhs_dtDuration_010: expected 2021-01-01T23:59:59, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dtDuration_to_rhs_dateAndTime_009  # FAILURE: add_lhs_dtDuration_to_rhs_dateAndTime_009: expected 2021-01-02T00:00:01, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#add_lhs_dtDuration_to_rhs_dateAndTime_010  # FAILURE: add_lhs_dtDuration_to_rhs_dateAndTime_010: expected 2021-01-01T23:59:59, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_002  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_002: expected null, got P1D
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_003  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_003: expected null, got P1D
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_004  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_004: expected null, got P1D
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_005  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_005: expected null, got P1D
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_009  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_009: expected null, got P1D
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dateAndTime_010  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dateAndTime_010: expected P0D, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_002  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_002: expected P1DT9H10M10S, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_003  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_003: expected P1DT9H10M10S, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_004  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_004: expected P9498DT9H10M10S, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_date_005  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_date_005: expected P9498DT9H10M10S, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_005  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_005: expected 2021-01-01T23:59:59, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_006  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_006: expected 2021-01-02T00:00:01, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_008  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_008: expected 2021-01-01T23:59:59, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_dateAndTime_minus_rhs_dtDuration_009  # FAILURE: subtract_lhs_dateAndTime_minus_rhs_dtDuration_009: expected 2021-01-02T00:00:01, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_002  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_002: expected P1DT49M50S, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_003  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_003: expected P1DT49M50S, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_004  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_004: expected P0D, got null
-compliance-level-3/0100-arithmetic/0100-arithmetic-test-01#subtract_lhs_date_minus_rhs_dateAndTime_005  # FAILURE: subtract_lhs_date_minus_rhs_dateAndTime_005: expected P9498DT49M50S, got null
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#fn-matchesErr-1  # FAILURE: fn-matchesErr-1: expected null, got true
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#fn-matches-45  # FAILURE: fn-matches-45: expected false, got true
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#caselessmatch10  # FAILURE: caselessmatch10: expected false, got true
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#caselessmatch11  # FAILURE: caselessmatch11: expected false, got true
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K-MatchesFunc-3  # FAILURE: K-MatchesFunc-3: expected null, got false
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K-MatchesFunc-5  # FAILURE: K-MatchesFunc-5: expected null, got false
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K-MatchesFunc-6  # FAILURE: K-MatchesFunc-6: expected null, got false
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-1  # FAILURE: K2-MatchesFunc-1: expected true, got false
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-5  # FAILURE: K2-MatchesFunc-5: expected true, got null
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-6  # FAILURE: K2-MatchesFunc-6: expected true, got null
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-11  # FAILURE: K2-MatchesFunc-11: expected null, got false
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-12  # FAILURE: K2-MatchesFunc-12: expected null, got false
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-13  # FAILURE: K2-MatchesFunc-13: expected null, got false
-compliance-level-3/1111-feel-matches-function/1111-feel-matches-function-test-01#K2-MatchesFunc-14  # FAILURE: K2-MatchesFunc-14: expected null, got false
-compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#044_74893220b4  # FAILURE: feel-date-function_ErrorCase_044_74893220b4: expected null, got 2017-05-02
-compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#045_969723fed5  # FAILURE: feel-date-function_ErrorCase_045_969723fed5: expected null, got 2017-08-30
-compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#046_36bf30268a  # FAILURE: feel-date-function_ErrorCase_046_36bf30268a: expected null, got -1000999999-12-01
-compliance-level-3/1115-feel-date-function/1115-feel-date-function-test-01#052_63457d78b7  # FAILURE: feel-date-function_052_63457d78b7: expected 2017-08-30, got null
-compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#067_8285edad7b  # FAILURE: feel-time-function_ErrorCase_067_8285edad7b: expected null, got 13:20:00+19:00
-compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#068_ad528abb23  # FAILURE: feel-time-function_ErrorCase_068_ad528abb23: expected null, got 13:20:00-19:00
-compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#082_36a78e5396  # FAILURE: feel-time-function_082_36a78e5396: expected 11:59:00+02:01, got null
-compliance-level-3/1116-feel-time-function/1116-feel-time-function-test-01#083_6b608254c7  # FAILURE: feel-time-function_083_6b608254c7: expected 11:59:00-02:00, got null
-compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#003_335cff371a  # FAILURE: feel-date-and-time-function_ErrorCase_003_335cff371a: expected null, got 2017-08-10T10:20:00
-compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#004_28ef3e7882  # FAILURE: feel-date-and-time-function_ErrorCase_004_28ef3e7882: expected null, got 2017-08-10T00:00:00
-compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#078_e113dabcdd  # FAILURE: feel-date-and-time-function_ErrorCase_078_e113dabcdd: expected null, got 2017-12-31T13:20:00+19:00
-compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#079_2e6f80eb94  # FAILURE: feel-date-and-time-function_ErrorCase_079_2e6f80eb94: expected null, got 2017-12-31T13:20:00-19:00
-compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#087_e9fd32063a  # FAILURE: feel-date-and-time-function_087_e9fd32063a: expected 2017-01-01T23:59:01, got null
-compliance-level-3/1117-feel-date-and-time-function/1117-feel-date-and-time-function-test-01#088_1db0287718  # FAILURE: feel-date-and-time-function_088_1db0287718: expected 2017-01-01T23:59:01, got null
 compliance-level-3/1145-feel-context-function/1145-feel-context-function-test-01#003  # FAILURE: decision003: expected null, got {a:2}
 compliance-level-3/1146-feel-context-put-function/1146-feel-context-put-function-test-01#nested009  # FAILURE: nested009: expected null, got {x:1, y:{a:{b:{c:2}}}}
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_a  # FAILURE: decision001_a: expected true, got false
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_b  # FAILURE: decision001_b: expected true, got false
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_c  # FAILURE: decision001_c: expected true, got false
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_d  # FAILURE: decision001_d: expected true, got false
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_e  # FAILURE: decision001_e: expected true, got false
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_g  # FAILURE: decision001_g: expected true, got false
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_h  # FAILURE: decision001_h: expected true, got false
-compliance-level-3/1156-range-function/1156-range-function-test-01#001_i  # FAILURE: decision001_i: expected true, got false
 compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#001  # FAILURE: To Singleton List: expected ["abc"], got "abc"
 compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#002  # FAILURE: From Singleton List: expected "abc", got ["abc"]
 compliance-level-3/1157-implicit-conversions/1157-implicit-conversions-test-01#002_a  # FAILURE: From Singleton List Error: expected null, got ["abc", "bcd"]

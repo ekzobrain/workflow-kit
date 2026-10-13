@@ -634,19 +634,18 @@ module FEEL
   end
 
   class Node
-    # The items of a range to iterate over: integers or dates, in ascending
-    # or descending order. Null for other ranges.
+    # The items of a range to iterate over: integers or dates. Null for other
+    # ranges and for descending ones (like `[2..1]`).
     def range_items(range)
       first = range.start
       last = range.end
       return nil if first.nil? || last.nil?
 
-      items = if first.is_a?(Integer) && last.is_a?(Integer) then first <= last ? (first..last).to_a : first.downto(last).to_a
-      elsif Numbers.number?(first) && Numbers.number?(last) && first == first.to_i && last == last.to_i
-        first.to_i <= last.to_i ? (first.to_i..last.to_i).to_a : first.to_i.downto(last.to_i).to_a
-      elsif first.instance_of?(Date) && last.instance_of?(Date) then first <= last ? (first..last).to_a : first.downto(last).to_a
+      items = if Numbers.number?(first) && Numbers.number?(last) && first == first.to_i && last == last.to_i
+        (first.to_i..last.to_i).to_a
+      elsif first.instance_of?(Date) && last.instance_of?(Date) then (first..last).to_a
       end
-      return nil unless items
+      return nil if items.nil? || items.empty?
 
       items.shift if !range.start_included && items.any?
       items.pop if !range.end_included && items.any?
@@ -658,9 +657,10 @@ module FEEL
     def eval(context = {})
       low_value = low.eval(context)
       high_value = high.eval(context)
-      unless low_value.is_a?(Integer) && high_value.is_a?(Integer)
+      unless (low_value.is_a?(Integer) && high_value.is_a?(Integer)) ||
+          (low_value.instance_of?(Date) && high_value.instance_of?(Date))
         reason = low_value.nil? || high_value.nil? ? :null_operand : :type_mismatch
-        return failure(reason) { "Expected integers for a range but found #{describe(low_value)} and #{describe(high_value)}" }
+        return failure(reason) { "Expected integers or dates for a range but found #{describe(low_value)} and #{describe(high_value)}" }
       end
 
       low_value <= high_value ? (low_value..high_value).to_a : low_value.downto(high_value).to_a

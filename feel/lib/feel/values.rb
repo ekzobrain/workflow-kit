@@ -50,9 +50,9 @@ module FEEL
         Temporal.instance_of_type?(input, type_text)
       when "context" then input.is_a?(Hash) || input.is_a?(Scope)
       when "function" then input.is_a?(Function) || input.is_a?(Proc) || input.is_a?(Method)
-      when /\Alist\b/ then input.is_a?(Array)
-      when /\Acontext\b/ then input.is_a?(Hash) || input.is_a?(Scope)
-      when /\Afunction\b/ then input.is_a?(Function) || input.is_a?(Proc) || input.is_a?(Method)
+      when "list" then input.is_a?(Array)
+      when "range" then input.is_a?(FEEL::Range)
+      when /[<>]/ then Types.instance_of?(input, type_text, self)
       else false
       end
     end
