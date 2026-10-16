@@ -16,12 +16,13 @@ module FEEL
       GROUPING_SEPARATORS = [" ", ",", "."].freeze
       DECIMAL_SEPARATORS = [",", "."].freeze
 
-      # Parses a number string. Returns an Integer if integral, otherwise a Float.
+      # Parses a number string. Returns an Integer if integral, otherwise a
+      # BigDecimal.
       def parse_number(text)
         return unless text.is_a?(String) && text.match?(NUMBER_PATTERN)
 
         decimal = BigDecimal(text)
-        decimal.frac.zero? ? decimal.to_i : decimal.to_f
+        decimal.frac.zero? ? decimal.to_i : decimal
       rescue ArgumentError
         nil
       end
@@ -47,9 +48,8 @@ module FEEL
       def to_json_value(value)
         case value
         when nil, String, true, false, Integer then value
-        when BigDecimal then value.frac.zero? ? value.to_i : value.to_f
+        when BigDecimal, Rational then Numbers.normalize(value)
         when Float then value.finite? ? value : nil
-        when Rational then value.to_f
         when Array then value.map { |item| to_json_value(item) }
         when Hash, Scope then context_entries(value).to_h { |k, v| [k, to_json_value(v)] }
         when FEEL::Range then value.to_feel_string { |endpoint| to_feel_string(endpoint, nested: true) }
@@ -57,6 +57,27 @@ module FEEL
         when Function, Proc, Method then format_function(value)
         else to_feel_string(value)
         end
+      end
+
+      # The JSON text of a structure of to_json_value. BigDecimals (numbers
+      # that a Float can't represent exactly) are written with all their
+      # digits, as JSON numbers (the json gem would write them as strings).
+      def generate_json(structure)
+        JSON.generate(raw_numbers(structure))
+      end
+
+      def raw_numbers(structure)
+        case structure
+        when BigDecimal then RawJSONNumber.new(structure)
+        when Array then structure.map { |item| raw_numbers(item) }
+        when Hash then structure.transform_values { |item| raw_numbers(item) }
+        else structure
+        end
+      end
+
+      # A number written into JSON as is.
+      RawJSONNumber = Struct.new(:number) do
+        def to_json(*) = number.to_s("F")
       end
 
       def context_entries(context)
@@ -103,14 +124,14 @@ module FEEL
       "from json": ->(json) {
         return unless json.is_a?(String)
         begin
-          JSON.parse(json)
+          JSON.parse(json, decimal_class: BigDecimal)
         rescue JSON::ParserError
           nil
         end
       },
       "to json": ->(value) {
         begin
-          JSON.generate(ConversionFormat.to_json_value(value))
+          ConversionFormat.generate_json(ConversionFormat.to_json_value(value))
         rescue JSON::GeneratorError, TypeError
           nil
         end

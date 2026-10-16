@@ -72,7 +72,9 @@ module FEEL
       end
 
       it "should exponentiate by '3.1'" do
-        _(evaluate("2**3.1")).must_equal 8.574187700290345
+        _(evaluate("2**3.1").to_f).must_equal 8.574187700290345
+        # a Float can't represent the result exactly: it's returned as BigDecimal
+        _(evaluate("2**3.1")).must_equal BigDecimal("8.5741877002903453137040506001867")
       end
 
       it "should negate" do

@@ -50,12 +50,12 @@ module FEEL
         end
       end
 
-      # Converts a decimal result back to the representation of the inputs:
-      # BigDecimal if any input was a BigDecimal, otherwise Integer or Float.
+      # Converts a decimal result to an Integer if integral (results are
+      # handed back to Ruby with Numbers.normalize).
       def to_number(decimal, inputs)
         return decimal if inputs.any? { |item| item.is_a?(BigDecimal) }
 
-        decimal.frac.zero? ? decimal.to_i : decimal.to_f
+        decimal.frac.zero? ? decimal.to_i : decimal
       end
 
       # Applies the block to the list items as BigDecimals. Returns nil unless
