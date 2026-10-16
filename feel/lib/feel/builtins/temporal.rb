@@ -29,7 +29,7 @@ module FEEL
         year, month, day = [year, month, day].map(&:to_i)
         return unless year.abs <= MAX_YEAR && month.positive? && day.positive?
 
-        Date.new(year, month, day) if Date.valid_date?(year, month, day)
+        Temporal.date(year, month, day) if Temporal.valid_date?(year, month, day)
       end
 
       def time(from, minute = nil, second = nil, offset = nil)
@@ -198,7 +198,7 @@ module FEEL
         TemporalFunctions.with_date(date) { |d| Date::MONTHNAMES[d.month] }
       },
       "last day of month": ->(date) {
-        TemporalFunctions.with_date(date) { |d| Date.new(d.year, d.month, -1) }
+        TemporalFunctions.with_date(date) { |d| Temporal.date(d.year, d.month, -1) }
       },
     }.freeze
   end

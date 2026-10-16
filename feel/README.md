@@ -462,6 +462,8 @@ FEEL::Duration.days(1).to_active_support # => 1 day (requires ActiveSupport)
 
 `now()` and `today()` use the zone `config.time_zone` (e.g. `"Europe/Berlin"`). If it is not set, `Time.zone` of ActiveSupport is used if available, else the system zone.
 
+Dates and date-times use the proleptic Gregorian calendar, like ISO 8601, XML Schema and the Java implementations of FEEL (e.g. `date("1582-10-10")` is valid, `date("1500-02-29")` is not), whereas Ruby's `Date` is Julian before 1582-10-15 by default. A `Date` passed as a variable is read with its year, month and day; dates are returned as Gregorian `Date`s (`Date#start` is `Date::GREGORIAN`).
+
 ### JSON and serialization
 
 `FEEL.to_json` (and `FEEL.as_json`) converts a value to plain JSON, with temporal values as ISO 8601 strings, like the FEEL function `to json()`. The FEEL value classes also implement `to_json`. The types are lost, and a date and time with a zone id is given with its offset (e.g. `2020-07-01T10:30:00+02:00`), since ISO 8601 has no notation for zone ids:
