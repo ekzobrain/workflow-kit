@@ -430,7 +430,7 @@ FEEL values are represented by these Ruby values (the results of `FEEL.evaluate`
 
 | FEEL | Ruby |
 |---|---|
-| number | `Integer`, `Float` (decimal literals are computed exactly with `BigDecimal` and returned as `Float`) |
+| number | `Integer`, `Float` or `BigDecimal` (see below) |
 | string, boolean, null | `String`, `true`/`false`, `nil` |
 | list, context | `Array`, `Hash` (String keys) |
 | date | `Date` |
@@ -441,6 +441,16 @@ FEEL values are represented by these Ruby values (the results of `FEEL.evaluate`
 | function | `FEEL::Function`, `Proc` |
 
 Variables can be given as these values or as other Ruby values: `DateTime`, and, if the application uses ActiveSupport, `ActiveSupport::TimeWithZone`, `ActiveSupport::Duration` and `HashWithIndifferentAccess`. Hash keys can be Strings or Symbols. The results of an evaluation can be passed as variables to the next one.
+
+Numbers are computed exactly, as decimals with 34 significant digits (`BigDecimal`, like the decimal128 numbers of DMN). A result is returned as an `Integer` if it is integral, as a `Float` if the Float has exactly the same value (e.g. `0.3`, `1.5`), otherwise as a `BigDecimal`, so that no precision is lost:
+
+```ruby
+FEEL.evaluate("0.1 + 0.2") # => 0.3 (Float)
+FEEL.evaluate("10 / 4")    # => 2.5 (Float)
+FEEL.evaluate("1 / 3")     # => 0.3333333333333333333333333333333333e0 (BigDecimal)
+```
+
+Code that handles the results should accept any `Numeric` (rather than check for `Float`). Note that the json gem writes a `BigDecimal` as a string (`"0.333…e0"`); `FEEL.to_json` writes all numbers as JSON numbers with all their digits.
 
 `FEEL::Duration` can be created and converted in Ruby:
 
@@ -476,6 +486,7 @@ FEEL.evaluate("due + wait", variables: variables) # => #<Date: 2020-01-03>
 | time | `{"$feel": "time", "value": "10:30:00+01:00", "zone": "Europe/Paris"}` (`zone` only for a zone id) |
 | date and time | `{"$feel": "date and time", "value": "2020-07-01T10:30:00@Europe/Berlin", "offset": "+02:00"}` (`offset` only for a zone id) |
 | durations | `{"$feel": "duration", "value": "P1Y2M"}` |
+| number that a Float can't represent exactly | `{"$feel": "number", "value": "0.3333333333333333333333333333333333"}` |
 | range | `{"$feel": "range", "start": ..., "end": ..., "start included": true, "end included": false}` |
 
 A context that contains the key `"$feel"` itself is escaped as `{"$feel": "context", "value": {...}}`. Functions can't be serialized (`FEEL::SerializationError`).

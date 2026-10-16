@@ -466,10 +466,11 @@ module FEEL
       value
     end
 
-    # Converts a numeric result (e.g. of duration / duration) to Integer or Float.
+    # Converts a numeric result (e.g. of duration / duration) to an Integer
+    # or a BigDecimal.
     def to_number(value)
       value = value.to_r
-      value.denominator == 1 ? value.to_i : value.to_f
+      value.denominator == 1 ? value.to_i : BigDecimal(value, Numbers::DIVISION_PRECISION)
     end
 
     #

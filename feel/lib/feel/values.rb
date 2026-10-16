@@ -184,21 +184,31 @@ module FEEL
     end
 
     # Converts a FEEL result for Ruby callers: BigDecimal (and Rational) become
-    # an Integer when integral, otherwise a Float. NaN and infinite values
-    # become nil. Temporal values of other Ruby types (e.g. ActiveSupport
-    # durations passed in as variables) become FEEL temporal values. Arrays
-    # and Hashes are normalized recursively.
+    # an Integer when integral, a Float when the Float has exactly the same
+    # value (e.g. 0.3, 1.5), otherwise a BigDecimal (e.g. the 34 digits of
+    # 1 / 3), so that no precision is lost. NaN and infinite values become
+    # nil. Temporal values of other Ruby types (e.g. ActiveSupport durations
+    # passed in as variables) become FEEL temporal values. Arrays and Hashes
+    # are normalized recursively.
     def normalize(value)
       case value
       when BigDecimal, Rational, Float
         return nil if value.respond_to?(:finite?) && !value.finite?
         return value if value.is_a?(Float)
+        return value.to_i if value == value.truncate
 
-        value == value.truncate ? value.to_i : value.to_f
+        value = BigDecimal(value, DIVISION_PRECISION) if value.is_a?(Rational)
+        exact_float(value) || value
       when Array then value.map { |item| normalize(item) }
       when Hash then value.transform_values { |item| normalize(item) }
       else Temporal.normalize(value)
       end
+    end
+
+    # The Float of a BigDecimal if it has exactly the same value, else nil.
+    def exact_float(decimal)
+      float = decimal.to_f
+      float if float.finite? && BigDecimal(float.to_s) == decimal
     end
 
     # String representation of a FEEL number, e.g. "1.5", "3" or "0.1".

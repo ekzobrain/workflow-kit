@@ -13,6 +13,9 @@ module FEEL
   #   { "$feel" => "date", "value" => "2020-01-01" }
   #   { "$feel" => "date and time", "value" => "2020-01-01T10:30:00@Europe/Berlin" }
   #   { "$feel" => "duration", "value" => "P1DT2H" }
+  #   { "$feel" => "number", "value" => "0.3333333333333333333333333333333333" }
+  #
+  # (numbers are tagged only if a Float can't represent them exactly)
   #
   # so that `deserialize(serialize(value)) == value`. A context that contains
   # the key "$feel" itself is escaped as { "$feel" => "context", "value" => ... }.
@@ -36,7 +39,7 @@ module FEEL
         number = Numbers.normalize(value)
         raise SerializationError, "can't serialize the number #{value}" if number.nil?
 
-        number
+        number.is_a?(BigDecimal) ? { TAG => "number", "value" => number.to_s("F") } : number
       when Array then value.map { |item| serialize(item) }
       when Hash, Scope then serialize_context(value)
       when ZonedTime
@@ -101,6 +104,7 @@ module FEEL
       value = case type
       when "context" then return data["value"].to_h { |key, item| [key.to_s, restore(item)] }
       when "range" then return restore_range(data)
+      when "number" then Builtins::ConversionFormat.parse_number(text)
       when "date" then Temporal.parse_date(text)
       when "time" then restore_time(text, data["zone"])
       when "date and time" then restore_date_time(text, data["offset"])
@@ -144,8 +148,9 @@ module FEEL
   end
 
   # The JSON string of a FEEL value with temporal values as ISO 8601 strings.
+  # Numbers are written with all their digits (also BigDecimals).
   def self.to_json(value)
-    JSON.generate(as_json(value))
+    Builtins::ConversionFormat.generate_json(as_json(value))
   end
 
   # A JSON-compatible structure of a FEEL value that keeps its types (see
