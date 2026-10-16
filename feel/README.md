@@ -462,15 +462,7 @@ FEEL::Duration.days(1).to_active_support # => 1 day (requires ActiveSupport)
 
 `now()` and `today()` use the zone `config.time_zone` (e.g. `"Europe/Berlin"`). If it is not set, `Time.zone` of ActiveSupport is used if available, else the system zone.
 
-Dates use the proleptic Gregorian calendar, like ISO 8601, XML Schema and the Java implementations of FEEL (e.g. `date("1582-10-10")` is valid, `date("1500-02-29")` is not), whereas Ruby's `Date` is Julian before 1582-10-15 by default. A `Date` passed as a variable is read with its year, month and day. The calendar can be configured:
-
-```ruby
-FEEL.configure do |config|
-  config.calendar = :italy # :gregorian (default), :julian, :italy (Ruby's default), :england, or the Julian day number of the reform
-end
-```
-
-Date-times are always Gregorian (Ruby's `Time` is).
+Dates and date-times use the proleptic Gregorian calendar, like ISO 8601, XML Schema and the Java implementations of FEEL (e.g. `date("1582-10-10")` is valid, `date("1500-02-29")` is not), whereas Ruby's `Date` is Julian before 1582-10-15 by default. A `Date` passed as a variable is read with its year, month and day; dates are returned as Gregorian `Date`s (`Date#start` is `Date::GREGORIAN`).
 
 ### JSON and serialization
 

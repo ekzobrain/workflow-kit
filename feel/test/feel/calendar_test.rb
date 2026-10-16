@@ -2,18 +2,15 @@
 
 require "test_helper"
 
-# Dates use the proleptic Gregorian calendar (like ISO 8601 and java.time)
-# unless FEEL.config.calendar says otherwise.
+# Dates use the proleptic Gregorian calendar (like ISO 8601, java.time and
+# Ruby's Time), not the default of Ruby's Date (Julian before 1582-10-15).
 module FEEL
   describe "Calendar" do
     def evaluate(expression, variables = {})
       FEEL.evaluate(expression, variables: variables)
     end
 
-    after { FEEL.config.calendar = :gregorian }
-
-    it "should be the proleptic Gregorian calendar by default" do
-      _(FEEL.config.calendar).must_equal :gregorian
+    it "should be the proleptic Gregorian calendar" do
       _(evaluate('date("1582-10-10")')).must_equal Date.new(1582, 10, 10, Date::GREGORIAN)
       _(evaluate('date("1500-02-29")')).must_be_nil
       _(evaluate("date(1500, 2, 29)")).must_be_nil
@@ -36,21 +33,9 @@ module FEEL
       _(evaluate("x", x: Date.new(2020, 1, 1))).must_equal Date.new(2020, 1, 1)
     end
 
-    it "should be configurable" do
-      FEEL.config.calendar = :italy
-      _(evaluate('date("1500-02-29")')).must_equal Date.new(1500, 2, 29)
-      _(evaluate('date("1582-10-10")')).must_be_nil
-      _(evaluate('date("1582-10-15") - date("1582-10-04")')).must_equal Duration.days(1)
-
-      FEEL.config.calendar = :julian
-      _(evaluate('date("1900-02-29")')).must_equal Date.new(1900, 2, 29, Date::JULIAN)
-
-      FEEL.config.calendar = Date::ENGLAND
-      _(evaluate('date("1752-09-10")')).must_be_nil
-    end
-
-    it "should reject unknown calendars" do
-      _ { FEEL.config.calendar = :maya }.must_raise ArgumentError
+    it "should return Gregorian dates" do
+      _(evaluate('date("1500-03-01")').start).must_equal Date::GREGORIAN
+      _(evaluate("x", x: Date.new(1500, 3, 1)).start).must_equal Date::GREGORIAN
     end
   end
 end

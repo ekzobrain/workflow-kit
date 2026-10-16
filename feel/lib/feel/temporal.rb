@@ -162,7 +162,7 @@ module FEEL
     end
 
     def initialize(year, month, day, hour = 0, minute = 0, second = 0)
-      raise ArgumentError, "invalid date" unless Date.valid_date?(year, month, day, Date::GREGORIAN)
+      raise ArgumentError, "invalid date" unless Temporal.valid_date?(year, month, day)
       raise ArgumentError, "invalid time" unless Temporal.valid_time?(hour, minute, second)
 
       @time = Time.utc(year, month, day, hour, minute, second)
@@ -327,9 +327,9 @@ module FEEL
     # "24:00:00" (the end of a day, as in XML Schema) is the start of the next day.
     def end_of_day(fields)
       year, month, day, hour, minute, second = fields
-      return fields unless hour == 24 && minute.zero? && second.zero? && Date.valid_date?(year, month, day, Date::GREGORIAN)
+      return fields unless hour == 24 && minute.zero? && second.zero? && valid_date?(year, month, day)
 
-      date = Date.new(year, month, day, Date::GREGORIAN) + 1
+      date = date(year, month, day) + 1
       [date.year, date.month, date.day, 0, 0, 0]
     end
 
@@ -420,7 +420,7 @@ module FEEL
     # `Time` with offset or a `Time` with zone), keeping the time of day; the
     # day is clamped to the end of the month.
     def add_months(time, months)
-      date = Date.new(time.year, time.month, time.day, Date::GREGORIAN) >> months
+      date = date(time.year, time.month, time.day) >> months
       fields = [date.year, date.month, date.day, time.hour, time.min, time.sec + time.subsec]
       if zoned?(time) then local_in_zone(*fields, time.zone)
       elsif time.utc? then Time.utc(*fields)
@@ -432,23 +432,26 @@ module FEEL
     # Construction
     #
 
-    # A date of the calendar of FEEL.config.calendar.
+    # Dates use the proleptic Gregorian calendar (like ISO 8601, XML Schema,
+    # java.time and Ruby's Time), not the default of Ruby's Date (Julian
+    # before 1582-10-15).
+    CALENDAR = Date::GREGORIAN
+
     def date(year, month, day)
-      Date.new(year, month, day, FEEL.config.calendar_start)
+      Date.new(year, month, day, CALENDAR)
     end
 
     def valid_date?(year, month, day)
-      Date.valid_date?(year, month, day, FEEL.config.calendar_start)
+      Date.valid_date?(year, month, day, CALENDAR)
     end
 
-    # A date of another calendar (e.g. a Date of Ruby, Julian before
-    # 1582-10-15) as the date with the same year, month and day in the
-    # calendar of FEEL.config.calendar (or the same day if there is none).
-    def calendar_date(value)
-      start = FEEL.config.calendar_start
-      return value if value.start == start
+    # A Date of another calendar (e.g. a Date of Ruby, Julian before
+    # 1582-10-15) as the Gregorian date with the same year, month and day (or
+    # the same day if there is none).
+    def gregorian_date(value)
+      return value if value.start == CALENDAR
 
-      valid_date?(value.year, value.month, value.day) ? date(value.year, value.month, value.day) : value.new_start(start)
+      valid_date?(value.year, value.month, value.day) ? date(value.year, value.month, value.day) : value.new_start(CALENDAR)
     end
 
     def valid_time?(hour, minute, second)
@@ -457,7 +460,7 @@ module FEEL
     end
 
     def valid_date_time?(year, month, day, hour, minute, second)
-      Date.valid_date?(year, month, day, Date::GREGORIAN) && valid_time?(hour, minute, second)
+      valid_date?(year, month, day) && valid_time?(hour, minute, second)
     end
 
     def local_time(hour, minute, second)
@@ -556,13 +559,13 @@ module FEEL
     end
 
     # Converts temporal values of other Ruby types to the FEEL representation:
-    # `DateTime` to `Time`, a `Date` to the calendar of FEEL.config.calendar,
+    # `DateTime` to `Time`, a `Date` to the Gregorian calendar,
     # and (if ActiveSupport is used) TimeWithZone to a zoned `Time` and
     # ActiveSupport::Duration to a FEEL::Duration. Other values are returned
     # as is.
     def normalize(value)
       if DateTime === value then value.to_time
-      elsif Date === value then calendar_date(value)
+      elsif Date === value then gregorian_date(value)
       elsif time_with_zone?(value) then Time.at(value.to_r).getlocal(value.time_zone.tzinfo)
       elsif active_support_duration?(value) then from_active_support_duration(value)
       else value
