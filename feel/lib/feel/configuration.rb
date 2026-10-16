@@ -30,9 +30,35 @@ module FEEL
 
     attr_reader :expression_cache_size
 
+    CALENDARS = {
+      gregorian: Date::GREGORIAN,
+      julian: Date::JULIAN,
+      italy: Date::ITALY,
+      england: Date::ENGLAND,
+    }.freeze
+
+    # The calendar of dates: :gregorian (default, the proleptic Gregorian
+    # calendar of ISO 8601, XML Schema and java.time), :julian, :italy (the
+    # default of Ruby's Date: Julian before 1582-10-15), :england (Julian
+    # before 1752-09-14), or the Julian day number of the calendar reform.
+    # Date-times are always Gregorian (Ruby's Time is).
+    attr_reader :calendar
+
+    def calendar=(value)
+      start = value.is_a?(Numeric) ? value : CALENDARS[value&.to_sym]
+      raise ArgumentError, "unknown calendar: #{value.inspect} (expected #{CALENDARS.keys.join(", ")} or a Julian day number)" unless start
+
+      @calendar = value
+      @calendar_start = start
+    end
+
+    # The `start` of Ruby's Date for the calendar (e.g. Date::GREGORIAN).
+    attr_reader :calendar_start
+
     def initialize
       @functions = {}
       @strict = false
+      self.calendar = :gregorian
       @time_zone = nil
       @camunda_extensions = true
       @expression_cache_size = DEFAULT_EXPRESSION_CACHE_SIZE
