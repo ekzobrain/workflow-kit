@@ -492,7 +492,7 @@ module FEEL
     # or a BigDecimal.
     def to_number(value)
       value = value.to_r
-      value.denominator == 1 ? value.to_i : BigDecimal(value, Numbers::DIVISION_PRECISION)
+      Numbers.round(value)
     end
 
     #

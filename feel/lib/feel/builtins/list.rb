@@ -15,9 +15,6 @@ module FEEL
       # an explicit null argument).
       NOT_GIVEN = Object.new.freeze
 
-      # Precision used for decimal division (like Java's MathContext.DECIMAL128).
-      DIVISION_PRECISION = 34
-
       module_function
 
       # Arguments of a varargs function: either the items themselves or a
@@ -70,8 +67,9 @@ module FEEL
         decimals.reduce(BigDecimal(0), :+)
       end
 
+      # 34 significant digits, half to even (see Numbers.divide).
       def divide(decimal, divisor)
-        decimal.div(divisor, DIVISION_PRECISION)
+        BigDecimal(Numbers.divide(decimal, divisor))
       end
 
       # Like Val#isComparable in feel-scala: all items are comparable values
