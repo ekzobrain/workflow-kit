@@ -93,7 +93,7 @@ module FEEL
 
           text = number.to_s
           text.include?("e") ? BigDecimal(text).to_s("F").sub(/\.0\z/, "") : text
-        when Rational then format_number(BigDecimal(number, 34))
+        when Rational then format_number(Numbers.round(number))
         else number.to_s
         end
       end

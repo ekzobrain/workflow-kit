@@ -46,5 +46,50 @@ module FEEL
       _(data).must_equal({ "a" => { "$feel" => "number", "value" => "0.3333333333333333333333333333333333" }, "b" => 0.5, "c" => 2 })
       _(FEEL.deserialize(data.to_json)).must_equal value
     end
+
+    # Expected values: Python's decimal with Context(prec=34,
+    # rounding=ROUND_HALF_EVEN), i.e. IEEE 754 decimal128.
+    describe "division" do
+      it "should round a tie at digit 35 half to even" do
+        # 312500000000000000000000000000000.25 (35 digits): half up would give .3
+        _(evaluate("10000000000000000000000000000000008 / 32")).must_equal BigDecimal("312500000000000000000000000000000.2")
+        # 312500000000000000000000000000000.75: rounds up either way
+        _(evaluate("10000000000000000000000000000000024 / 32")).must_equal BigDecimal("312500000000000000000000000000000.8")
+      end
+
+      it "should round a quotient ending in 5 at digit 35 half to even" do
+        # 1.0000000000000000000000000000000025
+        _(evaluate("2.000000000000000000000000000000005 / 2")).must_equal BigDecimal("1.000000000000000000000000000000002")
+        _(evaluate("-2.000000000000000000000000000000005 / 2")).must_equal BigDecimal("-1.000000000000000000000000000000002")
+        # 1.0000000000000000000000000000000015
+        _(evaluate("2.000000000000000000000000000000003 / 2")).must_equal BigDecimal("1.000000000000000000000000000000002")
+        # 9999999999999999999999999999999999.5: carries to 10^34
+        _(evaluate("99999999999999999999999999999999995 / 10")).must_equal 10**34
+      end
+
+      it "should round non-terminating quotients to 34 significant digits" do
+        _(evaluate("2 / 3")).must_equal BigDecimal("0.6666666666666666666666666666666667")
+        _(evaluate("0.000001 / 3")).must_equal BigDecimal("0.0000003333333333333333333333333333333333")
+        _(evaluate("1 / 32")).must_equal 0.03125
+      end
+
+      it "should round the divisions of the list functions half to even" do
+        _(evaluate("mean([2.000000000000000000000000000000005, 0])")).must_equal BigDecimal("1.000000000000000000000000000000002")
+        _(evaluate("median([2.000000000000000000000000000000005, 0])")).must_equal BigDecimal("1.000000000000000000000000000000002")
+      end
+
+      it "should not depend on BigDecimal.mode" do
+        BigDecimal.save_rounding_mode do
+          BigDecimal.mode(BigDecimal::ROUND_MODE, :down)
+          _(evaluate("2 / 3")).must_equal BigDecimal("0.6666666666666666666666666666666667")
+          _(evaluate("10000000000000000000000000000000008 / 32")).must_equal BigDecimal("312500000000000000000000000000000.2")
+        end
+      end
+
+      it "should keep addition, subtraction and multiplication exact" do
+        _(evaluate("1000000000000000000000000000000000 + 0.0001")).must_equal BigDecimal("1000000000000000000000000000000000.0001")
+        _(evaluate("1.0000000000000000000000000000000001 * 3")).must_equal BigDecimal("3.0000000000000000000000000000000003")
+      end
+    end
   end
 end

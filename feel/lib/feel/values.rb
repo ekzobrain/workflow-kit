@@ -156,12 +156,15 @@ module FEEL
   end
 
   #
-  # FEEL numbers. Decimal literals are parsed as BigDecimal so arithmetic is
-  # exact; values coming from Ruby may also be Integer or Float. Results
-  # handed back to Ruby are normalized with `Numbers.normalize`.
+  # FEEL numbers. Decimal literals are parsed as BigDecimal; values coming
+  # from Ruby may also be Integer or Float. Addition, subtraction and
+  # multiplication are exact (not rounded to 34 digits as in DMN's decimal128,
+  # on purpose: no silent rounding, like SQL DECIMAL). A quotient is rounded
+  # to 34 significant digits, half to even (like decimal128). Results handed
+  # back to Ruby are normalized with `Numbers.normalize`.
   #
   module Numbers
-    # Precision used for non-terminating divisions (like IEEE 754 decimal128).
+    # Significant digits of quotients (like IEEE 754 decimal128).
     DIVISION_PRECISION = 34
 
     module_function
@@ -179,8 +182,62 @@ module FEEL
       when Integer then value
       when BigDecimal then value.finite? ? value : nil
       when Float then value.finite? ? BigDecimal(value.to_s) : nil
-      when Rational then BigDecimal(value, DIVISION_PRECISION)
+      when Rational then round(value)
       end
+    end
+
+    # The quotient of two FEEL numbers, rounded to 34 significant digits,
+    # half to even: an Integer if it is integral, otherwise a BigDecimal.
+    # Raises ZeroDivisionError.
+    def divide(left, right)
+      if Integer === left && Integer === right
+        quotient, remainder = left.divmod(right)
+        return quotient if remainder.zero? && quotient.abs < 10**DIVISION_PRECISION
+      end
+
+      left = decimal(left)
+      right = decimal(right)
+      raise ZeroDivisionError, "divided by 0" if right.zero?
+
+      fast_divide(left, right) || round(left.to_r / right.to_r)
+    end
+
+    # Digits of the approximate quotient of fast_divide.
+    APPROXIMATION_DIGITS = DIVISION_PRECISION + 6
+    # Digits 35..40 of an approximate quotient close to a tie at digit 35.
+    NEAR_TIES = %w[499999 500000 500001].freeze
+
+    # The quotient computed with BigDecimal#div to 40 digits (whatever the
+    # BigDecimal.mode, the error is below one unit of digit 40), then
+    # rounded half to even. Nil if the quotient is too close to a tie at
+    # digit 35 to decide (then it's computed exactly).
+    def fast_divide(left, right)
+      quotient = BigDecimal(left).div(right, APPROXIMATION_DIGITS)
+      return 0 if quotient.zero?
+
+      digits = quotient.split[1]
+      return nil if NEAR_TIES.include?(digits.ljust(APPROXIMATION_DIGITS, "0")[DIVISION_PRECISION, 6])
+
+      result = quotient.round(DIVISION_PRECISION - quotient.exponent, :half_even)
+      result.frac.zero? ? result.to_i : result
+    end
+
+    # A Rational rounded to 34 significant digits, half to even, as an
+    # Integer or a BigDecimal. Computed exactly (independently of
+    # BigDecimal.mode).
+    def round(rational)
+      return rational.to_i if rational.denominator == 1 && rational.numerator.abs < 10**DIVISION_PRECISION
+      return 0 if rational.zero?
+
+      # 10**(exponent - 1) <= |rational| < 10**exponent
+      numerator = rational.numerator.abs
+      denominator = rational.denominator
+      exponent = numerator.to_s.length - denominator.to_s.length
+      exponent += 1 if exponent >= 0 ? numerator >= denominator * (10**exponent) : numerator * (10**-exponent) >= denominator
+      scale = DIVISION_PRECISION - exponent
+      digits = (scale >= 0 ? rational * (10**scale) : rational / (10**-scale)).round(half: :even)
+      result = BigDecimal(digits) * BigDecimal("1e#{-scale}")
+      result.frac.zero? ? result.to_i : result
     end
 
     # Converts a FEEL result for Ruby callers: BigDecimal (and Rational) become
@@ -197,7 +254,9 @@ module FEEL
         return value if value.is_a?(Float)
         return value.to_i if value == value.truncate
 
-        value = BigDecimal(value, DIVISION_PRECISION) if value.is_a?(Rational)
+        value = round(value) if value.is_a?(Rational)
+        return value if Integer === value
+
         exact_float(value) || value
       when Array then value.map { |item| normalize(item) }
       when Hash then value.transform_values { |item| normalize(item) }
@@ -317,9 +376,8 @@ module FEEL
 
     def decimal_divide(left, right)
       return nil if right.zero?
-      return left / right if left.is_a?(Integer) && right.is_a?(Integer) && (left % right).zero?
 
-      BigDecimal(left).div(right, Numbers::DIVISION_PRECISION)
+      Numbers.divide(left, right)
     end
   end
 end

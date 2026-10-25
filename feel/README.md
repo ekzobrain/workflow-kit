@@ -442,7 +442,11 @@ FEEL values are represented by these Ruby values (the results of `FEEL.evaluate`
 
 Variables can be given as these values or as other Ruby values: `DateTime`, and, if the application uses ActiveSupport, `ActiveSupport::TimeWithZone`, `ActiveSupport::Duration` and `HashWithIndifferentAccess`. Hash keys can be Strings or Symbols. The results of an evaluation can be passed as variables to the next one.
 
-Numbers are computed exactly, as decimals with 34 significant digits (`BigDecimal`, like the decimal128 numbers of DMN). A result is returned as an `Integer` if it is integral, as a `Float` if the Float has exactly the same value (e.g. `0.3`, `1.5`), otherwise as a `BigDecimal`, so that no precision is lost:
+Numbers are decimals (`BigDecimal`):
+
+- Addition, subtraction and multiplication are exact, with as many digits as needed. This differs on purpose from DMN, whose numbers (IEEE 754 decimal128) round every operation to 34 significant digits: there is no silent rounding, and the results are the same as with SQL `DECIMAL` arithmetic (e.g. in computed columns).
+- A quotient is rounded to 34 significant digits, half to even, as in decimal128 (e.g. `1 / 3` is `0.3333333333333333333333333333333333`). The rounding doesn't depend on `BigDecimal.mode`.
+- A result is returned as an `Integer` if it is integral, as a `Float` if the Float has exactly the same value (e.g. `0.3`, `1.5`), otherwise as a `BigDecimal`, so that no precision is lost:
 
 ```ruby
 FEEL.evaluate("0.1 + 0.2") # => 0.3 (Float)
